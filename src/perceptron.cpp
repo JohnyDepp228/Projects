@@ -25,7 +25,7 @@ private:
 
 
 public:
-	Perceptron(unsigned int inputNeurons, unsigned int hidenNeurons, unsigned int outputNeurons,std::string input) {
+	Perceptron(unsigned int inputNeurons, unsigned int hidenNeurons, unsigned int outputNeurons, std::string input) {
 		this->inputNeurons = inputNeurons;
 		this->hidenNeurons = hidenNeurons;
 		this->outputNeurons = outputNeurons;
@@ -68,7 +68,16 @@ public:
 			for (int i = 0; i < inputLayer.size(); i++) {
 				outputLayer[neuronIndex] += hiddenLayer[i] * hidenWeights[neuronIndex][i];
 			}
+			outputLayer[neuronIndex] = Relu(outputLayer[neuronIndex]);
 		}
+	}
+
+	double Sigmoid(double data) {
+		return 1.0 / (1.0 + std::exp(-data));
+	}
+
+	double deriativeSigmoid(double sigmoidRes) {
+		return sigmoidRes * (1.0 - sigmoidRes);
 	}
 
 	vector<double> GetOutput() const {
@@ -79,24 +88,28 @@ public:
 		inputLayer = vector<double>(inputNeurons, 0.0);;
 	}
 
+	double Relu(double data) {
+		return (data > 0.0) ? 1.0 : 0.0;
+	}
+
 	int hash(std::string key) {
-			int sum = 0;
-			for (char c : key) {
-				sum += (int)c;
-			}
-			int lastTwoDigits = sum % 100;
-			long long square = (long long)lastTwoDigits * lastTwoDigits;
-			std::string squareStr = std::to_string(square);
-			int mid;
-			if (squareStr.length() <= 4) {
-				mid = lastTwoDigits;
-			}
-			else {
-				int start = (squareStr.length() - 4) / 2;
-				std::string midStr = squareStr.substr(start, 4);
-				mid = stoi(midStr);
-			}
-			return mid % inputNeurons;
+		int sum = 0;
+		for (char c : key) {
+			sum += (int)c;
+		}
+		int lastTwoDigits = sum % 100;
+		long long square = (long long)lastTwoDigits * lastTwoDigits;
+		std::string squareStr = std::to_string(square);
+		int mid;
+		if (squareStr.length() <= 4) {
+			mid = lastTwoDigits;
+		}
+		else {
+			int start = (squareStr.length() - 4) / 2;
+			std::string midStr = squareStr.substr(start, 4);
+			mid = stoi(midStr);
+		}
+		return mid % inputNeurons;
 	}
 
 	vector<double> ProccedString(std::string str) {
@@ -117,7 +130,7 @@ public:
 		}
 	}
 
-	
+
 
 	//double Error(int index,double target) {
 	//	return (outputLayer[0] - target) * hidenWeights[0][index];
@@ -136,5 +149,5 @@ public:
 
 int main()
 {
-   
+
 }
