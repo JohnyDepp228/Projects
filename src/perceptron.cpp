@@ -14,8 +14,6 @@ private:
 	vector<double> inputLayer;
 	vector<double> hiddenLayer;
 	vector<double> outputLayer;
-	vector<double> inputVelocity;
-	vector<double> hiddenVelocity;
 	unsigned int inputNeurons;
 	unsigned int hidenNeurons;
 	unsigned int outputNeurons;
@@ -30,9 +28,7 @@ public:
 		this->hidenNeurons = hidenNeurons;
 		this->outputNeurons = outputNeurons;
 		inputLayer = vector<double>(inputNeurons, 0.0);
-		inputVelocity = vector<double>(inputNeurons, 0.0);
 		hiddenLayer = vector<double>(hidenNeurons, 0.0);
-		hiddenVelocity = vector<double>(hidenNeurons, 0.0);
 		outputLayer = vector<double>(outputNeurons, 0.0);
 		outputWeights = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
 		hidenWeights = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
@@ -40,9 +36,9 @@ public:
 		InitWeights(hidenWeights);
 	}
 
-	void InitWeights(vector<vector<double>> weights) {
-		for (auto rows : weights) {
-			for (auto colls : rows) {
+	void InitWeights(vector<vector<double>>& weights) {
+		for (auto& rows : weights) {
+			for (auto& colls : rows) {
 				colls = Weight(0.0, 1.0);
 			}
 		}
@@ -58,7 +54,7 @@ public:
 	void HiddenLayer() {
 		for (int neuronIndex = 0; neuronIndex < hiddenLayer.size(); neuronIndex++) {
 			for (int i = 0; i < inputLayer.size(); i++) {
-				hiddenLayer[neuronIndex] += inputLayer[i] * outputWeights[neuronIndex][i];
+				hiddenLayer[neuronIndex] += inputLayer[i] * outputWeights[i][neuronIndex];
 			}
 		}
 	}
@@ -66,9 +62,9 @@ public:
 	void OutputLayer() {
 		for (int neuronIndex = 0; neuronIndex < outputLayer.size(); neuronIndex++) {
 			for (int i = 0; i < inputLayer.size(); i++) {
-				outputLayer[neuronIndex] += hiddenLayer[i] * hidenWeights[neuronIndex][i];
+				outputLayer[neuronIndex] += hiddenLayer[i] * hidenWeights[i][neuronIndex];
 			}
-			outputLayer[neuronIndex] = Relu(outputLayer[neuronIndex]);
+			outputLayer[neuronIndex] = Sigmoid(outputLayer[neuronIndex]);
 		}
 	}
 
@@ -89,7 +85,7 @@ public:
 	}
 
 	double Relu(double data) {
-		return (data > 0.0) ? 1.0 : 0.0;
+		return (data > 0.0) ? data : 0.0;
 	}
 
 	int hash(std::string key) {
@@ -113,7 +109,7 @@ public:
 	}
 
 	vector<double> ProccedString(std::string str) {
-		vector<std::string> words;
+		vector<std::string> words(inputNeurons, 0);
 		unsigned int i = 0;
 		unsigned int j = 0;
 		while (str[i] != '\0') {
@@ -129,17 +125,6 @@ public:
 			inputLayer[hash(words[i])]++;
 		}
 	}
-
-
-
-	//double Error(int index,double target) {
-	//	return (outputLayer[0] - target) * hidenWeights[0][index];
-	//}
-
-	//void VelocityINnutCalcul(int index) {
-	//	double Error = 0;
-	//	inputVelocity[index + 1] = inertia * inputVelocity[index] * LR * Error * inputLayer[index];
-	//}
 };
 
 
