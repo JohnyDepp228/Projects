@@ -11,6 +11,8 @@ class Perceptron {
 private:
 	vector<vector<double>> outputWeights;
 	vector<vector<double>> hidenWeights;
+	vector<vector<double>> hVelocity;
+	vector<vector<double>> outVelocity;
 	vector<double> inputLayer;
 	vector<double> hiddenLayer;
 	vector<double> outputLayer;
@@ -31,7 +33,9 @@ public:
 		hiddenLayer = vector<double>(hidenNeurons, 0.0);
 		outputLayer = vector<double>(outputNeurons, 0.0);
 		outputWeights = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
+		hVelocity = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
 		hidenWeights = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
+		outVelocity = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
 		InitWeights(outputWeights);
 		InitWeights(hidenWeights);
 	}
@@ -81,7 +85,7 @@ public:
 	}
 
 	void CleaarInput() {
-		inputLayer = vector<double>(inputNeurons, 0.0);;
+		inputLayer = vector<double>(inputNeurons, 0.0);
 	}
 
 	double Relu(double data) {
@@ -109,7 +113,7 @@ public:
 	}
 
 	vector<double> ProccedString(std::string str) {
-		vector<std::string> words(inputNeurons, 0);
+		vector<std::string> words(inputNeurons, "0");
 		unsigned int i = 0;
 		unsigned int j = 0;
 		while (str[i] != '\0') {
@@ -123,6 +127,31 @@ public:
 
 		for (int i = 0; i < words.size(); i++) {
 			inputLayer[hash(words[i])]++;
+		}
+	}
+
+
+	void TrainInputHiden() {
+		for (int i = 0; i < hidenWeights.size(); i++) {
+			for (int j = 0; j < hidenWeights[0].size(); j++) {
+				hidenWeights[i][j] = hidenWeights[i][j] - hVelocity[i][j];
+			}
+		}
+	}
+
+	void TrainHidenOutput() {
+		for (int i = 0; i < outputWeights.size(); i++) {
+			for (int j = 0; j < outputWeights[0].size(); j++) {
+				outputWeights[i][j] = outputWeights[i][j] - outVelocity[i][j];
+			}
+		}
+	}
+
+	double hiddenVelocity() {
+		for (int i = 0; i < inputNeurons; i++) {
+			for (int j = 0; j < hidenWeights[0].size(); i++) {
+
+			}
 		}
 	}
 };
