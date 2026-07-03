@@ -11,8 +11,8 @@ class Perceptron {
 private:
 	vector<vector<double>> outputWeights;
 	vector<vector<double>> hidenWeights;
-	vector<vector<double>> hVelocity;
-	vector<vector<double>> outVelocity;
+	vector<vector<double>> InputHidenVelocity;
+	vector<vector<double>> HidenOutputVelocity;
 	vector<double> inputLayer;
 	vector<double> hiddenLayer;
 	vector<double> outputLayer;
@@ -22,6 +22,8 @@ private:
 	double bias = 1.0;
 	double LR = 0.001;
 	double inertia = 0.8;
+	double error = 0.0;
+	double deltaError = 0.0;
 
 
 public:
@@ -33,9 +35,9 @@ public:
 		hiddenLayer = vector<double>(hidenNeurons, 0.0);
 		outputLayer = vector<double>(outputNeurons, 0.0);
 		outputWeights = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
-		hVelocity = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
+		InputHidenVelocity = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
 		hidenWeights = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
-		outVelocity = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
+		HidenOutputVelocity = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
 		InitWeights(outputWeights);
 		InitWeights(hidenWeights);
 	}
@@ -65,7 +67,7 @@ public:
 
 	void OutputLayer() {
 		for (int neuronIndex = 0; neuronIndex < outputLayer.size(); neuronIndex++) {
-			for (int i = 0; i < inputLayer.size(); i++) {
+			for (int i = 0; i < hiddenLayer.size(); i++) {
 				outputLayer[neuronIndex] += hiddenLayer[i] * hidenWeights[i][neuronIndex];
 			}
 			outputLayer[neuronIndex] = Sigmoid(outputLayer[neuronIndex]);
@@ -112,8 +114,9 @@ public:
 		return mid % inputNeurons;
 	}
 
-	vector<double> ProccedString(std::string str) {
-		vector<std::string> words(inputNeurons, "0");
+	void ProccedString(std::string str) {
+		vector<std::string> words;
+		words.resize(inputNeurons);
 		unsigned int i = 0;
 		unsigned int j = 0;
 		while (str[i] != '\0') {
@@ -121,7 +124,7 @@ public:
 				j++;
 				i++;
 			}
-			words[j] += str[i];
+			words[j].push_back(str[i]);
 			i++;
 		}
 
@@ -132,27 +135,54 @@ public:
 
 
 	void TrainInputHiden() {
-		for (int i = 0; i < hidenWeights.size(); i++) {
-			for (int j = 0; j < hidenWeights[0].size(); j++) {
-				hidenWeights[i][j] = hidenWeights[i][j] - hVelocity[i][j];
+
+		for (int i = 0; i < inputNeurons; i++) {
+			for (int j = 0; j < hidenNeurons; j++) {
+				FindInputHidenVelocity(i, j);
+				hidenWeights[i][j] = hidenWeights[i][j] - InputHidenVelocity[i][j];
 			}
 		}
 	}
 
 	void TrainHidenOutput() {
-		for (int i = 0; i < outputWeights.size(); i++) {
-			for (int j = 0; j < outputWeights[0].size(); j++) {
-				outputWeights[i][j] = outputWeights[i][j] - outVelocity[i][j];
+		for (int i = 0; i < hidenNeurons; i++) {
+			for (int j = 0; j < outputNeurons; j++) {
+				FindHidenOutputVelocity(i, j);
+				outputWeights[i][j] = outputWeights[i][j] - HidenOutputVelocity[i][j];
 			}
 		}
 	}
 
-	double hiddenVelocity() {
-		for (int i = 0; i < inputNeurons; i++) {
-			for (int j = 0; j < hidenWeights[0].size(); i++) {
+	void Error(double target) {
+		error = outputLayer[0] - target;
+	}
 
-			}
+	void BackpropError() {
+		deltaError = error * deriativeSigmoid(outputLayer[0]);
+	}
+
+	void Train(double target, std::string log_line) {
+
+		Error(target);
+		BackpropError();
+		if ((std::abs(error) * 100) > 15) {
+
+			TrainHidenOutput();
+			TrainInputHiden();
+			ProccedString(log_line);
 		}
+	}
+	double Velocity(double oldVeloctity, double ErrorToNeuron, double dataFromNeuron) {
+		return (inertia * oldVeloctity) + LR * ErrorToNeuron * dataFromNeuron;
+	}
+
+	void FindInputHidenVelocity(int i, int j) {
+		double deltaHiddenJ = (deltaError * hidenWeights[j][0]) * Relu(hiddenLayer[j]);
+		InputHidenVelocity[i][j] = Velocity(InputHidenVelocity[i][j], deltaHiddenJ, inputLayer[i]);
+	}
+
+	void FindHidenOutputVelocity(int i, int j) {
+		HidenOutputVelocity[i][0] = Velocity(HidenOutputVelocity[i][0], deltaError, hiddenLayer[i]);
 	}
 };
 
