@@ -13,11 +13,15 @@ private:
 	vector<vector<double>> hiddenToOutputWeights;
 	vector<vector<double>> InputHidenVelocity;
 	vector<vector<double>> HidenOutputVelocity;
+	vector<vector<double>> InputHidenBias;
+	vector<vector<double>> HidenOutputBias;
 
 	vector<double> inputLayer;
 	vector<double> hiddenLayer;
 	vector<double> outputLayer;
 	vector<double> deltaOutput;
+	vector<double> inputToHidenError;
+	vector<double> hidenToOutputError;
 
 	unsigned int inputNeurons;
 	unsigned int hidenNeurons;
@@ -38,12 +42,17 @@ public:
 		hiddenLayer = vector<double>(hidenNeurons, 0.0);
 		outputLayer = vector<double>(outputNeurons, 0.0);
 		deltaOutput = vector<double>(outputNeurons, 0.0);
+		inputToHidenError = vector<double>(hidenNeurons, 0.0);
+		hidenToOutputError = vector<double>(outputNeurons, 0.0);
 
 		inputToHiddenWeights = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
 		InputHidenVelocity = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.0));
 
 		hiddenToOutputWeights = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
 		HidenOutputVelocity = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
+
+		InputHidenBias = vector<vector<double>>(inputNeurons, vector<double>(hidenNeurons, 0.01));
+		HidenOutputBias = vector<vector<double>>(hidenNeurons, vector<double>(outputNeurons, 0.0));
 
 		InitWeights(inputToHiddenWeights);
 		InitWeights(hiddenToOutputWeights);
@@ -215,6 +224,20 @@ public:
 
 		double deltaHiddenJ = errorFromOutput * derivativeRelu(hiddenLayer[j]);
 		InputHidenVelocity[i][j] = Velocity(InputHidenVelocity[i][j], deltaHiddenJ, inputLayer[i]);
+	}
+
+	void UpdateBias() {
+		for (int i = 0; i < InputHidenBias.size();i++) {
+			for (int j = 0; j < InputHidenBias[0].size();j++) {
+				InputHidenBias[i][j] = InputHidenBias[i][j] - LR * inputToHidenError[j];
+			}
+		}
+
+		for (int i = 0; i < HidenOutputBias.size(); i++) {
+			for (int j = 0; j < HidenOutputBias[0].size(); j++) {
+				HidenOutputBias[i][j] = HidenOutputBias[i][j] - LR * hidenToOutputError[j];
+			}
+		}
 	}
 
 };
