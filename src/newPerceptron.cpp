@@ -28,6 +28,7 @@ private:
 	unsigned int inputNeuronsAmount;
 	unsigned int hidenNeuronsAmount;
 	unsigned int outputNeuronsAmount;
+	unsigned int epoch;
 
 
 
@@ -38,6 +39,7 @@ public:
 		this->hidenNeuronsAmount = hidenNeuronsAmount;
 		this->outputNeuronsAmount = outputNeuronsAmount;
 		this->learningTargets = targets;
+		epoch = 0;
 
 		inputLayer = std::vector<double>(inputNeuronsAmount, 0);
 		hidenLayer = std::vector<double>(hidenNeuronsAmount, 0);
@@ -192,13 +194,13 @@ public:
 		}
 	}
 
-	void hidenToOutError(double target) {
+	void hidenToOutError() {
 		for (int i = 0; i < outputNeuronsAmount; i++) {
-			hidenToOutputError[i] = (outputLayer[i] - target) * directiveSigmoid(outputLayer[i]);
+			hidenToOutputError[i] = (outputLayer[i] - learningTargets[epoch]) * directiveSigmoid(outputLayer[i]);
 		}
 	}
 
-	void inToHidenError(double target) {
+	void inToHidenError() {
 		for (int i = 0; i < hidenNeuronsAmount; i++) {
 			double errorSum = 0;
 			for (int j = 0; j < outputNeuronsAmount; j++) {
@@ -230,11 +232,26 @@ public:
 				InputToHiddenWeights[i][j] -= NewVelocity(inputToHidenError[j], inputLayer[i], inputToHiddenLayerVelocity[i][j]);
 			}
 		}
+
+		epoch++;
+	}
+
+	double MSE() {
+		double errorSum = 0;
+		for (int i = 0; i < outputNeuronsAmount; i++) {
+			errorSum += std::pow((outputLayer[i] - learningTargets[epoch]), 2);
+		}
+
+		return (1.0 / outputNeuronsAmount) * errorSum;
+	}
+
+	double RMSE() {
+		return std::sqrt(MSE());
 	}
 };
 
 int main() {
-	std::vector<double> res2(1, 0);
+	std::vector<double> res2(3, 1);
 	Perceptron p(10, 7, 1, res2);
 	std::string test = { "Hello world peace and apple god dog layer cat weight" };
 	std::vector<double> res(1, 0);
@@ -242,9 +259,19 @@ int main() {
 	p.InputToHiddenLayerProccess();
 	p.HiddenToOutputLayerProccess();
 	res = p.GetOutputLayer();
-
 	for (auto n : res) {
-		std::cout << "Result: " << n;
+		std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
+	}
+	p.hidenToOutError();
+	p.inToHidenError();
+	p.UpdateBias();
+	p.UpdateWeights();
+	p.ProccedString(test);
+	p.InputToHiddenLayerProccess();
+	p.HiddenToOutputLayerProccess();
+	res = p.GetOutputLayer();
+	for (auto n : res) {
+		std::cout << "Result: " << n << "\tError: " << p.RMSE();
 	}
 
 	return 0;
