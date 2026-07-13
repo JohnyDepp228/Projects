@@ -118,6 +118,9 @@ public:
 		return outputLayer;
 	}
 
+	void CleanInputLayer() {
+		std::fill(inputLayer.begin(), inputLayer.end(), 0.0);
+	}
 
 	void InitWeights(std::vector<std::vector<double>>& layer) {
 		for (auto& colls : layer) {
@@ -248,13 +251,40 @@ public:
 	double RMSE() {
 		return std::sqrt(MSE());
 	}
+
+	void Learning() {
+		std::string test = { "Hello world peace and apple god dog layer cat weight" };
+		std::vector<double> res(1, 0);
+		int i = 0;
+		/*while (RMSE() * 100 > 3)*/ while (i < learningTargets.size() - 1) {
+			ProccedString(test);
+			InputToHiddenLayerProccess();
+			HiddenToOutputLayerProccess();
+			res = GetOutputLayer();
+			for (auto n : res) {
+				std::cout << "Result: " << n << "\tError: " << RMSE() << std::endl;
+			}
+			hidenToOutError();
+			inToHidenError();
+			UpdateBias();
+			UpdateWeights();
+			CleanInputLayer();
+			i++;
+			if ((RMSE() * 100) < 2) {
+				break;
+			}
+		}
+		std::cout << "Learning done on epoch " << epoch << std::endl;
+	}
+
 };
 
 int main() {
-	std::vector<double> res2(3, 1);
-	Perceptron p(10, 7, 1, res2);
+	std::vector<double> res2(10000000, 1);
 	std::string test = { "Hello world peace and apple god dog layer cat weight" };
+	Perceptron p(100, 64, 1, res2);
 	std::vector<double> res(1, 0);
+	p.Learning();
 	p.ProccedString(test);
 	p.InputToHiddenLayerProccess();
 	p.HiddenToOutputLayerProccess();
@@ -262,17 +292,5 @@ int main() {
 	for (auto n : res) {
 		std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
 	}
-	p.hidenToOutError();
-	p.inToHidenError();
-	p.UpdateBias();
-	p.UpdateWeights();
-	p.ProccedString(test);
-	p.InputToHiddenLayerProccess();
-	p.HiddenToOutputLayerProccess();
-	res = p.GetOutputLayer();
-	for (auto n : res) {
-		std::cout << "Result: " << n << "\tError: " << p.RMSE();
-	}
-
 	return 0;
 }
