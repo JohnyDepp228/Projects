@@ -2,24 +2,138 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <fstream>
 
+enum Errors {
+	FILEREAD = 1,
+	FILEWRITE
+};
 
-
-class Perceptron {
-private:
-
+struct SavePerceprtonConfig {
 	std::vector<std::vector<double>> InputToHiddenWeights;
 	std::vector<std::vector<double>> hidenToOutputWeights;
 	std::vector<std::vector<double>> hidenToOutputLayerVelocity;
 	std::vector<std::vector<double>> inputToHiddenLayerVelocity;
+	std::vector<double> inputToHiddenLayerBias;
+	std::vector<double> hidenToOutputLayerBias;
+	unsigned int inputNeuronsAmount;
+	unsigned int hidenNeuronsAmount;
+	unsigned int outputNeuronsAmount;
+
+	SavePerceprtonConfig(std::vector<std::vector<double>> InputToHiddenWeights, std::vector<std::vector<double>> hidenToOutputWeights,
+		std::vector<std::vector<double>> hidenToOutputLayerVelocity, std::vector<std::vector<double>> inputToHiddenLayerVelocity,
+		std::vector<double> inputToHiddenLayerBias, std::vector<double> hidenToOutputLayerBias,
+		const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount) {
+		this->InputToHiddenWeights = InputToHiddenWeights;
+		this->hidenToOutputWeights = hidenToOutputWeights;
+		this->hidenToOutputLayerVelocity = hidenToOutputLayerVelocity;
+		this->inputToHiddenLayerVelocity = inputToHiddenLayerVelocity;
+		this->inputToHiddenLayerBias = inputToHiddenLayerBias;
+		this->hidenToOutputLayerBias = hidenToOutputLayerBias;
+		this->inputNeuronsAmount = inputNeuronsAmount;
+		this->hidenNeuronsAmount = hidenNeuronsAmount;
+		this->outputNeuronsAmount = outputNeuronsAmount;
+	}
+	SavePerceprtonConfig() {
+		this->InputToHiddenWeights.clear();
+		this->hidenToOutputWeights.clear();
+		this->hidenToOutputLayerVelocity.clear();
+		this->inputToHiddenLayerVelocity.clear();
+		this->inputToHiddenLayerBias.clear();
+		this->hidenToOutputLayerBias.clear();
+
+		this->inputNeuronsAmount = 0;
+		this->hidenNeuronsAmount = 0;
+		this->outputNeuronsAmount = 0;
+	}
+
+	void SaveToFile(std::string path, const std::vector<std::vector<double>>& InputToHiddenWeights, const std::vector<std::vector<double>>& hidenToOutputWeights,
+		const std::vector<std::vector<double>>& hidenToOutputLayerVelocity, const std::vector<std::vector<double>>& inputToHiddenLayerVelocity,
+		const std::vector<double>& inputToHiddenLayerBias, const std::vector<double>& hidenToOutputLayerBias,
+		const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount) {
+		SavePerceprtonConfig config(InputToHiddenWeights, hidenToOutputWeights, hidenToOutputLayerVelocity, inputToHiddenLayerVelocity, inputToHiddenLayerBias, hidenToOutputLayerBias,
+			inputNeuronsAmount, hidenNeuronsAmount, outputNeuronsAmount);
+		std::ofstream fout;
+		fout.open(path, std::ios::binary);
+		auto SaveVec2D = [&fout](const std::vector<std::vector<double>>& vec) {
+
+
+			};
+		if (!fout.write((char*)&config, sizeof(SavePerceprtonConfig))) {
+			throw Errors::FILEWRITE;
+		}
+		fout.close();
+	}
+
+	bool GetFromFile(std::string path) {
+		SavePerceprtonConfig config;
+		std::ifstream fin;
+		fin.open(path, std::ios::binary);
+		if (fin.is_open()) {
+			if (!fin.read((char*)&config, sizeof(SavePerceprtonConfig))) {
+				throw Errors::FILEREAD;
+			};
+			SetConfig(config);
+			fin.close();
+			return true;
+		}
+		else {
+			fin.close();
+			return false;
+		}
+	}
+
+	void SetConfig(std::vector<std::vector<double>>& InputToHiddenWeights, std::vector<std::vector<double>>& hidenToOutputWeights,
+		std::vector<std::vector<double>>& hidenToOutputLayerVelocity, std::vector<std::vector<double>>& inputToHiddenLayerVelocity,
+		std::vector<double>& inputToHiddenLayerBias, std::vector<double>& hidenToOutputLayerBias,
+		unsigned int& inputNeuronsAmount, unsigned int& hidenNeuronsAmount, unsigned int& outputNeuronsAmount)
+	{
+		InputToHiddenWeights = this->InputToHiddenWeights;
+		InputToHiddenWeights = this->hidenToOutputWeights;
+		hidenToOutputLayerVelocity = this->hidenToOutputLayerVelocity;
+		inputToHiddenLayerVelocity = this->inputToHiddenLayerVelocity;
+		inputToHiddenLayerBias = this->inputToHiddenLayerBias;
+		hidenToOutputLayerBias = this->hidenToOutputLayerBias;
+		inputNeuronsAmount = this->inputNeuronsAmount;
+		hidenNeuronsAmount = this->hidenNeuronsAmount;
+		outputNeuronsAmount = this->outputNeuronsAmount;
+
+	}
+
+	void SetConfig(const SavePerceprtonConfig& config)
+	{
+		this->InputToHiddenWeights = config.InputToHiddenWeights;
+		this->InputToHiddenWeights = config.hidenToOutputWeights;
+		this->hidenToOutputLayerVelocity = config.hidenToOutputLayerVelocity;
+		this->inputToHiddenLayerVelocity = config.inputToHiddenLayerVelocity;
+		this->inputToHiddenLayerBias = config.inputToHiddenLayerBias;
+		this->hidenToOutputLayerBias = config.hidenToOutputLayerBias;
+		this->inputNeuronsAmount = config.inputNeuronsAmount;
+		this->hidenNeuronsAmount = config.hidenNeuronsAmount;
+		this->outputNeuronsAmount = config.outputNeuronsAmount;
+
+	}
+};
+
+class Perceptron {
+private:
+
+	std::vector<std::vector<double>> InputToHiddenWeights;//save
+	std::vector<std::vector<double>> hidenToOutputWeights;//save
+	std::vector<std::vector<double>> hidenToOutputLayerVelocity;//save
+	std::vector<std::vector<double>> inputToHiddenLayerVelocity;//save
 
 	std::vector<double> inputLayer;
 	std::vector<double> hidenLayer;
 	std::vector<double> outputLayer;
-	std::vector<double> inputToHiddenLayerBias;
-	std::vector<double> hidenToOutputLayerBias;
+
+	std::vector<double> inputToHiddenLayerBias;//save
+	std::vector<double> hidenToOutputLayerBias;//save
+
 	std::vector<double> inputToHidenError;
 	std::vector<double> hidenToOutputError;
+
+
 	std::vector<double> learningTargets;
 
 	double LR = 0.01;
@@ -35,30 +149,50 @@ private:
 public:
 	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,
 		std::vector<double> targets) {
-		this->inputNeuronsAmount = inputNeuronsAmount;
-		this->hidenNeuronsAmount = hidenNeuronsAmount;
-		this->outputNeuronsAmount = outputNeuronsAmount;
-		this->learningTargets = targets;
+		SavePerceprtonConfig config;
 		epoch = 0;
+		if (config.GetFromFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt")) {
+			config.SetConfig
+			(
+				this->InputToHiddenWeights, this->hidenToOutputWeights,
+				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
+				this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
+				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount
+			);
+			inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
+			hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
+			outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
+		}
+		else {
+			this->inputNeuronsAmount = inputNeuronsAmount;
+			this->hidenNeuronsAmount = hidenNeuronsAmount;
+			this->outputNeuronsAmount = outputNeuronsAmount;
+			this->learningTargets = targets;
 
-		inputLayer = std::vector<double>(inputNeuronsAmount, 0);
-		hidenLayer = std::vector<double>(hidenNeuronsAmount, 0);
-		outputLayer = std::vector<double>(outputNeuronsAmount, 0);
+			inputLayer = std::vector<double>(inputNeuronsAmount, 0);
+			hidenLayer = std::vector<double>(hidenNeuronsAmount, 0);
+			outputLayer = std::vector<double>(outputNeuronsAmount, 0);
 
-		inputToHiddenLayerBias = std::vector<double>(hidenNeuronsAmount, 0.01);
-		hidenToOutputLayerBias = std::vector<double>(outputNeuronsAmount, 0);
+			inputToHiddenLayerBias = std::vector<double>(hidenNeuronsAmount, 0.01);
+			hidenToOutputLayerBias = std::vector<double>(outputNeuronsAmount, 0);
 
-		inputToHidenError = std::vector<double>(hidenNeuronsAmount, 0.0);
-		hidenToOutputError = std::vector<double>(outputNeuronsAmount, 0.0);
+			inputToHidenError = std::vector<double>(hidenNeuronsAmount, 0.0);
+			hidenToOutputError = std::vector<double>(outputNeuronsAmount, 0.0);
 
-		hidenToOutputLayerVelocity = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
-		inputToHiddenLayerVelocity = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
+			hidenToOutputLayerVelocity = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
+			inputToHiddenLayerVelocity = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
 
-		InputToHiddenWeights = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
-		hidenToOutputWeights = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
+			InputToHiddenWeights = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
+			hidenToOutputWeights = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
 
-		InitWeights(InputToHiddenWeights);
-		InitWeights(hidenToOutputWeights);
+			InitWeights(InputToHiddenWeights);
+			InitWeights(hidenToOutputWeights);
+			Learning();
+			config.SaveToFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt", this->InputToHiddenWeights, this->hidenToOutputWeights,
+				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
+				this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
+				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount);
+		}
 	}
 
 	double ReLu(const double& data) {
@@ -256,7 +390,7 @@ public:
 		std::string test = { "Hello world peace and apple god dog layer cat weight" };
 		std::vector<double> res(1, 0);
 		int i = 0;
-		/*while (RMSE() * 100 > 3)*/ while (i < learningTargets.size() - 1) {
+		while (i < learningTargets.size() - 1) {
 			ProccedString(test);
 			InputToHiddenLayerProccess();
 			HiddenToOutputLayerProccess();
@@ -282,15 +416,27 @@ public:
 int main() {
 	std::vector<double> res2(10000000, 1);
 	std::string test = { "Hello world peace and apple god dog layer cat weight" };
-	Perceptron p(100, 64, 1, res2);
 	std::vector<double> res(1, 0);
-	p.Learning();
-	p.ProccedString(test);
-	p.InputToHiddenLayerProccess();
-	p.HiddenToOutputLayerProccess();
-	res = p.GetOutputLayer();
-	for (auto n : res) {
-		std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
+	Perceptron p(100, 64, 1, res2);
+	try {
+		p.ProccedString(test);
+		p.InputToHiddenLayerProccess();
+		p.HiddenToOutputLayerProccess();
+		res = p.GetOutputLayer();
+		for (auto n : res) {
+			std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
+		}
+	}
+	catch (const Errors& e) {
+		if (e == Errors::FILEREAD) {
+			std::cout << "Can't read perceptron weights" << std::endl;
+		}
+		else if (e == Errors::FILEWRITE) {
+			std::cout << "Can't save perceptron weights" << std::endl;
+		}
+	}
+	catch (...) {
+		std::cout << "Unknown problem" << std::endl;
 	}
 	return 0;
 }
