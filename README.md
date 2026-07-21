@@ -1,7 +1,7 @@
 # Projects
-[x] Learning
-[x] Saving perceptron config
-[ ] OPtimization
-[ ] Dataset
-[ ] Reading dataset from file
-[ ] Dividing code into separate parts(*.hpp, *.cpp) 
+1. - [x] Learning
+2. - [x] Saving perceptron config
+3. - [ ] OPtimization
+4. - [ ] Dataset
+5. - [ ] Reading dataset from file
+6. - [ ] Dividing code into separate parts(*.hpp, *.cpp) 
