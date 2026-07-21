@@ -6,7 +6,12 @@
 
 enum Errors {
 	FILEREAD = 1,
-	FILEWRITE
+	FILEREADVEC1D,
+	FILEREADVEC2D,
+	FILEWRITEVEC2D,
+	FILEWRITEVEC1D,
+	FILEWRITE,
+	DIVISIONBYZERO
 };
 
 struct SavePerceprtonConfig {
@@ -56,10 +61,46 @@ struct SavePerceprtonConfig {
 		std::ofstream fout;
 		fout.open(path, std::ios::binary);
 		auto SaveVec2D = [&fout](const std::vector<std::vector<double>>& vec) {
-
-
+			size_t size = vec.size();
+			fout.write((char*)&size, sizeof(size_t));
+			for (auto row : vec) {
+				size_t rowSize = row.size();
+				if (!fout.write((char*)&rowSize, sizeof(size_t))) {
+					throw Errors::FILEWRITEVEC2D;
+				}
+				if (rowSize > 0) {
+					if (!fout.write((char*)row.data(), sizeof(double) * rowSize)) {
+						throw Errors::FILEWRITEVEC2D;
+					}
+				}
+			}
 			};
-		if (!fout.write((char*)&config, sizeof(SavePerceprtonConfig))) {
+
+		auto SaveVec1D = [&fout](const std::vector<double>& vec) {
+			size_t rowSize = vec.size();
+			if (!fout.write((char*)&rowSize, sizeof(size_t))) {
+				throw Errors::FILEWRITEVEC1D;
+			}
+			if (rowSize > 0) {
+				if (!fout.write((char*)vec.data(), sizeof(double) * rowSize)) {
+					throw Errors::FILEWRITEVEC1D;
+				}
+			}
+			};
+
+		SaveVec2D(config.InputToHiddenWeights);
+		SaveVec2D(config.hidenToOutputWeights);
+		SaveVec2D(config.hidenToOutputLayerVelocity);
+		SaveVec2D(config.inputToHiddenLayerVelocity);
+		SaveVec1D(config.inputToHiddenLayerBias);
+		SaveVec1D(config.hidenToOutputLayerBias);
+		if (!fout.write((char*)&inputNeuronsAmount, sizeof(unsigned int))) {
+			throw Errors::FILEWRITE;
+		}
+		if (!fout.write((char*)&hidenNeuronsAmount, sizeof(unsigned int))) {
+			throw Errors::FILEWRITE;
+		}
+		if (!fout.write((char*)&outputNeuronsAmount, sizeof(unsigned int))) {
 			throw Errors::FILEWRITE;
 		}
 		fout.close();
@@ -69,10 +110,53 @@ struct SavePerceprtonConfig {
 		SavePerceprtonConfig config;
 		std::ifstream fin;
 		fin.open(path, std::ios::binary);
-		if (fin.is_open()) {
-			if (!fin.read((char*)&config, sizeof(SavePerceprtonConfig))) {
-				throw Errors::FILEREAD;
+
+		auto SetVec2D = [&fin](std::vector<std::vector<double>>& vec) {
+			size_t size = 0;
+			fin.read((char*)&size, sizeof(size_t));
+			vec.resize(size);
+			for (auto& row : vec) {
+				size_t rowSize;
+				if (!fin.read((char*)&rowSize, sizeof(size_t))) {
+					throw Errors::FILEREADVEC2D;
+				}
+				row.resize(rowSize);
+				if (rowSize > 0) {
+					if (!fin.read((char*)row.data(), sizeof(double) * rowSize)) {
+						throw Errors::FILEREADVEC2D;
+					}
+				}
+			}
 			};
+
+		auto SetVec1D = [&fin](std::vector<double>& vec) {
+			size_t rowSize = 0;
+			if (!fin.read((char*)&rowSize, sizeof(size_t))) {
+				throw Errors::FILEREADVEC1D;
+			}
+			vec.resize(rowSize);
+			if (rowSize > 0) {
+				if (!fin.read((char*)vec.data(), sizeof(double) * rowSize)) {
+					throw Errors::FILEREADVEC1D;
+				}
+			}
+			};
+		if (fin.is_open()) {
+			SetVec2D(config.InputToHiddenWeights);
+			SetVec2D(config.hidenToOutputWeights);
+			SetVec2D(config.hidenToOutputLayerVelocity);
+			SetVec2D(config.inputToHiddenLayerVelocity);
+			SetVec1D(config.inputToHiddenLayerBias);
+			SetVec1D(config.hidenToOutputLayerBias);
+			if (!fin.read((char*)&config.inputNeuronsAmount, sizeof(unsigned int))) {
+				throw Errors::FILEREAD;
+			}
+			if (!fin.read((char*)&config.hidenNeuronsAmount, sizeof(unsigned int))) {
+				throw Errors::FILEREAD;
+			}
+			if (!fin.read((char*)&config.outputNeuronsAmount, sizeof(unsigned int))) {
+				throw Errors::FILEREAD;
+			}
 			SetConfig(config);
 			fin.close();
 			return true;
@@ -89,7 +173,7 @@ struct SavePerceprtonConfig {
 		unsigned int& inputNeuronsAmount, unsigned int& hidenNeuronsAmount, unsigned int& outputNeuronsAmount)
 	{
 		InputToHiddenWeights = this->InputToHiddenWeights;
-		InputToHiddenWeights = this->hidenToOutputWeights;
+		hidenToOutputWeights = this->hidenToOutputWeights;
 		hidenToOutputLayerVelocity = this->hidenToOutputLayerVelocity;
 		inputToHiddenLayerVelocity = this->inputToHiddenLayerVelocity;
 		inputToHiddenLayerBias = this->inputToHiddenLayerBias;
@@ -103,7 +187,7 @@ struct SavePerceprtonConfig {
 	void SetConfig(const SavePerceprtonConfig& config)
 	{
 		this->InputToHiddenWeights = config.InputToHiddenWeights;
-		this->InputToHiddenWeights = config.hidenToOutputWeights;
+		this->hidenToOutputWeights = config.hidenToOutputWeights;
 		this->hidenToOutputLayerVelocity = config.hidenToOutputLayerVelocity;
 		this->inputToHiddenLayerVelocity = config.inputToHiddenLayerVelocity;
 		this->inputToHiddenLayerBias = config.inputToHiddenLayerBias;
@@ -159,6 +243,7 @@ public:
 				this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
 				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount
 			);
+			this->learningTargets = targets;
 			inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
 			hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
 			outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
@@ -289,7 +374,10 @@ public:
 			std::string midStr = squareStr.substr(start, 4);
 			mid = stoi(midStr);
 		}
-		return mid % inputNeuronsAmount;
+		if (this->inputNeuronsAmount <= 0) {
+			throw Errors::DIVISIONBYZERO;
+		}
+		return mid % this->inputNeuronsAmount;
 	}
 
 	void ProccedString(std::string str) {
@@ -333,7 +421,7 @@ public:
 
 	void hidenToOutError() {
 		for (int i = 0; i < outputNeuronsAmount; i++) {
-			hidenToOutputError[i] = (outputLayer[i] - learningTargets[epoch]) * directiveSigmoid(outputLayer[i]);
+			hidenToOutputError[i] = (outputLayer[i] - learningTargets[epoch % learningTargets.size()]) * directiveSigmoid(outputLayer[i]);
 		}
 	}
 
@@ -376,7 +464,10 @@ public:
 	double MSE() {
 		double errorSum = 0;
 		for (int i = 0; i < outputNeuronsAmount; i++) {
-			errorSum += std::pow((outputLayer[i] - learningTargets[epoch]), 2);
+			if (learningTargets.size() <= 0) {
+				throw Errors::DIVISIONBYZERO;
+			}
+			errorSum += std::pow((outputLayer[i] - learningTargets[epoch % learningTargets.size()]), 2);
 		}
 
 		return (1.0 / outputNeuronsAmount) * errorSum;
@@ -414,25 +505,34 @@ public:
 };
 
 int main() {
+	std::cout << "start";
 	std::vector<double> res2(10000000, 1);
 	std::string test = { "Hello world peace and apple god dog layer cat weight" };
 	std::vector<double> res(1, 0);
 	Perceptron p(100, 64, 1, res2);
 	try {
+		std::cout << "\nstart procceding string\n";
 		p.ProccedString(test);
+		std::cout << "Procceding done\n";
 		p.InputToHiddenLayerProccess();
+		std::cout << "InputToHiddenLayerProccess done\n";
 		p.HiddenToOutputLayerProccess();
+		std::cout << "HiddenToOutputLayerProccess done\n";
 		res = p.GetOutputLayer();
+		std::cout << "GetOutputLayer done\n";
 		for (auto n : res) {
 			std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
 		}
 	}
 	catch (const Errors& e) {
-		if (e == Errors::FILEREAD) {
-			std::cout << "Can't read perceptron weights" << std::endl;
+		if (e == Errors::FILEREAD || e == FILEREADVEC1D || e == FILEREADVEC2D) {
+			std::cout << "Can't read perceptron weights. Error code\t" << e << std::endl;
 		}
-		else if (e == Errors::FILEWRITE) {
-			std::cout << "Can't save perceptron weights" << std::endl;
+		else if (e == Errors::FILEWRITE || e == Errors::FILEWRITEVEC1D || e == Errors::FILEWRITEVEC2D) {
+			std::cout << "Can't save perceptron weights. Errro code\t" << e << std::endl;
+		}
+		else if (e == Errors::DIVISIONBYZERO) {
+			std::cout << "DIVISION BY ZERO. Error code\t" << e << std::endl;
 		}
 	}
 	catch (...) {
