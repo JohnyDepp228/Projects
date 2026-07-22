@@ -1,4 +1,5 @@
 # Projects
+0. - [ ] !!!!Hash function
 1. - [x] Learning
 2. - [x] Saving perceptron config
 3. - [ ] OPtimization
