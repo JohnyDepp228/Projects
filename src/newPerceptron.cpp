@@ -3,6 +3,9 @@
 #include <random>
 #include <string>
 #include <fstream>
+#include <map>
+#include <set>
+#include "DatasetGenerator.h"
 
 enum Errors {
 	FILEREAD = 1,
@@ -209,6 +212,7 @@ private:
 
 	std::vector<double> inputLayer;
 	std::vector<double> hidenLayer;
+	std::vector<double> hidenLayerBeforeReLu;
 	std::vector<double> outputLayer;
 
 	std::vector<double> inputToHiddenLayerBias;//save
@@ -218,7 +222,8 @@ private:
 	std::vector<double> hidenToOutputError;
 
 
-	std::vector<double> learningTargets;
+	std::vector<int> learningTargets;
+	std::vector<std::string> learningLogs;
 
 	double LR = 0.01;
 	double inertia = 0.1;
@@ -228,11 +233,9 @@ private:
 	unsigned int outputNeuronsAmount;
 	unsigned int epoch;
 
-
-
 public:
 	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,
-		std::vector<double> targets) {
+		const std::vector<int>& targets, const std::vector<std::string>& learningLogs) {
 		SavePerceprtonConfig config;
 		epoch = 0;
 		if (config.GetFromFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt")) {
@@ -244,18 +247,26 @@ public:
 				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount
 			);
 			this->learningTargets = targets;
+			this->learningLogs = learningLogs;
 			inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
 			hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
+			hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
 			outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
+
+
+
+
 		}
 		else {
 			this->inputNeuronsAmount = inputNeuronsAmount;
 			this->hidenNeuronsAmount = hidenNeuronsAmount;
 			this->outputNeuronsAmount = outputNeuronsAmount;
 			this->learningTargets = targets;
+			this->learningLogs = learningLogs;
 
 			inputLayer = std::vector<double>(inputNeuronsAmount, 0);
 			hidenLayer = std::vector<double>(hidenNeuronsAmount, 0);
+			hidenLayerBeforeReLu = std::vector<double>(hidenNeuronsAmount, 0);
 			outputLayer = std::vector<double>(outputNeuronsAmount, 0);
 
 			inputToHiddenLayerBias = std::vector<double>(hidenNeuronsAmount, 0.01);
@@ -272,6 +283,9 @@ public:
 
 			InitWeights(InputToHiddenWeights);
 			InitWeights(hidenToOutputWeights);
+
+
+
 			Learning();
 			config.SaveToFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt", this->InputToHiddenWeights, this->hidenToOutputWeights,
 				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
@@ -315,6 +329,7 @@ public:
 		}
 
 		for (int j = 0; j < hidenNeuronsAmount; j++) {
+			hidenLayerBeforeReLu[j] = hidenLayer[j] + inputToHiddenLayerBias[j];
 			hidenLayer[j] = ReLu(hidenLayer[j] + inputToHiddenLayerBias[j]);
 
 		}
@@ -358,26 +373,8 @@ public:
 	}
 
 	int hash(std::string key) {
-		int sum = 0;
-		for (char c : key) {
-			sum += (int)c;
-		}
-		int lastTwoDigits = sum % 100;
-		long long square = (long long)lastTwoDigits * lastTwoDigits;
-		std::string squareStr = std::to_string(square);
-		int mid;
-		if (squareStr.length() <= 4) {
-			mid = lastTwoDigits;
-		}
-		else {
-			int start = (squareStr.length() - 4) / 2;
-			std::string midStr = squareStr.substr(start, 4);
-			mid = stoi(midStr);
-		}
-		if (this->inputNeuronsAmount <= 0) {
-			throw Errors::DIVISIONBYZERO;
-		}
-		return mid % this->inputNeuronsAmount;
+		std::hash<std::string> hasher;
+		return hasher(key) % inputNeuronsAmount;
 	}
 
 	void ProccedString(std::string str) {
@@ -401,9 +398,14 @@ public:
 		}
 
 		for (const auto& word : words) {
-			inputLayer[hash(word)]++;
+			int idx = hash(word);
+			if (idx < inputLayer.size()) {
+				inputLayer[idx] = 1.0;
+			}
 		}
 	}
+
+
 
 	double NewVelocity(const double& neuronError, const double& neuronInput, double& oldVelocity) {
 		return oldVelocity = (inertia * oldVelocity) + (LR * neuronError * neuronInput);
@@ -431,7 +433,7 @@ public:
 			for (int j = 0; j < outputNeuronsAmount; j++) {
 				errorSum += hidenToOutputError[j] * hidenToOutputWeights[i][j];
 			}
-			inputToHidenError[i] = errorSum * directiveReLu(hidenLayer[i]);
+			inputToHidenError[i] = errorSum * directiveReLu(hidenLayerBeforeReLu[i]);
 		}
 	}
 
@@ -458,7 +460,6 @@ public:
 			}
 		}
 
-		epoch++;
 	}
 
 	double MSE() {
@@ -478,11 +479,12 @@ public:
 	}
 
 	void Learning() {
-		std::string test = { "Hello world peace and apple god dog layer cat weight" };
 		std::vector<double> res(1, 0);
 		int i = 0;
 		while (i < learningTargets.size() - 1) {
-			ProccedString(test);
+			epoch = i;
+			ProccedString(learningLogs[i]);
+			std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
 			InputToHiddenLayerProccess();
 			HiddenToOutputLayerProccess();
 			res = GetOutputLayer();
@@ -505,21 +507,18 @@ public:
 };
 
 int main() {
-	std::cout << "start";
-	std::vector<double> res2(10000000, 1);
-	std::string test = { "Hello world peace and apple god dog layer cat weight" };
+	setlocale(LC_ALL, "ru");
+	Dataset dataset(200);
+	std::vector<std::string> log = dataset.GetLogs();
+	std::vector<int> danger = dataset.GetLogsDanger();
 	std::vector<double> res(1, 0);
-	Perceptron p(100, 64, 1, res2);
+	Perceptron p(500, 128, 1, danger, log);
 	try {
-		std::cout << "\nstart procceding string\n";
-		p.ProccedString(test);
-		std::cout << "Procceding done\n";
+		std::cout << "Log:\t" << log[3] << std::endl;
+		p.ProccedString(log[3]);
 		p.InputToHiddenLayerProccess();
-		std::cout << "InputToHiddenLayerProccess done\n";
 		p.HiddenToOutputLayerProccess();
-		std::cout << "HiddenToOutputLayerProccess done\n";
 		res = p.GetOutputLayer();
-		std::cout << "GetOutputLayer done\n";
 		for (auto n : res) {
 			std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
 		}
