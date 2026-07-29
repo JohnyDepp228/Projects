@@ -7,4 +7,5 @@
 3. - [ ] OPtimization
 4. - [ ] Dataset
 5. - [ ] Reading dataset from file
-6. - [ ] Dividing code into separate parts(*.hpp, *.cpp) 
+6. - [ ] Dividing code into separate parts(*.hpp, *.cpp)
+7. - [ ] Упорядочить входной слой в соответствии с порядком idf(в структуру idf добавит индекс в входной слое) 
