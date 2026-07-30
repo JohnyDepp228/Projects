@@ -12,8 +12,9 @@
 
 
 struct WordsIDF {
-	std::string word;
+	char* word;
 	double IDF;
+	int size;
 };
 
 class WordsVectorize {
@@ -54,13 +55,16 @@ public:
 		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,
 		std::vector<std::string> dataset);
 
-	void MapIndexInit(std::map<std::string, int> numOfWordsInSentenceInDataset,std::vector<std::string> vec);
+	void MapIndexInit(std::map<std::string, int> &numOfWordsInSentenceInDataset,std::vector<std::string> vec);
 
-	void MapIndexInit(std::map<std::string, double> numOfWordsInSentenceInDataset, std::vector<std::string> vec);
+	void MapIndexInit(std::map<std::string, double> &numOfWordsInSentenceInDataset, std::vector<std::string> vec);
 
 	void calculIDF();
 
 	~WordsVectorize() {
+		for (int i = 0; i < uniqueWordsAmount; i++) {
+			delete[] idf[i].word;
+		}
 		delete[] idf;
 	}
 
@@ -76,6 +80,7 @@ public:
 
 	std::map<std::string, double> TF(std::string sentence);
 
-
+	void FromStringToChar(std::string sentence,char * arr,int size);
+	void FromCharToString(char* arr,std::string sentence,int size);
 };
 #endif 

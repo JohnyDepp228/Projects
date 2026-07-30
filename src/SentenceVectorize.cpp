@@ -38,14 +38,14 @@ std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string s
 }
 
 
-void WordsVectorize::MapIndexInit(std::map<std::string, int> numOfWordsInSentenceInDataset,std::vector<std::string> vec) {
-	for (auto n : vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, int> &numOfWordsInSentenceInDataset,std::vector<std::string> vec) {
+	for (const auto &n : vec) {
 		this->numOfWordsInSentenceInDataset[n] = 0;
 	}
 }
 
-void WordsVectorize::MapIndexInit(std::map<std::string, double> numOfWordsInSentenceInDataset, std::vector<std::string> vec) {
-	for (auto n : vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, double> &numOfWordsInSentenceInDataset, std::vector<std::string> vec) {
+	for (const auto &n : vec) {
 		this->numOfWordsInSentenceInDataset[n] = 0.0;
 	}
 }
@@ -63,7 +63,7 @@ void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::st
 	MapIndexInit(numOfWordsInSentenceInDataset,XSS);
 	MapIndexInit(numOfWordsInSentenceInDataset,Win);
 
-	for (auto sentence: dataset) {
+	for (const auto &sentence: dataset) {
 		std::istringstream s(sentence);
 		std::string word;
 		while (s >> word) {
@@ -74,9 +74,11 @@ void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::st
 
 void WordsVectorize::calculIDF() {
 	int i = 0;
-	for (auto words: numOfWordsInSentenceInDataset) {
-		idf[i].word = words.first;
+	for (const auto &words: numOfWordsInSentenceInDataset) {
+		idf[i].word = new char[words.first.size()];
+		FromStringToChar(words.first, idf[i].word, words.first.size());
 		idf[i].IDF = log10(datasetSize / words.second);
+		idf[i].size = words.first.size();
 		i++;
 	}
 }
@@ -85,31 +87,36 @@ void WordsVectorize::SaveIDFToFile() {
 	std::ofstream fout;
 	fout.open(path, std::ios::binary);
 	for (int i = 0; i < numOfWordsInSentenceInDataset.size(); i++) {
-		fout.write((char*)&idf[i], sizeof(WordsIDF));
+		fout.write((char*)&idf[i].size, sizeof(int));
+		fout.write(idf[i].word, idf[i].size);
+		fout.write((char*)&idf[i].IDF, sizeof(double));
 	}
 }
 
 void WordsVectorize::ReadIDFFromFile() {
-	WordsIDF* wordIdf;
-	wordIdf = new WordsIDF[uniqueWordsAmount];
 	std::ifstream fin;
+	IDF.clear();
 	fin.open(path, std::ios::binary);
 		for (int i = 0; i < numOfWordsInSentenceInDataset.size(); i++) {
-			fin.read((char*)&wordIdf[i], sizeof(WordsIDF));
-		}
-		IDF.clear();
-		for (int i = 0; i < uniqueWordsAmount;i ++) {
-			IDF[wordIdf[i].word] = wordIdf[i].IDF;
+			int size = 0;
+			fin.read((char*)&size, sizeof(int));
+			std::vector<char> wordBuffer(size + 1, '\0');
+			fin.read(wordBuffer.data(), size);
+			std::string word(wordBuffer.data());
+			double wordIDF;
+			fin.read((char*)&wordIDF, sizeof(double));
+			IDF[word] = wordIDF;
+
 		}
 }
 
 
 std::map<std::string, double> WordsVectorize::TF(std::string sentence) {
-	int totalWords;
+	int totalWords = 0;
 	std::vector<std::string> words = SentenceIntoSeparateWords(sentence,totalWords);
 	std::map<std::string, double> res;
 	MapIndexInit(res, words);
-	for (auto &n : words) {
+	for (const auto &n : words) {
 		res[n]++;
 	}
 
@@ -121,16 +128,38 @@ std::map<std::string, double> WordsVectorize::TF(std::string sentence) {
 
 std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned int& inputNeuronsAmount) {
 
-	std::vector<double> res(inputNeuronsAmount, 0.0);
+	std::vector<double> res;
 	std::map<std::string, double> sentenceTF = TF(sentence);
-
-	for (auto n : sentenceTF) {
-		res.push_back(n.second);
-	}
 	int i = 0;
-	for (auto n : IDF) {
-		res[i] = res[i] * n.second;
-		i++;
+	for (const auto &n : sentenceTF) {
+		if (i >= inputNeuronsAmount) break;
+		std::string currrentWord = n.first;
+		double currentIdf = n.second;
+
+		if (sentenceTF.find(currrentWord) != sentenceTF.end()) {
+			res[i] = sentenceTF[currrentWord] * currentIdf;
+		}
+		else {
+			res[i] = 0;
+		}
 	}
+	
 	return res;
+}
+
+void WordsVectorize::FromStringToChar(std::string sentence,char* arr,int size) {
+	if (size != sentence.size()) return;
+	else {
+		for (int i = 0; i < size; i++) {
+			arr[i] = sentence[i];
+		}
+	}
+}
+void WordsVectorize::FromCharToString(char* arr, std::string sentence,int size) {
+	if (size != sentence.size()) return;
+	else {
+		for (int i = 0; i < size; i++) {
+			sentence[i] = arr[i];
+		}
+	}
 }
