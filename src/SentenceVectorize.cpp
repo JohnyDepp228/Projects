@@ -75,8 +75,9 @@ void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::st
 void WordsVectorize::calculIDF() {
 	int i = 0;
 	for (const auto &words: numOfWordsInSentenceInDataset) {
-		idf[i].word = new char[words.first.size()];
+		idf[i].word = new char[words.first.size() + 1];
 		FromStringToChar(words.first, idf[i].word, words.first.size());
+		idf[i].word[words.first.size()] = '\0';
 		idf[i].IDF = log10(datasetSize / words.second);
 		idf[i].size = words.first.size();
 		i++;
@@ -142,7 +143,26 @@ std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned i
 		else {
 			res[i] = 0.0;
 		}
+
+		i++;
 	}
 	
 	return res;
+}
+
+void WordsVectorize::FromStringToChar(std::string sentence,char* arr,int size) {
+	if (size != sentence.size()) return;
+	else {
+		for (int i = 0; i < size; i++) {
+			arr[i] = sentence[i];
+		}
+	}
+}
+void WordsVectorize::FromCharToString(char* arr, std::string sentence,int size) {
+	if (size != sentence.size()) return;
+	else {
+		for (int i = 0; i < size; i++) {
+			sentence[i] = arr[i];
+		}
+	}
 }

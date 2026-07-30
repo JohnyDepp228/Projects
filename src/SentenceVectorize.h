@@ -80,5 +80,7 @@ public:
 
 	std::map<std::string, double> TF(std::string sentence);
 
+	void FromStringToChar(std::string sentence,char * arr,int size);
+	void FromCharToString(char* arr,std::string sentence,int size);
 };
 #endif 
