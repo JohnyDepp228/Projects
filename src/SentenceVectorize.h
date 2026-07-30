@@ -55,9 +55,9 @@ public:
 		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,
 		std::vector<std::string> dataset);
 
-	void MapIndexInit(std::map<std::string, int> &numOfWordsInSentenceInDataset,std::vector<std::string> vec);
+	void MapIndexInit(std::map<std::string, int> & tempMap,std::vector<std::string> vec);
 
-	void MapIndexInit(std::map<std::string, double> &numOfWordsInSentenceInDataset, std::vector<std::string> vec);
+	void MapIndexInit(std::map<std::string, double> & tempMap, std::vector<std::string> vec);
 
 	void calculIDF();
 
@@ -80,7 +80,5 @@ public:
 
 	std::map<std::string, double> TF(std::string sentence);
 
-	void FromStringToChar(std::string sentence,char * arr,int size);
-	void FromCharToString(char* arr,std::string sentence,int size);
 };
 #endif 

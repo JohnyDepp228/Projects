@@ -38,15 +38,15 @@ std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string s
 }
 
 
-void WordsVectorize::MapIndexInit(std::map<std::string, int> &numOfWordsInSentenceInDataset,std::vector<std::string> vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, int> &tempMap,std::vector<std::string> vec) {
 	for (const auto &n : vec) {
-		this->numOfWordsInSentenceInDataset[n] = 0;
+		tempMap[n] = 0;
 	}
 }
 
-void WordsVectorize::MapIndexInit(std::map<std::string, double> &numOfWordsInSentenceInDataset, std::vector<std::string> vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, double> &tempMap, std::vector<std::string> vec) {
 	for (const auto &n : vec) {
-		this->numOfWordsInSentenceInDataset[n] = 0.0;
+		tempMap[n] = 0.0;
 	}
 }
 
@@ -128,10 +128,10 @@ std::map<std::string, double> WordsVectorize::TF(std::string sentence) {
 
 std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned int& inputNeuronsAmount) {
 
-	std::vector<double> res;
+	std::vector<double> res(inputNeuronsAmount,0);
 	std::map<std::string, double> sentenceTF = TF(sentence);
 	int i = 0;
-	for (const auto &n : sentenceTF) {
+	for (const auto &n : IDF) {
 		if (i >= inputNeuronsAmount) break;
 		std::string currrentWord = n.first;
 		double currentIdf = n.second;
@@ -140,26 +140,9 @@ std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned i
 			res[i] = sentenceTF[currrentWord] * currentIdf;
 		}
 		else {
-			res[i] = 0;
+			res[i] = 0.0;
 		}
 	}
 	
 	return res;
-}
-
-void WordsVectorize::FromStringToChar(std::string sentence,char* arr,int size) {
-	if (size != sentence.size()) return;
-	else {
-		for (int i = 0; i < size; i++) {
-			arr[i] = sentence[i];
-		}
-	}
-}
-void WordsVectorize::FromCharToString(char* arr, std::string sentence,int size) {
-	if (size != sentence.size()) return;
-	else {
-		for (int i = 0; i < size; i++) {
-			sentence[i] = arr[i];
-		}
-	}
 }
