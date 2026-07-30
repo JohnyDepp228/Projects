@@ -78,7 +78,12 @@ void WordsVectorize::calculIDF() {
 		idf[i].word = new char[words.first.size() + 1];
 		FromStringToChar(words.first, idf[i].word, words.first.size());
 		idf[i].word[words.first.size()] = '\0';
-		idf[i].IDF = log10(datasetSize / words.second);
+		if (words.second != 0) {
+			idf[i].IDF = log10(datasetSize / words.second);
+		}
+		else {
+			idf[i].IDF = log10(datasetSize / 1);
+		}
 		idf[i].size = words.first.size();
 		i++;
 	}

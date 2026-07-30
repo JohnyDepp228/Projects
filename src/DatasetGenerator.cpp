@@ -9,18 +9,20 @@ double Dataset::Index(double leftBoard, double rightBoard) {
 }
 
 void Dataset::InitLogsDB() {
-    std::vector<std::string> methods = { "GET", "POST", "PUT", "DELETE" };
-    std::vector<std::string> pages = { "/index.html", "/login.php", "/profile", "/shop/items", "/assets/style.css", "/js/main.js", "/contacts" };
-    std::vector<std::string> protocol = { "HTTP/1.1", "HTTP/2.0" };
-    std::vector<std::string> agent = { "Mozilla/5.0", "Chrome/120.0", "Safari/13.1", "Curl/7.68.0" };
+    this-> methods = { "GET", "POST", "PUT", "DELETE" };
+    this->pages = { "/index.html", "/login.php", "/profile", "/shop/items", "/assets/style.css", "/js/main.js", "/contacts" };
+    this->protocol = { "HTTP/1.1", "HTTP/2.0" };
+    this->agent = { "Mozilla/5.0", "Chrome/120.0", "Safari/13.1", "Curl/7.68.0" };
 
 
-    std::vector<std::string> SQL = { "' OR '1'='1'", "admin' --", "' UNION SELECT NULL, username, password FROM users --",
+    this->SQL = { "' OR '1'='1'", "admin' --", "' UNION SELECT NULL, username, password FROM users --",
     "1; DROP TABLE users; --", "' OR 1=1 --'", "1' AND 1=2 UNION SELECT", "OR 1=1" };
-    std::vector<std::string> XSS = { "<script>alert('xss')</script>", "javascript:alert(1)", "<img src=x onerror=alert(1)>",
+    this->XSS = { "<script>alert('xss')</script>", "javascript:alert(1)", "<img src=x onerror=alert(1)>",
     "<svg/onload=alert(1)>", "element.innerHTML = <script>" };
-    std::vector<std::string> Win = { "../../../../etc/passwd", "..\\..\\..\\windows\\win.ini", "/etc/shadow",
+    this->Win = { "../../../../etc/passwd", "..\\..\\..\\windows\\win.ini", "/etc/shadow",
     "%2e%2e%2f%2e%2e%2fetc%2fpasswd", "../boot.ini" };
+
+
     for (int i = 0; i < Dataset::testListSize; i++) {
         logs.push_back(CreateLog(methods, pages, protocol, agent, SQL, XSS, Win,i));
     }

@@ -28,12 +28,11 @@ private:
 	std::string path;
 
 public:
-	WordsVectorize(const unsigned int& uniqueWordsAmount,std::vector<std::string> dataset,
+	WordsVectorize(const unsigned int& uniqueWordsAmount,const std::vector<std::string> &dataset,
 		const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
 		const std::vector<std::string>& agent,
-		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,bool learning) {
+		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win) {
 		IDF.clear();
-		if (learning) {
 			this->uniqueWordsAmount = uniqueWordsAmount;
 			this->datasetSize = dataset.size();
 			separateWordsFromSQL = SentenceIntoSeparateWords(SQL);
@@ -41,10 +40,11 @@ public:
 			FindsNumOfWordsInDatasetSentences(methods, pages, protocol, agent, separateWordsFromSQL, XSS, Win, dataset);
 			calculIDF();
 			SaveIDFToFile();
-		}
-		else {
-			ReadIDFFromFile();
-		}
+	}
+
+	WordsVectorize() {
+		IDF.clear();
+		ReadIDFFromFile();
 	}
 
 	std::vector<std::string> SentenceIntoSeparateWords(const std::vector<std::string>& SQL);

@@ -7,6 +7,15 @@ struct Dataset {
 	std::vector<int> dangerLevel;
 	std::vector<std::string> logs;
 	int testListSize;
+	std::vector<std::string> methods;
+	std::vector<std::string> pages;
+	std::vector<std::string> protocol;
+	std::vector<std::string> agent;
+
+
+	std::vector<std::string> SQL;
+	std::vector<std::string> XSS;
+	std::vector<std::string> Win;
 
 	Dataset(int testListSize) {
 		this->testListSize = testListSize;
@@ -28,6 +37,7 @@ struct Dataset {
 	std::vector<int> GetLogsDanger() const {
 		return dangerLevel;
 	}
+
 };
 
 
