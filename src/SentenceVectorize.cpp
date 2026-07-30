@@ -14,13 +14,25 @@ std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(const std::ve
 	return res;
 }
 
-std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string sentence) {
+std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string sentence,int &totalWords) {
 	std::vector<std::string> res;
 		std::istringstream s(sentence);
 		std::string word;
 		while (s >> word) {
 			res.push_back(word);
+			totalWords++;
 		}
+
+	return res;
+}
+
+std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string sentence) {
+	std::vector<std::string> res;
+	std::istringstream s(sentence);
+	std::string word;
+	while (s >> word) {
+		res.push_back(word);
+	}
 
 	return res;
 }
@@ -29,6 +41,12 @@ std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string s
 void WordsVectorize::MapIndexInit(std::map<std::string, int> numOfWordsInSentenceInDataset,std::vector<std::string> vec) {
 	for (auto n : vec) {
 		this->numOfWordsInSentenceInDataset[n] = 0;
+	}
+}
+
+void WordsVectorize::MapIndexInit(std::map<std::string, double> numOfWordsInSentenceInDataset, std::vector<std::string> vec) {
+	for (auto n : vec) {
+		this->numOfWordsInSentenceInDataset[n] = 0.0;
 	}
 }
 
@@ -85,26 +103,34 @@ void WordsVectorize::ReadIDFFromFile() {
 		}
 }
 
-std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned int& ipnutNeuronsAmount) {
-	std::map<std::string, int> sameWordInOneSentenceAmount;
-	std::vector<double> inputNeurons(ipnutNeuronsAmount, 0);
-	std::vector<std::string> separateWords = SentenceIntoSeparateWords(sentence);
-	MapIndexInit(sameWordInOneSentenceAmount, separateWords);
-	int wordsInSentence = 0;
-	std::vector<double> TF(ipnutNeuronsAmount,0);
-	std::vector<std::string> keys;
-	std::istringstream s(sentence);
-	std::string word;
-	while (s >> word) {
-		if (IDF.find(word) != IDF.end()) {
-			keys.push_back(word);
-		}
-		sameWordInOneSentenceAmount[word]++;
-		wordsInSentence++;
+
+std::map<std::string, double> WordsVectorize::TF(std::string sentence) {
+	int totalWords;
+	std::vector<std::string> words = SentenceIntoSeparateWords(sentence,totalWords);
+	std::map<std::string, double> res;
+	MapIndexInit(res, words);
+	for (auto &n : words) {
+		res[n]++;
 	}
 
-	for (int i = 0; i < keys.size();i++) {
+	for (auto &n : res) {
+		n.second = n.second / totalWords;
 	}
+	return res;
+}
 
-	//if(IDF.find()
+std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned int& inputNeuronsAmount) {
+
+	std::vector<double> res(inputNeuronsAmount, 0.0);
+	std::map<std::string, double> sentenceTF = TF(sentence);
+
+	for (auto n : sentenceTF) {
+		res.push_back(n.second);
+	}
+	int i = 0;
+	for (auto n : IDF) {
+		res[i] = res[i] * n.second;
+		i++;
+	}
+	return res;
 }
