@@ -33,10 +33,10 @@ public:
 		const std::vector<std::string>& agent,
 		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win) {
 		IDF.clear();
+		path = "C: / Users / LordMegatron / Desktop / Pupa / IDF.txt";
 			this->uniqueWordsAmount = uniqueWordsAmount;
 			this->datasetSize = dataset.size();
 			separateWordsFromSQL = SentenceIntoSeparateWords(SQL);
-			idf = new WordsIDF[uniqueWordsAmount];
 			FindsNumOfWordsInDatasetSentences(methods, pages, protocol, agent, separateWordsFromSQL, XSS, Win, dataset);
 			calculIDF();
 			SaveIDFToFile();

@@ -23,10 +23,10 @@ struct Dataset {
 		InitLogsDB();
 	}
 	void InitLogsDB();
-	double Index(double leftBoard, double rightBoard);
+	double Index(int leftBoard, int rightBoard);
 	std::string CreateLog(const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
 		const std::vector<std::string>& agent,
-		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &index);
+		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &danger);
 
 	bool DangerLog();
 

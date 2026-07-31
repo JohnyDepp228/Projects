@@ -1,10 +1,10 @@
 #include "DatasetGenerator.h"
 
 
-double Dataset::Index(double leftBoard, double rightBoard) {
+double Dataset::Index(int leftBoard, int rightBoard) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<double> dis(leftBoard, rightBoard);
+	std::uniform_int_distribution<int> dis(leftBoard, rightBoard);
 	return dis(gen);
 }
 
@@ -24,26 +24,25 @@ void Dataset::InitLogsDB() {
 
 
     for (int i = 0; i < Dataset::testListSize; i++) {
-        logs.push_back(CreateLog(methods, pages, protocol, agent, SQL, XSS, Win,i));
+        int targetDanger = DangerLog();
+        Dataset::dangerLevel[i] = targetDanger;
+        logs.push_back(CreateLog(methods, pages, protocol, agent, SQL, XSS, Win, targetDanger));
     }
 }
 
 std::string Dataset::CreateLog(const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
     const std::vector<std::string>& agent,
-    const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &index)
+    const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &danger)
 {
-    std::string res = methods[(int)Index(0,methods.size())] + " " +  pages[(int)Index(0, pages.size())] + " " + protocol[(int)Index(0, protocol.size())]
-        + " " + agent[Index(0, agent.size())]+ " " ;
-    if ((int)Index(0, 10) % 2 == 0) {
-        Dataset::dangerLevel[index] = 1;
-        switch ((int)Index(1, 3)) {
-        case 1: res += SQL[(int)Index(0, SQL.size())]; break;
-        case 2: res += XSS[(int)Index(0, XSS.size())]; break;
-        case 3: res += Win[(int)Index(0, Win.size())]; break;
+    std::string res = methods[(int)Index(0,methods.size() - 1)] + " " +  pages[(int)Index(0, pages.size() - 1)] + " " + protocol[(int)Index(0, protocol.size() -1)]
+        + " " + agent[Index(0, agent.size() - 1)]+ " " ;
+    if (danger == 1) {
+        int attackType = Index(1, 3);
+        switch (attackType) {
+        case 1: res += SQL[Index(0, SQL.size() - 1)]; break;
+        case 2: res += XSS[Index(0, XSS.size() - 1)]; break;
+        case 3: res += Win[Index(0, Win.size() - 1)]; break;
         }
-    }
-    else {
-        Dataset::dangerLevel[index] = 0;
     }
     return res;
 

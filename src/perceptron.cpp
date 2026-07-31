@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <set>
+#include <Windows.h>
 #include "DatasetGenerator.h"
 #include "SentenceVectorize.h"
 
@@ -226,8 +227,8 @@ private:
 	std::vector<int> learningTargets;
 	std::vector<std::string> learningLogs;
 
-	double LR = 0.01;
-	double inertia = 0.1;
+	double LR = 0.005;
+	double inertia = 0.01;
 
 	unsigned int inputNeuronsAmount;
 	unsigned int hidenNeuronsAmount;
@@ -280,7 +281,7 @@ public:
 			InitWeights(hidenToOutputWeights);
 
 			
-
+			
 			Learning();
 			config.SaveToFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt", this->InputToHiddenWeights, this->hidenToOutputWeights,
 				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
@@ -324,6 +325,7 @@ public:
 		}
 
 		for (int j = 0; j < hidenNeuronsAmount; j++) {
+			hidenLayerBeforeReLu[j] = 0.0;
 			hidenLayerBeforeReLu[j] = hidenLayer[j] + inputToHiddenLayerBias[j];
 			hidenLayer[j] = ReLu(hidenLayer[j] + inputToHiddenLayerBias[j]);
 
@@ -376,23 +378,23 @@ public:
 		SetInputLayer(  vectorize.TFxIDF(str,inputNeuronsAmount));
 	}
 
-	double NewVelocity(const double& neuronError, const double& neuronInput,double &oldVelocity) {
+	double NewVelocity(double LR,const double& neuronError, const double& neuronInput,double &oldVelocity) {
 		return oldVelocity = (inertia * oldVelocity) + (LR * neuronError * neuronInput);
 	}
 
 	void UpdateBias() {
 		for (int i = 0; i < inputToHiddenLayerBias.size(); i++) {
-			inputToHiddenLayerBias[i] = inputToHiddenLayerBias[i] - LR * inputToHidenError[i];
+			inputToHiddenLayerBias[i] += LR * inputToHidenError[i];
 		}
 
 		for (int i = 0; i < hidenToOutputLayerBias.size(); i++) {
-			hidenToOutputLayerBias[i] = hidenToOutputLayerBias[i] - LR * hidenToOutputError[i];
+			hidenToOutputLayerBias[i] += LR * hidenToOutputError[i];
 		}
 	}
 
-	void hidenToOutError() {
+	void hidenToOutError(int targetIndex) {
 		for (int i = 0; i < outputNeuronsAmount; i++) {
-			hidenToOutputError[i] = (outputLayer[i] - learningTargets[epoch % learningTargets.size()]) * directiveSigmoid(outputLayer[i]);
+			hidenToOutputError[i] = (learningTargets[targetIndex] - outputLayer[i]) * directiveSigmoid(outputLayer[i]);
 		}
 	}
 
@@ -416,39 +418,40 @@ public:
 	}
 
 	void UpdateWeights() {
+		double lrOutput = 0.01;
 		for (int i = 0; i < hidenNeuronsAmount; i++) {
 			for (int j = 0; j < outputNeuronsAmount; j++) {
-				hidenToOutputWeights[i][j] -= NewVelocity(hidenToOutputError[j], hidenLayer[i], hidenToOutputLayerVelocity[i][j]);
+				hidenToOutputWeights[i][j] += NewVelocity(lrOutput,hidenToOutputError[j], hidenLayer[i], hidenToOutputLayerVelocity[i][j]);
 
 			}
 		}
-
+		double lrInput = 0.01;
 		for (int i = 0; i < inputNeuronsAmount; i++) {
 			for (int j = 0; j < hidenNeuronsAmount; j++) {
-				InputToHiddenWeights[i][j] -= NewVelocity(inputToHidenError[j], inputLayer[i], inputToHiddenLayerVelocity[i][j]);
+				InputToHiddenWeights[i][j] += NewVelocity(lrInput,inputToHidenError[j], inputLayer[i], inputToHiddenLayerVelocity[i][j]);
 			}
 		}
 
 	}
 
-	double MSE() {
+	double MSE(int targetIndex) {
 		double errorSum = 0;
 		for (int i = 0; i < outputNeuronsAmount; i++) {
 			if (learningTargets.size() <= 0) {
 				throw Errors::DIVISIONBYZERO;
 			}
-			errorSum += std::pow((outputLayer[i] - learningTargets[epoch % learningTargets.size()]),2);
+			errorSum += std::pow((learningTargets[targetIndex] - outputLayer[i]),2);
 		}
 
 		return (1.0 / outputNeuronsAmount) * errorSum; 
 	}
 
-	double RMSE() {
-		return std::sqrt(MSE());
+	double RMSE(int targetIndex) {
+		return std::sqrt(MSE(targetIndex));
 	}
 
 	void Learning() {
-		Dataset dataset(200);
+		Dataset dataset(2000);
 		std::vector<std::string> log = dataset.GetLogs();
 		std::vector<int> danger = dataset.GetLogsDanger();
 		this->learningTargets = danger;
@@ -458,27 +461,35 @@ public:
 		unsigned int uniqueWordsInDataset = 37;
 		WordsVectorize vectorize1(uniqueWordsInDataset, log,dataset.methods,dataset.pages,dataset.protocol,
 			dataset.agent,dataset.SQL,dataset.XSS,dataset.Win);
-		while(i < learningTargets.size() - 1){
-			epoch = i;
-			SetInputLayer(vectorize1.TFxIDF(learningLogs[i],inputNeuronsAmount));
-			std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
-			InputToHiddenLayerProccess();
-			HiddenToOutputLayerProccess();
-			res = GetOutputLayer();
-			for (auto n : res) {
-				std::cout << "Result: " << n << "\tError: " << RMSE() << std::endl;
+		epoch = 0;
+		while(1){
+
+			double epochError = 0.0;
+			for (int i = 0; i < learningLogs.size(); i++) {
+				SetInputLayer(vectorize1.TFxIDF(learningLogs[i], inputNeuronsAmount));
+				std::cout << "\nEpoch: " << epoch << std::endl;
+				std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
+				InputToHiddenLayerProccess();
+				HiddenToOutputLayerProccess();
+				res = GetOutputLayer();
+				for (auto n : res) {
+					std::cout << "Result: " << n << "\tError: " << RMSE(i) << std::endl;
+				}
+				epochError += RMSE(i);
+				hidenToOutError(i);
+				inToHidenError();
+				UpdateBias();
+				UpdateWeights();
+				CleanInputLayer();
 			}
-			hidenToOutError();
-			inToHidenError();
-			UpdateBias();
-			UpdateWeights();
-			CleanInputLayer();
-			i++;
-			if ((RMSE() * 100) < 2) {
+			if ((epochError / learningLogs.size() * 100) < 2) {
+				std::cout << "Learning done on epoch " << epoch << std::endl;
 				break;
 			}
+			epoch++;
+			Sleep(1000);
+			std::cout << "\nNew epoch " << epoch << std::endl;
 		}
-		std::cout << "Learning done on epoch " << epoch<< std::endl;
 	}
 	
 };
@@ -489,7 +500,7 @@ int main() {
 	std::vector<std::string> log = dataset.GetLogs();
 	std::vector<int> danger = dataset.GetLogsDanger();
 	std::vector<double> res(1, 0);
-	Perceptron p(500, 128, 1);
+	Perceptron p(100, 64, 1);
 	try {
 		std::cout << "Log:\t" << log[3] << std::endl;
 		p.ProccedString(log[3]);
@@ -497,7 +508,7 @@ int main() {
 		p.HiddenToOutputLayerProccess();
 		res = p.GetOutputLayer();
 		for (auto n : res) {
-			std::cout << "Result: " << n << "\tError: " << p.RMSE() << std::endl;
+			std::cout << "Result: " << n << "\tError: " << p.RMSE(3) << std::endl;
 		}
 	}
 	catch (const Errors &e) {

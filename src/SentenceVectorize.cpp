@@ -74,6 +74,7 @@ void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::st
 
 void WordsVectorize::calculIDF() {
 	int i = 0;
+	idf = new WordsIDF[numOfWordsInSentenceInDataset.size()];
 	for (const auto &words: numOfWordsInSentenceInDataset) {
 		idf[i].word = new char[words.first.size() + 1];
 		FromStringToChar(words.first, idf[i].word, words.first.size());
@@ -141,9 +142,10 @@ std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned i
 		if (i >= inputNeuronsAmount) break;
 		std::string currrentWord = n.first;
 		double currentIdf = n.second;
-
-		if (sentenceTF.find(currrentWord) != sentenceTF.end()) {
-			res[i] = sentenceTF[currrentWord] * currentIdf;
+		auto it = sentenceTF.find(currrentWord);
+		if (it != sentenceTF.end()) {
+			//res[i] = it->second * currentIdf;
+			res[i] = 1.0;
 		}
 		else {
 			res[i] = 0.0;
