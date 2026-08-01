@@ -18,5 +18,5 @@
 - [ ] Вернуть реальный TF-IDF вместо 1.0
 - [ ] Слишком большой разброс [-1, 1]
 - [ ] Создать Dataset в конструкторе Perceptron
-- [ ]Инициализировать поле vectorize этими данными
-- [ ]Использовать ЭТУ же vectorize в Learning() и в ProccedString()
+- [ ] Инициализировать поле vectorize этими данными
+- [ ] Использовать ЭТУ же vectorize в Learning() и в ProccedString()
