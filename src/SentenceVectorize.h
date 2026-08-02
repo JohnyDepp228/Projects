@@ -9,6 +9,9 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <set>
+#include <iostream>
+#include "DatasetGenerator.h"
 
 
 struct WordsIDF {
@@ -26,15 +29,16 @@ private:
 	std::vector<std::string> separateWordsFromSQL;
 	WordsIDF *idf;
 	std::string path;
+	Dataset set;
 
 public:
-	WordsVectorize(const unsigned int& uniqueWordsAmount,const std::vector<std::string> &dataset,
+	WordsVectorize(const std::vector<std::string> &dataset,
 		const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
 		const std::vector<std::string>& agent,
 		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win) {
 		IDF.clear();
 		path = "C: / Users / LordMegatron / Desktop / Pupa / IDF.txt";
-			this->uniqueWordsAmount = uniqueWordsAmount;
+			this->uniqueWordsAmount = set.GetNumOfUniqueWords();
 			this->datasetSize = dataset.size();
 			separateWordsFromSQL = SentenceIntoSeparateWords(SQL);
 			FindsNumOfWordsInDatasetSentences(methods, pages, protocol, agent, separateWordsFromSQL, XSS, Win, dataset);

@@ -66,8 +66,12 @@ void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::st
 	for (const auto &sentence: dataset) {
 		std::istringstream s(sentence);
 		std::string word;
+		std::set<std::string> unique;
 		while (s >> word) {
-			numOfWordsInSentenceInDataset[word]++;
+			unique.insert(word);
+		}
+		for(auto &w:unique){
+			numOfWordsInSentenceInDataset[w]++;
 		}
 	}
 }
@@ -80,12 +84,13 @@ void WordsVectorize::calculIDF() {
 		FromStringToChar(words.first, idf[i].word, words.first.size());
 		idf[i].word[words.first.size()] = '\0';
 		if (words.second != 0) {
-			idf[i].IDF = log10(datasetSize / words.second);
+			idf[i].IDF = log10((double)datasetSize / words.second);
 		}
 		else {
-			idf[i].IDF = log10(datasetSize / 1);
+			idf[i].IDF = log10((double)datasetSize / 1);
 		}
 		idf[i].size = words.first.size();
+		IDF[words.first] = idf[i].IDF;
 		i++;
 	}
 }
@@ -115,6 +120,8 @@ void WordsVectorize::ReadIDFFromFile() {
 			IDF[word] = wordIDF;
 
 		}
+
+
 }
 
 
@@ -144,8 +151,8 @@ std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned i
 		double currentIdf = n.second;
 		auto it = sentenceTF.find(currrentWord);
 		if (it != sentenceTF.end()) {
-			//res[i] = it->second * currentIdf;
-			res[i] = 1.0;
+			res[i] = it->second * currentIdf;
+			
 		}
 		else {
 			res[i] = 0.0;

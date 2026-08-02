@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <Windows.h>
+#include <conio.h>
 #include "DatasetGenerator.h"
 #include "SentenceVectorize.h"
 
@@ -224,23 +225,33 @@ private:
 	std::vector<double> hidenToOutputError;
 
 
-	std::vector<int> learningTargets;
+	std::vector<double> learningTargets;
 	std::vector<std::string> learningLogs;
 
-	double LR = 0.005;
+	double LR = 0.5;
 	double inertia = 0.01;
+	double oldWeight1;
+	double oldWeight2;
 
 	unsigned int inputNeuronsAmount;
 	unsigned int hidenNeuronsAmount;
 	unsigned int outputNeuronsAmount;
 	unsigned int epoch;
 
-	WordsVectorize vectorize;
+	WordsVectorize *vectorize;
+
+	Dataset *dataset;
 
 public:
 	Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int &hidenNeuronsAmount,const unsigned int &outputNeuronsAmount) {
 		SavePerceprtonConfig config;
 		epoch = 0;
+		dataset = new Dataset(2000);
+		this->learningTargets = dataset->GetLogsDanger();
+		this->learningLogs = dataset->GetLogs();
+		unsigned int uniqueWordsInDataset = 37;
+		vectorize = new WordsVectorize(learningLogs, dataset->methods, dataset->pages, dataset->protocol,
+			dataset->agent, dataset->SQL, dataset->XSS, dataset->Win);
 		if (config.GetFromFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt")) {
 				config.SetConfig
 				(
@@ -253,7 +264,7 @@ public:
 				hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
 				hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
 				outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
-				vectorize.ReadIDFFromFile();	
+				vectorize->ReadIDFFromFile();	
 		}
 		else {
 			this->inputNeuronsAmount = inputNeuronsAmount;
@@ -291,11 +302,13 @@ public:
 	}
 
 	double ReLu(const double &data) {
-		return data > 0 ? data : 0;
+		//return data > 0 ? data : 0;
+		return data > 0 ? data : data * 0.01; //leakyReLu
 	}
 
 	double directiveReLu(const double &data) {
-		return data > 0 ? 1.0 : 0;
+		//return data > 0 ? 1.0 : 0;
+		return data > 0 ? 1.0 : 0.01; //Leaky ReLu
 	}
 
 	double Sigmoid(const double& data) {
@@ -356,7 +369,7 @@ public:
 	void InitWeights(std::vector<std::vector<double>>& layer) {
 		for (auto& colls : layer) {
 			for (auto& rows : colls) {
-				rows = Weight(-1.0, 1.0);
+				rows = Weight(-0.5, 0.5);
 			}
 		}
 	}
@@ -375,7 +388,7 @@ public:
 	}
 
 	void ProccedString(std::string str) {
-		SetInputLayer(  vectorize.TFxIDF(str,inputNeuronsAmount));
+		SetInputLayer(  vectorize->TFxIDF(str,inputNeuronsAmount));
 	}
 
 	double NewVelocity(double LR,const double& neuronError, const double& neuronInput,double &oldVelocity) {
@@ -418,14 +431,14 @@ public:
 	}
 
 	void UpdateWeights() {
-		double lrOutput = 0.01;
+		double lrOutput = 0.5;
 		for (int i = 0; i < hidenNeuronsAmount; i++) {
 			for (int j = 0; j < outputNeuronsAmount; j++) {
 				hidenToOutputWeights[i][j] += NewVelocity(lrOutput,hidenToOutputError[j], hidenLayer[i], hidenToOutputLayerVelocity[i][j]);
 
 			}
 		}
-		double lrInput = 0.01;
+		double lrInput = 0.5;
 		for (int i = 0; i < inputNeuronsAmount; i++) {
 			for (int j = 0; j < hidenNeuronsAmount; j++) {
 				InputToHiddenWeights[i][j] += NewVelocity(lrInput,inputToHidenError[j], inputLayer[i], inputToHiddenLayerVelocity[i][j]);
@@ -450,23 +463,37 @@ public:
 		return std::sqrt(MSE(targetIndex));
 	}
 
+	void ShowHidenWeights() {
+		for (int i = 0; i < InputToHiddenWeights.size();i++) {
+			for (int j = 0; j < InputToHiddenWeights[i].size();j ++) {
+				std::cout << "InputToHiddenWeight[" << i << "][" << j << "]\t" << InputToHiddenWeights[i][j] << std::endl;
+			}
+		}
+		std::cout << "**********************************************************************" << std::endl;
+		for (int i = 0; i < hidenToOutputWeights.size(); i++) {
+			for (int j = 0; j < hidenToOutputWeights[i].size(); j++) {
+				std::cout << "HidenToOutputWeight[" << i << "][" << j << "]" << hidenToOutputWeights[i][j]<< std::endl;
+			}
+		}
+		char ch1 = _getch();
+	}
+
 	void Learning() {
-		Dataset dataset(2000);
-		std::vector<std::string> log = dataset.GetLogs();
-		std::vector<int> danger = dataset.GetLogsDanger();
-		this->learningTargets = danger;
-		this->learningLogs = log;
+		
 		std::vector<double> res(1, 0);
 		int i = 0;
-		unsigned int uniqueWordsInDataset = 37;
-		WordsVectorize vectorize1(uniqueWordsInDataset, log,dataset.methods,dataset.pages,dataset.protocol,
-			dataset.agent,dataset.SQL,dataset.XSS,dataset.Win);
 		epoch = 0;
 		while(1){
 
 			double epochError = 0.0;
 			for (int i = 0; i < learningLogs.size(); i++) {
-				SetInputLayer(vectorize1.TFxIDF(learningLogs[i], inputNeuronsAmount));
+				SetInputLayer(vectorize->TFxIDF(learningLogs[i], inputNeuronsAmount));
+				std::cout << "TF-IDF: ";
+				for (auto n : vectorize->TFxIDF(learningLogs[i], inputNeuronsAmount)) {
+					std::cout << n;
+				}
+				std::cout << std::endl;
+				char ch = _getch();
 				std::cout << "\nEpoch: " << epoch << std::endl;
 				std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
 				InputToHiddenLayerProccess();
@@ -482,12 +509,13 @@ public:
 				UpdateWeights();
 				CleanInputLayer();
 			}
-			if ((epochError / learningLogs.size() * 100) < 2) {
+			if ((epochError / learningLogs.size() * 100) < 10) {
 				std::cout << "Learning done on epoch " << epoch << std::endl;
 				break;
 			}
 			epoch++;
 			Sleep(1000);
+			ShowHidenWeights();
 			std::cout << "\nNew epoch " << epoch << std::endl;
 		}
 	}
@@ -498,9 +526,9 @@ int main() {
 	setlocale(LC_ALL, "ru");
 	Dataset dataset(200);
 	std::vector<std::string> log = dataset.GetLogs();
-	std::vector<int> danger = dataset.GetLogsDanger();
+	std::vector<double> danger = dataset.GetLogsDanger();
 	std::vector<double> res(1, 0);
-	Perceptron p(100, 64, 1);
+	Perceptron p(100, 80, 1);
 	try {
 		std::cout << "Log:\t" << log[3] << std::endl;
 		p.ProccedString(log[3]);

@@ -1,7 +1,7 @@
 #include "DatasetGenerator.h"
 
 
-double Dataset::Index(int leftBoard, int rightBoard) {
+int Dataset::Index(int leftBoard, int rightBoard) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> dis(leftBoard, rightBoard);
@@ -25,7 +25,12 @@ void Dataset::InitLogsDB() {
 
     for (int i = 0; i < Dataset::testListSize; i++) {
         int targetDanger = DangerLog();
-        Dataset::dangerLevel[i] = targetDanger;
+        if (targetDanger == 1) {
+            Dataset::dangerLevel[i] = 0.9;
+        }
+        else {
+            Dataset::dangerLevel[i] = 0.1;
+        }
         logs.push_back(CreateLog(methods, pages, protocol, agent, SQL, XSS, Win, targetDanger));
     }
 }
