@@ -431,14 +431,14 @@ public:
 	}
 
 	void UpdateWeights() {
-		double lrOutput = 0.5;
+		double lrOutput = 0.01;
 		for (int i = 0; i < hidenNeuronsAmount; i++) {
 			for (int j = 0; j < outputNeuronsAmount; j++) {
 				hidenToOutputWeights[i][j] += NewVelocity(lrOutput,hidenToOutputError[j], hidenLayer[i], hidenToOutputLayerVelocity[i][j]);
 
 			}
 		}
-		double lrInput = 0.5;
+		double lrInput = 0.01;
 		for (int i = 0; i < inputNeuronsAmount; i++) {
 			for (int j = 0; j < hidenNeuronsAmount; j++) {
 				InputToHiddenWeights[i][j] += NewVelocity(lrInput,inputToHidenError[j], inputLayer[i], inputToHiddenLayerVelocity[i][j]);
@@ -488,12 +488,12 @@ public:
 			double epochError = 0.0;
 			for (int i = 0; i < learningLogs.size(); i++) {
 				SetInputLayer(vectorize->TFxIDF(learningLogs[i], inputNeuronsAmount));
-				std::cout << "TF-IDF: ";
+				/*std::cout << "TF-IDF: ";
 				for (auto n : vectorize->TFxIDF(learningLogs[i], inputNeuronsAmount)) {
 					std::cout << n;
-				}
-				std::cout << std::endl;
-				char ch = _getch();
+				}*/
+				//std::cout << std::endl;
+				//char ch = _getch();
 				std::cout << "\nEpoch: " << epoch << std::endl;
 				std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
 				InputToHiddenLayerProccess();
@@ -509,13 +509,13 @@ public:
 				UpdateWeights();
 				CleanInputLayer();
 			}
-			if ((epochError / learningLogs.size() * 100) < 10) {
+			if ((epochError / learningLogs.size() * 100) < 5) {
 				std::cout << "Learning done on epoch " << epoch << std::endl;
 				break;
 			}
 			epoch++;
 			Sleep(1000);
-			ShowHidenWeights();
+			//ShowHidenWeights();
 			std::cout << "\nNew epoch " << epoch << std::endl;
 		}
 	}

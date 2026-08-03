@@ -97,7 +97,7 @@ void WordsVectorize::calculIDF() {
 
 void WordsVectorize::SaveIDFToFile() {
 	std::ofstream fout;
-	fout.open(path, std::ios::binary);
+	fout.open(WordsVectorize::path, std::ios::binary);
 	for (int i = 0; i < numOfWordsInSentenceInDataset.size(); i++) {
 		fout.write((char*)&idf[i].size, sizeof(int));
 		fout.write(idf[i].word, idf[i].size);
@@ -108,7 +108,7 @@ void WordsVectorize::SaveIDFToFile() {
 void WordsVectorize::ReadIDFFromFile() {
 	std::ifstream fin;
 	IDF.clear();
-	fin.open(path, std::ios::binary);
+	fin.open(WordsVectorize::path, std::ios::binary);
 		for (int i = 0; i < numOfWordsInSentenceInDataset.size(); i++) {
 			int size = 0;
 			fin.read((char*)&size, sizeof(int));
