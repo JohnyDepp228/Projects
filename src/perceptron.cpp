@@ -1,17 +1,4 @@
-﻿#include <iostream>
-#include <vector>
-#include <random>
-#include <string>
-#include <fstream>
-#include <map>
-#include <set>
-#include <Windows.h>
-#include <conio.h>
-#include "DatasetGenerator.h"
-#include "SentenceVectorize.h"
-#include "Test.h"
-#include "SaveConfig.h"
-#include "Errors.h"
+﻿
 #include "perceptron.h"
 
 

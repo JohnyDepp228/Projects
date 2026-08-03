@@ -13,7 +13,7 @@
 #include <conio.h>
 #include "DatasetGenerator.h"
 #include "SentenceVectorize.h"
-#include "Test.h"
+#include "../test/Test.h"
 #include "SaveConfig.h"
 #include "Errors.h"
 
