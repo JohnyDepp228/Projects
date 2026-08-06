@@ -1,5 +1,4 @@
-﻿
-#include "perceptron.h"
+﻿#include "perceptron.h"
 
 
 Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int &hidenNeuronsAmount,const unsigned int &outputNeuronsAmount) {
@@ -9,9 +8,10 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 		this->learningTargets = dataset->GetLogsDanger();
 		this->learningLogs = dataset->GetLogs();
 		unsigned int uniqueWordsInDataset = 37;
+		path = "C:/Users/LordMegatron/Desktop/Pupa/weights.txt";
 		vectorize = new WordsVectorize(learningLogs, dataset->methods, dataset->pages, dataset->protocol,
 			dataset->agent, dataset->SQL, dataset->XSS, dataset->Win);
-		if (config.GetFromFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt")) {
+		if (config.GetFromFile(path)) {
 				config.SetConfig
 				(
 					this->InputToHiddenWeights, this->hidenToOutputWeights,
@@ -50,10 +50,10 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 			Perceptron::InitWeights(InputToHiddenWeights);
 			Perceptron::InitWeights(hidenToOutputWeights);
 
-			
+			//vectorize->ShowIDF();
 			
 			Perceptron::Learning();
-			config.SaveToFile("C:/Users/LordMegatron/Desktop/Pupa/weights.txt", this->InputToHiddenWeights, this->hidenToOutputWeights,
+			config.SaveToFile(path, this->InputToHiddenWeights, this->hidenToOutputWeights,
 				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
 				this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
 				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount);
@@ -125,6 +125,9 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 	}
 
 	void Perceptron::ProccedString(std::string str) {
+		/*for (auto n : vectorize->TFxIDF(str, inputNeuronsAmount)) {
+			std::cout << "TF-IDF:" << n << std::endl;
+		}*/
 		SetInputLayer(  vectorize->TFxIDF(str,inputNeuronsAmount));
 	}
 
@@ -226,6 +229,7 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 			for (int i = 0; i < learningLogs.size(); i++) {
 				std::cout << "\nEpoch: " << epoch << std::endl;
 				std::cout << "Learning on log:\t" << learningLogs[i] << "\tDanger:\t" << learningTargets[i] << std::endl;
+				ProccedString(learningLogs[i]);
 				InputToHiddenLayerProccess();
 				HiddenToOutputLayerProccess();
 				res = GetOutputLayer();
@@ -237,6 +241,9 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 				inToHidenError();
 				UpdateBias();
 				UpdateWeights();
+				/*for (auto n : inputLayer) {
+					std::cout << "\nInput layer\t" << n;
+				}*/
 				CleanInputLayer();
 			}
 			if ((epochError / learningLogs.size() * 100) < 5) {
@@ -246,6 +253,7 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 			epoch++;
 			Sleep(1000);
 			std::cout << "\nNew epoch " << epoch << std::endl;
+			//ShowHidenWeights();
 		}
 	}
 

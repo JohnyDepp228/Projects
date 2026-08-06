@@ -3,7 +3,7 @@
 
 
 
-#include "../src/DatasetGenerator.h"
+#include "DatasetGenerator.h"
 #include <vector>
 
 

@@ -13,7 +13,7 @@
 #include <conio.h>
 #include "DatasetGenerator.h"
 #include "SentenceVectorize.h"
-#include "../test/Test.h"
+#include "Test.h"
 #include "SaveConfig.h"
 #include "Errors.h"
 
@@ -49,6 +49,8 @@ private:
 	unsigned int hidenNeuronsAmount;
 	unsigned int outputNeuronsAmount;
 	unsigned int epoch;
+
+	std::string path;
 
 	WordsVectorize* vectorize;
 

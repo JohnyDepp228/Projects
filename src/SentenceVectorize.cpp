@@ -152,7 +152,7 @@ std::vector<double> WordsVectorize::TFxIDF(std::string sentence,const unsigned i
 		auto it = sentenceTF.find(currrentWord);
 		if (it != sentenceTF.end()) {
 			res[i] = it->second * currentIdf;
-			
+			//std::cout << "TF-IDF: " << res[i] << std::endl;
 		}
 		else {
 			res[i] = 0.0;
@@ -180,3 +180,11 @@ void WordsVectorize::FromCharToString(char* arr, std::string sentence,int size) 
 		}
 	}
 }
+
+void WordsVectorize::ShowIDF() {
+	std::cout << "IDF:" << std::endl;
+	for (auto n : IDF) {
+		std::cout <<"Word" << n.first << "\tIDF" << n.second << std::endl;
+	}
+}
+
