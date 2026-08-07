@@ -116,7 +116,7 @@ public:
 
 	void Test();
 
-	void FullProcess(std::string);
+	bool FullProcess(std::string);
 
 	std::vector<double> GetOutputLayer() const {
 		return outputLayer;

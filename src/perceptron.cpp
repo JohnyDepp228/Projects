@@ -273,13 +273,11 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 		std::cout << "Proccent of corretc answers:\t" << test.GetSuccessProcent() << "%" << std::endl;
 	}
 
-	void Perceptron::FullProcess(std::string str) {
+	bool Perceptron::FullProcess(std::string str) {
 		ProccedString(str);
 		InputToHiddenLayerProccess();
 		HiddenToOutputLayerProccess();
 		std::vector<double> res = GetOutputLayer();
 		std::cout << "Result: " << res[0] << std::endl;
-		if (res[0] * 100 < 50) {
-			std::cout << "Warning danger Log" << std::endl;
-		}
+		return (res[0] * 100) > 50;
 	}
