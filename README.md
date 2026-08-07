@@ -7,7 +7,7 @@
 3. - [ ] OPtimization
 4. - [x] Dataset
 5. - [x] Reading dataset from file
-6. - [ ] Dividing code into separate parts(*.hpp, *.cpp)
+6. - [x] Dividing code into separate parts(*.hpp, *.cpp)
 7. - [x] Упорядочить входной слой в соответствии с порядком idf(в структуру idf добавит индекс в входной слое)
    - [x]       double LeakyReLu(const double &data) {
              return data > 0 ? data : 0.01 * data;
@@ -20,3 +20,4 @@
 - [x] Создать Dataset в конструкторе Perceptron
 - [x] Инициализировать поле vectorize этими данными
 - [x] Использовать ЭТУ же vectorize в Learning() и в ProccedString()
+- [ ] Сделать сервер с этим пересептроном и клиента дающего логи для проверки
