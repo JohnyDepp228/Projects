@@ -106,8 +106,39 @@ public:
 int main() {
 	
 	std::string str;
+	Perceptron* p;
+	p = new Perceptron(100, 80, 1);
 
-	Perceptron p(100, 80, 1);
+	try {
+		p->Start();
+	}
+	catch (const Errors &e) {
+		if (e == Errors::DIVISIONBYZERO) {
+			std::cout << "DIVISIONBYZERO" << std::endl;
+		}
+		else if(e == Errors::FILEREAD) {
+			std::cout << "FILEREAD. Error code:\t" << GetLastError() << std::endl;
+		}
+		else if (e == Errors::FILEREADVEC1D) {
+			std::cout << "FILEREADVEC1D. Error code:\t" << GetLastError() << std::endl;
+		}
+		else if (e == Errors::FILEREADVEC2D) {
+			std::cout << "FILEREADVEC2D. Error code:\t" << GetLastError() << std::endl;
+		}
+		else if (e == Errors::FILEWRITE) {
+			std::cout << "FILEWRITE. Error code:\t" << GetLastError() <<  std::endl;
+		}
+		else if (e == Errors::FILEWRITEVEC1D) {
+			std::cout << "FILEWRITEVEC1D.\t Error code:\t" << GetLastError() << std::endl;
+		}
+		else if (e == Errors::FILEWRITEVEC2D) {
+			std::cout << "FILEWRITEVEC2D.\t Error code:\t" << GetLastError() << std::endl;
+		}
+	}
+	catch (...) {
+
+	}
+	
 
 	Server s;
 
@@ -117,12 +148,9 @@ int main() {
 
 	std::cout << "Read\t" << s.GetLog() << std::endl;
 
-	s.SetDanger(p.FullProcess(s.GetLog()));
+	s.SetDanger(p->FullProcess(s.GetLog()));
 
 	s.WriteAnswer();
-
-
-
 
 	return 0;
 }

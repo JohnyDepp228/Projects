@@ -2,62 +2,65 @@
 
 
 Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int &hidenNeuronsAmount,const unsigned int &outputNeuronsAmount) {
-		SavePerceprtonConfig config;
-		epoch = 0;
-		dataset = new Dataset(2000);
-		this->learningTargets = dataset->GetLogsDanger();
-		this->learningLogs = dataset->GetLogs();
-		unsigned int uniqueWordsInDataset = 37;
-		path = "C:/Users/LordMegatron/Desktop/Pupa/weights.txt";
-		vectorize = new WordsVectorize(learningLogs, dataset->methods, dataset->pages, dataset->protocol,
-			dataset->agent, dataset->SQL, dataset->XSS, dataset->Win);
-		if (config.GetFromFile(path)) {
-				config.SetConfig
-				(
-					this->InputToHiddenWeights, this->hidenToOutputWeights,
-					this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity, 
-					this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
-					this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount
-				);
-				inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
-				hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
-				hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
-				outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
-				vectorize->ReadIDFFromFile();	
-		}
-		else {
-			this->inputNeuronsAmount = inputNeuronsAmount;
-			this->hidenNeuronsAmount = hidenNeuronsAmount;
-			this->outputNeuronsAmount = outputNeuronsAmount;
+	this->inputNeuronsAmount = inputNeuronsAmount;
+	this->hidenNeuronsAmount = hidenNeuronsAmount;
+	this->outputNeuronsAmount = outputNeuronsAmount;
+	}
 
-			inputLayer = std::vector<double>(inputNeuronsAmount, 0);
-			hidenLayer = std::vector<double>(hidenNeuronsAmount, 0);
-			hidenLayerBeforeReLu = std::vector<double>(hidenNeuronsAmount, 0);
-			outputLayer = std::vector<double>(outputNeuronsAmount, 0);
+void Perceptron::Start() {
+	SavePerceprtonConfig config;
+	epoch = 0;
+	dataset = new Dataset(2000);
+	this->learningTargets = dataset->GetLogsDanger();
+	this->learningLogs = dataset->GetLogs();
+	unsigned int uniqueWordsInDataset = 37;
+	path = "weights.txt";
+	vectorize = new WordsVectorize(learningLogs, dataset->methods, dataset->pages, dataset->protocol,
+		dataset->agent, dataset->SQL, dataset->XSS, dataset->Win);
+	if (config.GetFromFile(path)) {
+		config.SetConfig
+		(
+			this->InputToHiddenWeights, this->hidenToOutputWeights,
+			this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
+			this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
+			this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount
+		);
+		this->inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
+		this->hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
+		this->hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
+		this->outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
+		vectorize->ReadIDFFromFile();
+	}
+	else {
 
-			inputToHiddenLayerBias = std::vector<double>(hidenNeuronsAmount, 0.01);
-			hidenToOutputLayerBias = std::vector<double>(outputNeuronsAmount, 0);
+		this->inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
+		this->hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
+		this->hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
+		this->outputLayer = std::vector<double>(this->outputNeuronsAmount, 0);
 
-			inputToHidenError = std::vector<double>(hidenNeuronsAmount, 0.0);
-			hidenToOutputError = std::vector<double>(outputNeuronsAmount, 0.0);
+		this->inputToHiddenLayerBias = std::vector<double>(this->hidenNeuronsAmount, 0.01);
+		this->hidenToOutputLayerBias = std::vector<double>(this->outputNeuronsAmount, 0);
 
-			hidenToOutputLayerVelocity = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
-			inputToHiddenLayerVelocity = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
+		this->inputToHidenError = std::vector<double>(this->hidenNeuronsAmount, 0.0);
+		this->hidenToOutputError = std::vector<double>(this->outputNeuronsAmount, 0.0);
 
-			InputToHiddenWeights = std::vector<std::vector<double>>(inputNeuronsAmount, std::vector<double>(hidenNeuronsAmount, 0));
-			hidenToOutputWeights = std::vector<std::vector<double>>(hidenNeuronsAmount, std::vector<double>(outputNeuronsAmount, 0));
+		this->hidenToOutputLayerVelocity = std::vector<std::vector<double>>(this->hidenNeuronsAmount, std::vector<double>(this->outputNeuronsAmount, 0));
+		this->inputToHiddenLayerVelocity = std::vector<std::vector<double>>(this->inputNeuronsAmount, std::vector<double>(this->hidenNeuronsAmount, 0));
 
-			Perceptron::InitWeights(InputToHiddenWeights);
-			Perceptron::InitWeights(hidenToOutputWeights);
+		this->InputToHiddenWeights = std::vector<std::vector<double>>(this->inputNeuronsAmount, std::vector<double>(this->hidenNeuronsAmount, 0));
+		this->hidenToOutputWeights = std::vector<std::vector<double>>(this->hidenNeuronsAmount, std::vector<double>(this->outputNeuronsAmount, 0));
 
-			//vectorize->ShowIDF();
-			
-			Perceptron::Learning();
-			config.SaveToFile(path, this->InputToHiddenWeights, this->hidenToOutputWeights,
-				this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
-				this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
-				this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount);
-		}
+		Perceptron::InitWeights(this->InputToHiddenWeights);
+		Perceptron::InitWeights(this->hidenToOutputWeights);
+
+		//vectorize->ShowIDF();
+
+		Perceptron::Learning();
+		config.SaveToFile(path, this->InputToHiddenWeights, this->hidenToOutputWeights,
+			this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
+			this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
+			this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount);
+	}
 	}
 
 	void Perceptron::SetInputLayer(const std::vector<double>& input) {

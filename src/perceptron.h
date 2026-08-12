@@ -118,6 +118,8 @@ public:
 
 	bool FullProcess(std::string);
 
+	void Start();
+
 	std::vector<double> GetOutputLayer() const {
 		return outputLayer;
 	}

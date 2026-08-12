@@ -37,7 +37,7 @@ public:
 		const std::vector<std::string>& agent,
 		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win) {
 		IDF.clear();
-		path = "C:/Users/LordMegatron/Desktop/Pupa/idf.txt";
+		path = "idf.txt";
 			this->uniqueWordsAmount = set.GetNumOfUniqueWords();
 			this->datasetSize = dataset.size();
 			separateWordsFromSQL = SentenceIntoSeparateWords(SQL);
