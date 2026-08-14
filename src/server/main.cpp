@@ -8,8 +8,6 @@ private:
 	DWORD pipeWriteLimit = 1024;
 
 	DWORD limitOfReadBytes = 1024;
-	HANDLE eventToRead;
-	HANDLE eventClientRead;
 
 	std::string log;
 
@@ -28,34 +26,20 @@ public:
 			NULL);
 		danger = false;
 
-		eventToRead = CreateEventW(NULL, FALSE, FALSE, L"ReadServerEvent");
-
-		eventClientRead = CreateEventW(NULL, FALSE, FALSE, L"ReadClientEvent");
 
 		if (serverPipe == INVALID_HANDLE_VALUE) {
 			std::cout << "Can't create pipe\t" << GetLastError() << std::endl;
-			return;
-		}
-
-		if (eventToRead == INVALID_HANDLE_VALUE) {
-			std::cout << "Can't create eventToRead\t" << GetLastError() << std::endl;
-			return;
-		}
-
-		if (eventClientRead == INVALID_HANDLE_VALUE) {
-			std::cout << "Can't create eventClientRead\t" << GetLastError() << std::endl;
 			return;
 		}
 	}
 
 	void ReadLog() {
 		std::cout << "Waiting for client to write " << std::endl;
-		WaitForSingleObject(eventToRead, INFINITE);
 		std::cout << "Get signal to read" << std::endl;
 		char buffer[1024] = { 0 };
-		limitOfReadBytes = 1000;
+		limitOfReadBytes = 1024;
 		DWORD readBytes = 0;
-		bool readLog = ReadFile(serverPipe, &buffer, limitOfReadBytes, &readBytes, NULL);
+		bool readLog = ReadFile(serverPipe, buffer, limitOfReadBytes, &readBytes, NULL);
 
 		if (!readLog) {
 			std::cout << "Error to read from Pipe\t" << GetLastError() << std::endl;
@@ -68,6 +52,7 @@ public:
 	void ClientWait() {
 		std::cout << "Waiting for client connection..." << std::endl;
 		ConnectNamedPipe(serverPipe, NULL);
+		std::cout << "Connected" << std::endl;
 	}
 
 	std::string GetLog() const {
@@ -91,20 +76,17 @@ public:
 			std::cout << "Sent success" << std::endl;
 		}
 		FlushFileBuffers(serverPipe);
-		SetEvent(eventClientRead);
 	}
 
 	~Server() {
 		CloseHandle(serverPipe);
-		CloseHandle(eventToRead);
-		CloseHandle(eventClientRead);
 	}
-	
+
 };
 
 
 int main() {
-	
+
 	std::string str;
 	Perceptron* p;
 	p = new Perceptron(100, 80, 1);
@@ -112,11 +94,11 @@ int main() {
 	try {
 		p->Start();
 	}
-	catch (const Errors &e) {
+	catch (const Errors& e) {
 		if (e == Errors::DIVISIONBYZERO) {
 			std::cout << "DIVISIONBYZERO" << std::endl;
 		}
-		else if(e == Errors::FILEREAD) {
+		else if (e == Errors::FILEREAD) {
 			std::cout << "FILEREAD. Error code:\t" << GetLastError() << std::endl;
 		}
 		else if (e == Errors::FILEREADVEC1D) {
@@ -126,7 +108,7 @@ int main() {
 			std::cout << "FILEREADVEC2D. Error code:\t" << GetLastError() << std::endl;
 		}
 		else if (e == Errors::FILEWRITE) {
-			std::cout << "FILEWRITE. Error code:\t" << GetLastError() <<  std::endl;
+			std::cout << "FILEWRITE. Error code:\t" << GetLastError() << std::endl;
 		}
 		else if (e == Errors::FILEWRITEVEC1D) {
 			std::cout << "FILEWRITEVEC1D.\t Error code:\t" << GetLastError() << std::endl;
@@ -138,19 +120,21 @@ int main() {
 	catch (...) {
 
 	}
-	
+
 
 	Server s;
 
 	s.ClientWait();
 
-	s.ReadLog();
+	while (true) {
+		s.ReadLog();
 
-	std::cout << "Read\t" << s.GetLog() << std::endl;
+		std::cout << "Read\t" << s.GetLog() << std::endl;
 
-	s.SetDanger(p->FullProcess(s.GetLog()));
+		s.SetDanger(p->FullProcess(s.GetLog()));
 
-	s.WriteAnswer();
+		s.WriteAnswer();
+	}
 
 	return 0;
 }
