@@ -4,7 +4,7 @@
    - [x] TF-IDF + униграммы/биграммы || BOW + биграммы
 1. - [x] Learning
 2. - [x] Saving perceptron config
-3. - [ ] # Optimization
+3. - [ ] Optimization
 4. - [x] Dataset
 5. - [x] Reading dataset from file
 6. - [x] Dividing code into separate parts(*.hpp, *.cpp)
