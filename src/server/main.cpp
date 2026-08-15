@@ -118,7 +118,7 @@ int main() {
 		}
 	}
 	catch (...) {
-
+		std::cout << "UNKNOWN ERROR.\t Error code:\t" << GetLastError() << std::endl;
 	}
 
 

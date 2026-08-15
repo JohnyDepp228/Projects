@@ -9,7 +9,6 @@ add_executable(Perceptron
     DatasetGenerator.cpp 
     SaveConfig.cpp 
     SentenceVectorize.cpp
-	Test.cpp
 )
 
 

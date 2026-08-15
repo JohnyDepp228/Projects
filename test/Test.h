@@ -3,7 +3,8 @@
 
 
 
-#include "../src/DatasetGenerator.h"
+#include "DatasetGenerator.h"
+#include "perceptron.h"
 #include <vector>
 
 
@@ -24,17 +25,19 @@ public:
 		testSetLogs = testSet->GetLogs();
 
 	}
-	void Testing(const std::vector<double>& res, int index);
+	void CheckResult(const std::vector<double>& res, int index);
 
 	unsigned int GetTestSetSize() const;
 
 	std::vector<std::string> GetTestLog() const;
-	
+
 	~Tests() {
 		delete testSet;
 	}
 
 	int GetSuccessProcent() const;
+
+	void Test(const unsigned int &inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount);
 
 };
 

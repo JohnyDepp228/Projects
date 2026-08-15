@@ -1,0 +1,3 @@
+C:/Users/Boss/Desktop/Pupa/src/server/build/CMakeFiles/Perceptron.dir
+C:/Users/Boss/Desktop/Pupa/src/server/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Boss/Desktop/Pupa/src/server/build/CMakeFiles/ZERO_CHECK.dir
