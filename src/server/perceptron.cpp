@@ -99,7 +99,7 @@ void Perceptron::HiddenToOutputLayerProccess() {
 		}
 	}
 	for (int j = 0; j < outputNeuronsAmount; j++) {
-		outputLayer[j] = Sigmoid(outputLayer[j] + hidenToOutputLayerBias[j]);
+		outputLayer[j] = (outputLayer[j] + hidenToOutputLayerBias[j]);
 
 	}
 }
