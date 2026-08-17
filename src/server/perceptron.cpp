@@ -1,7 +1,12 @@
 ﻿#include "perceptron.h"
 
 
-Perceptron::Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount) {
+Perceptron::Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,std::string weightsPath,std::string idfPath) {
+	this->weightsPath = weightsPath;
+	this->idfPath = idfPath;
+	epoch = 0;
+	dataset = nullptr;
+	vectorize = nullptr;
 	this->inputNeuronsAmount = inputNeuronsAmount;
 	this->hidenNeuronsAmount = hidenNeuronsAmount;
 	this->outputNeuronsAmount = outputNeuronsAmount;
@@ -13,10 +18,9 @@ void Perceptron::Start() {
 	dataset = new Dataset(2000);
 	this->learningTargets = dataset->GetLogsDanger();
 	this->learningLogs = dataset->GetLogs();
-	path = "weights.txt";
 	vectorize = new WordsVectorize(learningLogs, dataset->methods, dataset->pages, dataset->protocol,
-		dataset->agent, dataset->SQL, dataset->XSS, dataset->Win);
-	if (config.GetFromFile(path) && vectorize->FindFileIDF()) {
+		dataset->agent, dataset->SQL, dataset->XSS, dataset->Win, idfPath);
+	if (config.GetFromFile(weightsPath) && vectorize->FindFileIDF()) {
 		config.SetConfig
 		(
 			this->InputToHiddenWeights, this->hidenToOutputWeights,
@@ -31,7 +35,7 @@ void Perceptron::Start() {
 		vectorize->ReadIDFFromFile();
 	}
 	else {
-		std::cout << "IDF find\t" << vectorize->FindFileIDF() << "\tWeight find\t" << config.GetFromFile(path) << std::endl;
+		std::cout << "IDF find\t" << vectorize->FindFileIDF() << "\tWeight find\t" << config.GetFromFile(weightsPath) << std::endl;
 		this->inputLayer = std::vector<double>(this->inputNeuronsAmount, 0);
 		this->hidenLayer = std::vector<double>(this->hidenNeuronsAmount, 0);
 		this->hidenLayerBeforeReLu = std::vector<double>(this->hidenNeuronsAmount, 0);
@@ -54,7 +58,7 @@ void Perceptron::Start() {
 		vectorize->SetIDF();
 
 		Perceptron::Learning();
-		config.SaveToFile(path, this->InputToHiddenWeights, this->hidenToOutputWeights,
+		config.SaveToFile(weightsPath, this->InputToHiddenWeights, this->hidenToOutputWeights,
 			this->hidenToOutputLayerVelocity, this->inputToHiddenLayerVelocity,
 			this->inputToHiddenLayerBias, this->hidenToOutputLayerBias,
 			this->inputNeuronsAmount, this->hidenNeuronsAmount, this->outputNeuronsAmount);
@@ -82,7 +86,7 @@ void Perceptron::InputToHiddenLayerProccess() {
 	for (unsigned int j = 0; j < hidenNeuronsAmount; j++) {
 		hidenLayerBeforeReLu[j] = 0.0;
 		hidenLayerBeforeReLu[j] = hidenLayer[j] + inputToHiddenLayerBias[j];
-		hidenLayer[j] = ReLu(hidenLayer[j] + inputToHiddenLayerBias[j]);
+		hidenLayer[j] = LeakyReLu(hidenLayer[j] + inputToHiddenLayerBias[j]);
 
 	}
 }
@@ -120,15 +124,7 @@ double Perceptron::Weight(double leftBoard, double rightBoard) {
 	return dis(gen);
 }
 
-int Perceptron::hash(std::string key) {
-	std::hash<std::string> hasher;
-	return hasher(key) % inputNeuronsAmount;
-}
-
 void Perceptron::ProccedString(std::string str) {
-	/*for (auto n : vectorize->TFxIDF(str, inputNeuronsAmount)) {
-		std::cout << "TF-IDF:" << n << std::endl;
-	}*/
 	SetInputLayer(vectorize->TFxIDF(str, inputNeuronsAmount));
 }
 
@@ -158,7 +154,7 @@ void Perceptron::inToHidenError() {
 		for (int j = 0; j < outputNeuronsAmount; j++) {
 			errorSum += hidenToOutputError[j] * hidenToOutputWeights[i][j];
 		}
-		inputToHidenError[i] = errorSum * directiveReLu(hidenLayerBeforeReLu[i]);
+		inputToHidenError[i] = errorSum * directiveLeakyReLu(hidenLayerBeforeReLu[i]);
 	}
 }
 
@@ -216,7 +212,6 @@ void Perceptron::ShowHidenWeights() {
 			std::cout << "HidenToOutputWeight[" << i << "][" << j << "]" << hidenToOutputWeights[i][j] << std::endl;
 		}
 	}
-	char ch1 = _getch();
 }
 
 void Perceptron::Learning() {
@@ -242,9 +237,6 @@ void Perceptron::Learning() {
 			inToHidenError();
 			UpdateBias();
 			UpdateWeights();
-			/*for (auto n : inputLayer) {
-				std::cout << "\nInput layer\t" << n;
-			}*/
 			CleanInputLayer();
 		}
 		if ((epochError / learningLogs.size() * 100) < 5) {
@@ -252,9 +244,7 @@ void Perceptron::Learning() {
 			break;
 		}
 		epoch++;
-		Sleep(1000);
 		std::cout << "\nNew epoch " << epoch << std::endl;
-		//ShowHidenWeights();
 	}
 }
 

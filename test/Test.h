@@ -3,15 +3,15 @@
 
 
 
-#include "DatasetGenerator.h"
-#include "perceptron.h"
+#include "../src/server/DatasetGenerator.h"
+#include "../src/server/perceptron.h"
 #include <vector>
 
 
 
 class Tests {
 private:
-	unsigned int testSetSize = 1000;
+	unsigned int testSetSize = 2000;
 	Dataset* testSet;
 	std::vector<double> testSetTargets;
 	std::vector<std::string> testSetLogs;
@@ -37,7 +37,7 @@ public:
 
 	int GetSuccessProcent() const;
 
-	void Test(const unsigned int &inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount);
+	void Test(const unsigned int &inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,std::string weightsPath, std::string idfPath);
 
 };
 

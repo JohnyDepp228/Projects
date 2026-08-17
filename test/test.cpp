@@ -26,14 +26,13 @@ std::vector<std::string>  Tests::GetTestLog() const {
 	return  Tests::testSetLogs;
 }
 
-void Tests::Test(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount) {
-	Perceptron p(inputNeuronsAmount, hidenNeuronsAmount, outputNeuronsAmount);
+void Tests::Test(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,std::string weightsPath,std::string idfPath) {
+	Perceptron p(inputNeuronsAmount, hidenNeuronsAmount, outputNeuronsAmount, weightsPath, idfPath);
+	p.Start();
 		std::vector<std::string> log = GetTestLog();
 		for (int i = 0; i < testSetSize; i++) {
 			std::cout << "Log: " << log[i] << std::endl;
-			p.ProccedString(log[i]);
-			p.InputToHiddenLayerProccess();
-			p.HiddenToOutputLayerProccess();
+			p.FullProcess(log[i]);
 			std::vector<double> res = p.GetOutputLayer();
 			std::cout << "Result: " << res[0] << std::endl;
 			CheckResult(p.GetOutputLayer(), i);

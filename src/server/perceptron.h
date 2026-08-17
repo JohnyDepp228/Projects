@@ -6,11 +6,7 @@
 #include <vector>
 #include <random>
 #include <string>
-#include <fstream>
-#include <map>
-#include <set>
 #include <Windows.h>
-#include <conio.h>
 #include "DatasetGenerator.h"
 #include "SentenceVectorize.h"
 #include "SaveConfig.h"
@@ -19,18 +15,18 @@
 class Perceptron {
 private:
 
-	std::vector<std::vector<double>> InputToHiddenWeights;//save
-	std::vector<std::vector<double>> hidenToOutputWeights;//save
-	std::vector<std::vector<double>> hidenToOutputLayerVelocity;//save
-	std::vector<std::vector<double>> inputToHiddenLayerVelocity;//save
+	std::vector<std::vector<double>> InputToHiddenWeights;
+	std::vector<std::vector<double>> hidenToOutputWeights;
+	std::vector<std::vector<double>> hidenToOutputLayerVelocity;
+	std::vector<std::vector<double>> inputToHiddenLayerVelocity;
 
 	std::vector<double> inputLayer;
 	std::vector<double> hidenLayer;
 	std::vector<double> hidenLayerBeforeReLu;
 	std::vector<double> outputLayer;
 
-	std::vector<double> inputToHiddenLayerBias;//save
-	std::vector<double> hidenToOutputLayerBias;//save
+	std::vector<double> inputToHiddenLayerBias;
+	std::vector<double> hidenToOutputLayerBias;
 
 	std::vector<double> inputToHidenError;
 	std::vector<double> hidenToOutputError;
@@ -41,31 +37,28 @@ private:
 
 	double LR = 0.5;
 	double inertia = 0.01;
-	double oldWeight1;
-	double oldWeight2;
 
 	unsigned int inputNeuronsAmount;
 	unsigned int hidenNeuronsAmount;
 	unsigned int outputNeuronsAmount;
 	unsigned int epoch;
 
-	std::string path;
+	std::string weightsPath;
+	std::string idfPath;
 
 	WordsVectorize* vectorize;
 
 	Dataset* dataset;
 
 public:
-	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount);
+	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,std::string weightsPath,std::string idfPath);
 
-	double ReLu(const double& data) {
-		//return data > 0 ? data : 0;
-		return data > 0 ? data : data * 0.01; //leakyReLu
+	double LeakyReLu(const double& data) {
+		return data > 0 ? data : data * 0.01;
 	}
 
-	double directiveReLu(const double& data) {
-		//return data > 0 ? 1.0 : 0;
-		return data > 0 ? 1.0 : 0.01; //Leaky ReLu
+	double directiveLeakyReLu(const double& data) {
+		return data > 0 ? 1.0 : 0.01;
 	}
 
 	double Sigmoid(const double& data) {
@@ -73,7 +66,7 @@ public:
 	}
 
 	double directiveSigmoid(const double& data) {
-		return data * (1.0 - data); // data after sigmoid
+		return data * (1.0 - data);
 	}
 
 	void SetInputLayer(const std::vector<double>& input);
@@ -86,10 +79,7 @@ public:
 
 	void InitWeights(std::vector<std::vector<double>>& layer);
 
-
 	double Weight(double leftBoard, double rightBoard);
-
-	int hash(std::string key);
 
 	void ProccedString(std::string str);
 
@@ -112,8 +102,6 @@ public:
 	void ShowHidenWeights();
 
 	void Learning();
-
-	void Test();
 
 	bool FullProcess(std::string);
 

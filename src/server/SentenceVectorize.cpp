@@ -37,18 +37,18 @@ std::vector<std::string> WordsVectorize::SentenceIntoSeparateWords(std::string s
 	return res;
 }
 
-
-void WordsVectorize::MapIndexInit(std::map<std::string, int>& tempMap, std::vector<std::string> vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, int>& tempMap,const std::vector<std::string> &vec) {
 	for (const auto& n : vec) {
 		tempMap[n] = 0;
 	}
 }
 
-void WordsVectorize::MapIndexInit(std::map<std::string, double>& tempMap, std::vector<std::string> vec) {
+void WordsVectorize::MapIndexInit(std::map<std::string, double>& tempMap, const std::vector<std::string>& vec) {
 	for (const auto& n : vec) {
 		tempMap[n] = 0.0;
 	}
 }
+
 
 void WordsVectorize::FindsNumOfWordsInDatasetSentences(const std::vector<std::string>& methods, const std::vector<std::string>& pages,
 	const std::vector<std::string>& protocol,
@@ -98,7 +98,7 @@ void WordsVectorize::calculIDF() {
 
 void WordsVectorize::SaveIDFToFile() {
 	std::ofstream fout;
-	fout.open(WordsVectorize::path, std::ios::binary);
+	fout.open(WordsVectorize::idfPath, std::ios::binary);
 	for (int i = 0; i < numOfUniqueWordsInSentenceInDataset.size(); i++) {
 		fout.write((char*)&idf[i].size, sizeof(int));
 		fout.write(idf[i].word, idf[i].size);
@@ -110,7 +110,7 @@ void WordsVectorize::ReadIDFFromFile() {
 
 	std::ifstream fin;
 	IDF.clear();
-	fin.open(WordsVectorize::path, std::ios::binary);
+	fin.open(WordsVectorize::idfPath, std::ios::binary);
 	if (fin.is_open()) {
 		for (int i = 0; i < numOfUniqueWordsInSentenceInDataset.size(); i++) {
 			int size = 0;
@@ -177,14 +177,6 @@ void WordsVectorize::FromStringToChar(std::string sentence, char* arr, int size)
 		}
 	}
 }
-void WordsVectorize::FromCharToString(char* arr, std::string sentence, int size) {
-	if (size != sentence.size()) return;
-	else {
-		for (int i = 0; i < size; i++) {
-			sentence[i] = arr[i];
-		}
-	}
-}
 
 void WordsVectorize::ShowIDF() {
 	std::cout << "IDF:" << std::endl;
@@ -195,7 +187,7 @@ void WordsVectorize::ShowIDF() {
 
 bool WordsVectorize::FindFileIDF() {
 	std::ifstream fin;
-	fin.open(WordsVectorize::path, std::ios::binary);
+	fin.open(WordsVectorize::idfPath, std::ios::binary);
 	bool fileExist = fin.is_open();
 	fin.close();
 	return fileExist;

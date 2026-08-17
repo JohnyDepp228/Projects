@@ -17,7 +17,6 @@ struct Dataset {
 	std::vector<std::string> Win;
 
 	int testListSize;
-	//int uniqueWordsAmount = 37;
 
 	Dataset(int testListSize) {
 		this->testListSize = testListSize;
@@ -42,10 +41,6 @@ struct Dataset {
 	std::vector<double> GetLogsDanger() const {
 		return dangerLevel;
 	}
-
-	/*int GetNumOfUniqueWords() const {
-		return uniqueWordsAmount;
-	}*/
 
 };
 
