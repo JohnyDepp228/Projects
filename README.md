@@ -4,7 +4,7 @@
    - [x] TF-IDF + униграммы/биграммы || BOW + биграммы
    - [x] Learning
    - [x] Saving perceptron config
-   - [ ] Optimization
+   - [x] Optimization
    - [x] Dataset
    - [x] Reading dataset from file
    - [x] Dividing code into separate parts(*.hpp, *.cpp)
@@ -16,4 +16,4 @@
    - [x] Инициализировать поле vectorize этими данными
    - [x] Использовать ЭТУ же vectorize в Learning() и в ProccedString()
    - [x] Сделать сервер с этим пересептроном и клиента дающего логи для проверки
-   - [ ] Сделать тесты нормально(отдельно от всего проекта) 
+   - [x] Сделать тесты нормально(отдельно от всего проекта) 
