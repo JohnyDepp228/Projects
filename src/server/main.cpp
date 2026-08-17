@@ -89,7 +89,7 @@ int main() {
 
 	std::string str;
 	Perceptron* p;
-	p = new Perceptron(100, 80, 1,"../../../../src/server/weights.txt","../../../../src/server/idf.txt");
+	p = new Perceptron(100, 80, 1, "../../../../config/weights.txt", "../../../../config/idf.txt");
 
 	try {
 		p->Start();
