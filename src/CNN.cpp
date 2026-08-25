@@ -126,6 +126,15 @@ public:
 		}
 	}
 
+
+	double GAP(const std::vector < std::vector < double>>& matrix) {
+		std::vector<double> temp;
+		for (auto n : matrix) {
+			temp.push_back(MaxPooling(n));
+		}
+
+		return *max_element(temp.begin(), temp.end());
+	}
 };
 
 
@@ -144,4 +153,7 @@ int main()
 	std::cout << std::endl;
 	c.BlokOfConvNPool();
 	c.ShowMatrix(c.GetPhotoMatrix());
+
+	std::cout << std::endl;
+	std::cout << c.GAP(c.GetPhotoMatrix());
 }
