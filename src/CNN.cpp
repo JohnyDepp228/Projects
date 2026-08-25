@@ -16,6 +16,11 @@ private:
 	std::vector<std::vector<double>> photoMatrix;
 	double bias = 1.0;
 
+	int filterHeight = 3;
+	int filterWeight = 3;
+	int poolingWindowHeight = 2;
+	int poolingWindowWeight = 2;
+
 	int matSizeAfterConvH = 0;
 	int matSizeAfterConvW = 0;
 
@@ -68,17 +73,32 @@ public:
 		}
 	}
 
-	std::vector < std::vector < double>> FullConvolution(int biggerMatHeight, int biggerMatWidth, int smallerMatHeight, int smallerMatWeight) {
+	std::vector < std::vector < double>> FullConvolution(const std::vector < std::vector < double>>& matrix, int biggerMatHeight, int biggerMatWiedth,
+		int smallerMatHeight, int smallerMatWeight, int& newHeight, int& newWeight) {
 		this->matSizeAfterConvH = (biggerMatHeight - smallerMatHeight) + 1;
-		this->matSizeAfterConvW = (biggerMatWidth - smallerMatWeight) + 1;
-		std::vector < std::vector < double>> mapOfSigns((biggerMatHeight - smallerMatHeight) + 1, std::vector < double>((biggerMatWidth - smallerMatWeight) + 1, 0));
+		this->matSizeAfterConvW = (biggerMatWiedth - smallerMatWeight) + 1;
+		newHeight = (biggerMatHeight - smallerMatHeight) + 1;
+		newWeight = (biggerMatWiedth - smallerMatWeight) + 1;
+		std::vector < std::vector < double>> mapOfSigns((biggerMatHeight - smallerMatHeight) + 1, std::vector < double>((biggerMatWiedth - smallerMatWeight) + 1, 0));
 		for (int i = 0; i <= biggerMatHeight - smallerMatHeight; i++) {
-			for (int j = 0; j <= biggerMatWidth - smallerMatWeight; j++) {
-				mapOfSigns[i][j] = ÑonvolutionOfOneMatrix(GetSmallerMatrixFromMatrix(i, j, photoMatrix, smallerMatHeight, smallerMatWeight), i);
+			for (int j = 0; j <= biggerMatWiedth - smallerMatWeight; j++) {
+				mapOfSigns[i][j] = ÑonvolutionOfOneMatrix(GetSmallerMatrixFromMatrix(i, j, matrix, smallerMatHeight, smallerMatWeight), i);
 			}
 		}
 
 		return mapOfSigns;
+	}
+
+	void BlokOfConvNPool() {
+		int newHeight = 0;
+		int newWeight = 0;
+		photoMatrix = FullConvolution(photoMatrix, photoMatrix.size(), photoMatrix[0].size(), filterHeight, filterWeight, newHeight, newWeight);
+		photoMatrix = FullConvolution(photoMatrix, newHeight, newWeight, filterHeight, filterWeight, newHeight, newWeight);
+		photoMatrix = Pooling(photoMatrix, poolingWindowHeight, poolingWindowWeight);
+	}
+
+	std::vector < std::vector < double>> GetPhotoMatrix() const {
+		return photoMatrix;
 	}
 
 	std::vector < std::vector < double>> Pooling(std::vector < std::vector < double>> mapOfSigns, int smallerMatHeight, int smallerMatWeight) {
@@ -114,10 +134,14 @@ int main()
 {
 	CNN c;
 	std::vector<double> vec;
-	std::vector < std::vector < double>> matrix(6, std::vector < double>(6, 0));
+	std::vector < std::vector < double>> matrix(16, std::vector < double>(16, 0));
 	InitMatrix(matrix);
 	c.SetImageMatrix(matrix);
-	c.ShowMatrix(matrix);
+	c.ShowMatrix(c.GetPhotoMatrix());
 	std::cout << std::endl;
-	c.ShowMatrix(c.Pooling(c.FullConvolution(6, 6, 3, 3), 2, 2));
+	c.BlokOfConvNPool();
+	c.ShowMatrix(c.GetPhotoMatrix());
+	std::cout << std::endl;
+	c.BlokOfConvNPool();
+	c.ShowMatrix(c.GetPhotoMatrix());
 }
