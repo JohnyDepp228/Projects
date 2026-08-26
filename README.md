@@ -6,7 +6,7 @@
 3. - [X] GAP
 4. - [X] Block of Сonvolution and MaxPooling
 5. - [ ] Add image decomposition
-
+6. - [ ] Save map of signs into channal
 
 
 # Test LIST
