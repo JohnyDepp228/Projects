@@ -194,15 +194,15 @@ public:
 
 
 	//Setter & Getters
-	std::vector<double> GetFilter(int filterIndex) const {
+	std::vector<double> GetMapOfSigns(int filterIndex) const {
 		return blocks[filterIndex]->GetMap();
 	}
 
-	int GetFilterSize(int filterIndex) const {
+	int GetMapOfSignsSize(int filterIndex) const {
 		return blocks[filterIndex]->GetMapSize();
 	}
 
-	void SetFilter(int filterIndex, const std::vector<double>& mapOfSigns) const {
+	void SetMapOfSigns(int filterIndex, const std::vector<double>& mapOfSigns) const {
 		blocks[filterIndex]->SetMap(mapOfSigns, mapOfSigns.size());
 	}
 
@@ -216,29 +216,36 @@ public:
 int main()
 {
 	CNN c;
-	//std::vector<double> vec;
-	//std::vector < std::vector < double>> matrix(16, std::vector < double>(16,0));
+	std::vector<double> vec;
+	std::vector < std::vector < double>> matrix(16, std::vector < double>(16, 0));
 
 
-	//std::vector < std::vector < double>> matrix1(16, std::vector < double>(16,0));
+	std::vector < std::vector < double>> matrix1(16, std::vector < double>(16, 0));
 
-	//std::vector < std::vector < double>> matrix2(16, std::vector < double>(16,0));
 
-	//std::vector < std::vector < double>> matrix3(16, std::vector < double>(16,0));
 
-	//InitMatrix(matrix);
-	//c.SetImageMatrix(matrix);
-	//c.ShowMatrix(c.GetPhotoMatrix());
+	std::vector < std::vector < double>> matrix4;
 
-	//matrix1 = c.GetPhotoMatrix();
-	//std::cout << std::endl;
-	//c.BlokOfConvNPool(0, matrix1);
-	////c.ShowMatrix(matrix1);
-	//std::cout << std::endl;
-	//c.BlokOfConvNPool(0, matrix1);
+
+
+	InitMatrix(matrix);
+	c.SetImageMatrix(matrix);
+	c.ShowMatrix(c.GetPhotoMatrix());
+
+	matrix1 = c.GetPhotoMatrix();
+	std::cout << std::endl;
+	c.BlokOfConvNPool(0, matrix1);
 	//c.ShowMatrix(matrix1);
-	//std::cout << std::endl;
+	std::cout << std::endl;
+	c.BlokOfConvNPool(0, matrix1);
+	c.ShowMatrix(matrix1);
+	std::cout << std::endl;
+	c.SetMapOfSigns(0, c.MatrixIntoVector(matrix1));
 
+
+	std::cout << std::endl;
+	matrix4 = c.VectorIntoMatrix(c.GetMapOfSigns(0));
+	c.ShowMatrix(matrix4);
 	//matrix2 = c.GetPhotoMatrix();
 	////c.ShowMatrix(matrix2);
 	//std::cout << std::endl;
