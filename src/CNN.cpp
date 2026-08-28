@@ -13,7 +13,7 @@ void InitMatrix(std::vector < std::vector < double>>& matrix) {
 	}
 }
 
-struct Channal {
+struct Channel {
 	std::vector<double> mapOfSigns;
 
 	std::vector<double> filter;
@@ -58,14 +58,14 @@ private:
 
 	int numOfBlocks = 6;
 	int numOfFiltersInBlock = 16;
-	Channal** blocks;
+	Channel** blocks;
 
 
 public:
 	CNN() {
-		blocks = new Channal * [6];
+		blocks = new Channel * [6];
 		for (int i = 0; i < numOfBlocks; i++) {
-			blocks[i] = new Channal[numOfFiltersInBlock];
+			blocks[i] = new Channel[numOfFiltersInBlock];
 			for (int j = 0; j < numOfFiltersInBlock; j++) {
 				blocks[i][j].SetFilter(InitFilterWeight(numOfFiltersInBlock));
 			}
@@ -103,9 +103,9 @@ public:
 		return temp;
 	}
 
-	double ÑonvolutionOfOneMatrix(std::vector<double> MatrixFromPhoto, int channalIndex, int filterIndex) {
+	double ÑonvolutionOfOneMatrix(std::vector<double> MatrixFromPhoto, int channelIndex, int filterIndex) {
 		double res = 0.0;
-		std::vector<double> filter = blocks[channalIndex][filterIndex].GetFilter();
+		std::vector<double> filter = blocks[channelIndex][filterIndex].GetFilter();
 		for (int i = 0; i < MatrixFromPhoto.size(); i++) {
 			res += MatrixFromPhoto[i] * filter[i];
 		}
@@ -133,24 +133,24 @@ public:
 	}
 
 	std::vector < std::vector < double>> FullConvolution(const std::vector < std::vector < double>>& matrix, int biggerMatHeight, int biggerMatWiedth,
-		int smallerMatHeight, int smallerMatWeight, int& newHeight, int& newWeight, int channalIndex, int filterIndex) {
+		int smallerMatHeight, int smallerMatWeight, int& newHeight, int& newWeight, int channelIndex, int filterIndex) {
 		newHeight = (biggerMatHeight - smallerMatHeight) + 1;
 		newWeight = (biggerMatWiedth - smallerMatWeight) + 1;
 		std::vector < std::vector < double>> mapOfSigns((biggerMatHeight - smallerMatHeight) + 1, std::vector < double>((biggerMatWiedth - smallerMatWeight) + 1, 0));
 		for (int i = 0; i <= biggerMatHeight - smallerMatHeight; i++) {
 			for (int j = 0; j <= biggerMatWiedth - smallerMatWeight; j++) {
-				mapOfSigns[i][j] = ÑonvolutionOfOneMatrix(GetSmallerMatrixFromMatrix(i, j, matrix, smallerMatHeight, smallerMatWeight), channalIndex, filterIndex);
+				mapOfSigns[i][j] = ÑonvolutionOfOneMatrix(GetSmallerMatrixFromMatrix(i, j, matrix, smallerMatHeight, smallerMatWeight), channelIndex, filterIndex);
 			}
 		}
 
 		return mapOfSigns;
 	}
 
-	void BlokOfConvNPool(int channalIndex, int filterIndex, std::vector < std::vector < double>>& newFilter) {
+	void BlokOfConvNPool(int channelIndex, int filterIndex, std::vector < std::vector < double>>& newFilter) {
 		int newHeight = 0;
 		int newWeight = 0;
-		newFilter = FullConvolution(newFilter, newFilter.size(), newFilter[0].size(), filterHeight, filterWeight, newHeight, newWeight, channalIndex, filterIndex);
-		newFilter = FullConvolution(newFilter, newHeight, newWeight, filterHeight, filterWeight, newHeight, newWeight, channalIndex, filterIndex);
+		newFilter = FullConvolution(newFilter, newFilter.size(), newFilter[0].size(), filterHeight, filterWeight, newHeight, newWeight, channelIndex, filterIndex);
+		newFilter = FullConvolution(newFilter, newHeight, newWeight, filterHeight, filterWeight, newHeight, newWeight, channelIndex, filterIndex);
 		newFilter = Pooling(newFilter, poolingWindowHeight, poolingWindowWeight, newHeight, newWeight);
 	}
 
@@ -216,27 +216,27 @@ public:
 		return res;
 	}
 
-	void Forward(int channalIndex) {
+	void Forward(int channelIndex) {
 		std::vector < std::vector < double>> matrix;
-		std::vector<double> filter = blocks[channalIndex]->GetFilter();
+		std::vector<double> filter = blocks[channelIndex]->GetFilter();
 		for (int i = 0; i < filter.size(); i++) {
 			matrix = photoMatrix;
-			std::cout << "Filter index" << i << std::endl;
-			BlokOfConvNPool(channalIndex, i, matrix);
-			BlokOfConvNPool(channalIndex, i, matrix);
-			SetMapOfSigns(channalIndex, i, MatrixIntoVector(matrix));
-			ShowMatrix(matrix);
+			//std::cout << "Filter index" << i << std::endl;
+			BlokOfConvNPool(channelIndex, i, matrix);
+			BlokOfConvNPool(channelIndex, i, matrix);
+			SetMapOfSigns(channelIndex, i, MatrixIntoVector(matrix));
+			//ShowMatrix(matrix);
 			matrix.clear();
 		}
 	}
 
 
-	void Check(int channalIndex) {  //rename
+	void Check(int channelIndex) {  //rename
 		std::vector < std::vector < double>> matrix;
-		std::vector<double> filter = blocks[channalIndex]->GetFilter();
+		std::vector<double> filter = blocks[channelIndex]->GetFilter();
 		for (int i = 0; i < filter.size(); i++) {
 			std::cout << "Filter index" << i << std::endl;
-			matrix = VectorIntoMatrix(GetMapOfSigns(channalIndex, i));
+			matrix = VectorIntoMatrix(GetMapOfSigns(channelIndex, i));
 			ShowMatrix(matrix);
 			matrix.clear();
 		}
@@ -252,16 +252,16 @@ public:
 
 
 	//Setter & Getters
-	std::vector<double> GetMapOfSigns(int channalIndex, int filterIndex) const {
-		return blocks[channalIndex][filterIndex].GetMap();
+	std::vector<double> GetMapOfSigns(int channelIndex, int filterIndex) const {
+		return blocks[channelIndex][filterIndex].GetMap();
 	}
 
-	int GetMapOfSignsSize(int channalIndex, int filterIndex) const {
-		return blocks[channalIndex][filterIndex].GetMapSize();
+	int GetMapOfSignsSize(int channelIndex, int filterIndex) const {
+		return blocks[channelIndex][filterIndex].GetMapSize();
 	}
 
-	void SetMapOfSigns(int channalIndex, int filterIndex, const std::vector<double>& mapOfSigns) const {
-		blocks[channalIndex][filterIndex].SetMap(mapOfSigns, mapOfSigns.size());
+	void SetMapOfSigns(int channelIndex, int filterIndex, const std::vector<double>& mapOfSigns) const {
+		blocks[channelIndex][filterIndex].SetMap(mapOfSigns, mapOfSigns.size());
 	}
 
 	void SetImageMatrix(const std::vector<std::vector<double>>& matrix) {
@@ -283,7 +283,7 @@ int main()
 
 	c.Forward(0);
 
-	c.Check(0);
+	//c.Check(0);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
