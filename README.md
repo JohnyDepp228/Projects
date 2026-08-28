@@ -6,8 +6,9 @@
 3. - [X] GAP
 4. - [X] Block of Сonvolution and MaxPooling
 5. - [ ] Add image decomposition
-6. - [ ] Save map of signs into channal
-7. - [ ] Check names of functions and variables
+6. - [x] Save map of signs into channel
+7. - [ ] First channel done
+8. - [ ] Check names of functions and variables(Grammar) 
 
 
 
