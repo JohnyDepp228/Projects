@@ -18,6 +18,8 @@ struct Channel {
 
 	std::vector<double> filter;
 
+	int numOfFilters = 0;
+
 	int size = 0;
 
 	void SetMap(const std::vector<double>& mapOfSigns, int size) {
@@ -30,7 +32,6 @@ struct Channel {
 	}
 
 	void SetFilter(const std::vector<double>& filter) {
-
 		this->filter = filter;
 	}
 
@@ -57,18 +58,21 @@ private:
 
 
 	int numOfBlocks = 6;
-	int numOfFiltersInBlock = 16;
+	int numOfFiltersInBlock = 8;
 	Channel** blocks;
 
 
 public:
 	CNN() {
+		int filterSize = filterHeight * filterWeight;
 		blocks = new Channel * [6];
 		for (int i = 0; i < numOfBlocks; i++) {
 			blocks[i] = new Channel[numOfFiltersInBlock];
 			for (int j = 0; j < numOfFiltersInBlock; j++) {
-				blocks[i][j].SetFilter(InitFilterWeight(numOfFiltersInBlock));
+				blocks[i][j].SetFilter(InitFilterWeight(filterSize));
 			}
+			blocks[i]->numOfFilters = numOfFiltersInBlock;
+
 			numOfFiltersInBlock *= 2;
 		}
 
@@ -196,6 +200,9 @@ public:
 		int matHeight = std::sqrt((double)vec.size());
 		int matWeight = std::sqrt((double)vec.size());
 		std::vector < std::vector < double>> res(matHeight, std::vector<double>(matWeight, 0));
+		if (matHeight == 0) {
+			matHeight = 1;
+		}
 		int border = vec.size() / matHeight;
 		for (int i = 0; i < matHeight; i++) {
 			for (int j = 0; j < matWeight; j++) {
@@ -218,18 +225,55 @@ public:
 
 	void Forward(int channelIndex) {
 		std::vector < std::vector < double>> matrix;
-		std::vector<double> filter = blocks[channelIndex]->GetFilter();
-		for (int i = 0; i < filter.size(); i++) {
+		int size = blocks[channelIndex]->numOfFilters;
+		for (int i = 0; i < size; i++) {
 			matrix = photoMatrix;
 			//std::cout << "Filter index" << i << std::endl;
 			BlokOfConvNPool(channelIndex, i, matrix);
-			BlokOfConvNPool(channelIndex, i, matrix);
+			if (matrix.size() > 1) {
+				BlokOfConvNPool(channelIndex, i, matrix);
+			}
 			SetMapOfSigns(channelIndex, i, MatrixIntoVector(matrix));
 			//ShowMatrix(matrix);
 			matrix.clear();
 		}
 	}
 
+
+	void Forward(int channelIndex, bool ChannelSum) {
+		std::vector < std::vector < double>> matrix;
+		std::vector < std::vector < double>> matrixPrev = VectorIntoMatrix(ChannelMatrixSum(channelIndex - 1));
+		int size = blocks[channelIndex]->numOfFilters;
+		for (int i = 0; i < size; i++) {
+			matrix = matrixPrev;
+			//std::cout << "Filter index" << i << std::endl;
+			BlokOfConvNPool(channelIndex, i, matrix);
+			if (matrix.size() > 1) {
+				BlokOfConvNPool(channelIndex, i, matrix);
+			}
+			SetMapOfSigns(channelIndex, i, MatrixIntoVector(matrix));
+			//ShowMatrix(matrix);
+			matrix.clear();
+		}
+	}
+
+	std::vector<double> ChannelMatrixSum(int channelIndex) {
+		std::vector<double> temp = GetMapOfSigns(channelIndex, 0);
+		for (int i = 1; i < blocks[channelIndex]->numOfFilters; i++) {
+			VectorSum(GetMapOfSigns(channelIndex, i), temp);
+		}
+
+		return temp;
+	}
+
+	void VectorSum(const std::vector<double>& vec, std::vector<double>& res) {
+		if (vec.size() == res.size()) {
+			for (int i = 0; i < res.size(); i++) {
+				res[i] += vec[i];
+			}
+		}
+		else return;
+	}
 
 	void Check(int channelIndex) {  //rename
 		std::vector < std::vector < double>> matrix;
@@ -277,14 +321,17 @@ int main()
 	auto start = std::chrono::high_resolution_clock::now();
 	CNN c;
 
-	std::vector < std::vector < double>> matrix(16, std::vector < double>(16, 0.01));
+	std::vector < std::vector < double>> matrix(24, std::vector < double>(24, 0.01));
 	InitMatrix(matrix);
 	c.SetImageMatrix(matrix);
 
 	c.Forward(0);
+	std::cout << "first forward done " << std::endl;
 
+	c.Forward(1, true);
 	//c.Check(0);
 
+	c.Check(1);
 	auto end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> duration = end - start;
