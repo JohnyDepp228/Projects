@@ -247,7 +247,9 @@ public:
 		for (int i = 0; i < size; i++) {
 			matrix = matrixPrev;
 			//std::cout << "Filter index" << i << std::endl;
-			BlokOfConvNPool(channelIndex, i, matrix);
+			if (matrix.size() > 1) {
+				BlokOfConvNPool(channelIndex, i, matrix);
+			}
 			if (matrix.size() > 1) {
 				BlokOfConvNPool(channelIndex, i, matrix);
 			}
@@ -277,8 +279,8 @@ public:
 
 	void Check(int channelIndex) {  //rename
 		std::vector < std::vector < double>> matrix;
-		std::vector<double> filter = blocks[channelIndex]->GetFilter();
-		for (int i = 0; i < filter.size(); i++) {
+		int size = blocks[channelIndex]->numOfFilters;
+		for (int i = 0; i < size; i++) {
 			std::cout << "Filter index" << i << std::endl;
 			matrix = VectorIntoMatrix(GetMapOfSigns(channelIndex, i));
 			ShowMatrix(matrix);
@@ -321,7 +323,7 @@ int main()
 	auto start = std::chrono::high_resolution_clock::now();
 	CNN c;
 
-	std::vector < std::vector < double>> matrix(24, std::vector < double>(24, 0.01));
+	std::vector < std::vector < double>> matrix(25, std::vector < double>(25, 0.01));
 	InitMatrix(matrix);
 	c.SetImageMatrix(matrix);
 
@@ -329,9 +331,13 @@ int main()
 	std::cout << "first forward done " << std::endl;
 
 	c.Forward(1, true);
-	//c.Check(0);
 
 	c.Check(1);
+	std::cout << "second forward done " << std::endl;
+
+	/*c.Forward(2, true);
+
+	c.Check(2);*/
 	auto end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> duration = end - start;
