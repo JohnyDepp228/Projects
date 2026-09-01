@@ -7,8 +7,10 @@
 4. - [X] Block of Сonvolution and MaxPooling
 5. - [ ] Add image decomposition
 6. - [x] Save map of signs into channel
-7. - [ ] First channel done
-8. - [ ] Check names of functions and variables(Grammar) 
+7. - [x] First channel done
+8. - [x] Check names of functions and variables(Grammar)
+9. - [ ] Padding
+10. - [ ] Bilinear interpolation
 
 
 
