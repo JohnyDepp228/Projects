@@ -60,7 +60,7 @@ private:
 	int imageHeight = 224;
 	int imageWidth = 224;
 
-	int numOfBlocks = 6;
+	int numOfBlocks = 7;
 	int numOfFiltersInBlock = 8;
 	Channel** blocks;
 
@@ -68,7 +68,7 @@ private:
 public:
 	CNN() {
 		int filterSize = filterHeight * filterWeight;
-		blocks = new Channel * [6];
+		blocks = new Channel * [numOfBlocks];
 		for (int i = 0; i < numOfBlocks; i++) {
 			blocks[i] = new Channel[numOfFiltersInBlock];
 			for (int j = 0; j < numOfFiltersInBlock; j++) {
@@ -162,9 +162,29 @@ public:
 		newFilter = Pooling(newFilter, poolingWindowHeight, poolingWindowWidth, newHeight, newWidth);
 	}
 
-	std::vector < std::vector < double>> GetPhotoMatrix() const {
-		return photoMatrix;
+	std::vector < std::vector < double>> MatrixForPooling(const int& stride, const std::vector < std::vector < double>>& mapOfSigns) {
+		std::vector < double> res;
+		std::vector < std::vector < double>> res2;
+		int numOfmat = mapOfSigns.size() / stride;
+		int x = 0;
+		int y = 0;
+		for (int h = 0; h < numOfmat; h++) {
+			y = 0;
+			for (int w = 0; w < numOfmat; w++) {
+				for (int i = x; i < x + stride; i++) {
+					for (int j = y; j < y + stride; j++) {
+						res.push_back(mapOfSigns[i][j]);
+					}
+				}
+				res2.push_back(res);
+				res.clear();
+				y += stride;
+			}
+			x += stride;
+		}
+		return res2;
 	}
+
 
 	std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns, const int& smallerMatHeight,
 		const int& smallerMatWidth, const int& newH, const int& newW) {
@@ -176,6 +196,10 @@ public:
 		}
 
 		return smallerMapOfSigns;
+	}
+
+	std::vector < std::vector < double>> GetPhotoMatrix() const {
+		return photoMatrix;
 	}
 
 	void ShowVector(const std::vector<double>& vec) {
@@ -293,7 +317,7 @@ public:
 		}
 	}
 
-	void Padding(std::vector < std::vector < double>>& matrix) {
+	void IncreaseMatrixeSize(std::vector < std::vector < double>>& matrix) {
 		if (matrix.size() < imageHeight) {
 			matrix.resize(imageHeight);
 		}
@@ -305,27 +329,80 @@ public:
 		}
 	}
 
-	void BilinearInterpolation(std::vector < std::vector < double>>& matrix) {
+
+	void Padding(std::vector < std::vector < double>>& matrix) {
+		std::vector<double> vec(matrix[0].size() + 2, 0);
+		for (auto& n : matrix) {
+
+			n.insert(n.begin(), 0.0);
+			n.push_back(0.0);
+		}
+		matrix.push_back(vec);
+		matrix.insert(matrix.begin(), vec);
+	}
+
+	std::vector < std::vector < double>> BilinearInterpolation(std::vector < std::vector < double>>& matrix) {
+
+		std::vector < std::vector < double>> res(imageHeight, std::vector<double>(imageWidth, 0.0));
+
+		double decr—oefX = matrix.size() / imageHeight;
+		double decr—oefY = matrix[0].size() / imageWidth;
+		for (int x = 0; x < imageHeight; x++) {
+			for (int y = 0; y < imageWidth; y++) {
+				double scaleX = (x + 0.5) * decr—oefX - 0.5;
+				double scaleY = (y + 0.5) * decr—oefY - 0.5;
+
+				int x1 = scaleX;
+				int x2 = scaleX + 1;
+				int y1 = scaleY;
+				int y2 = scaleY + 1;
+
+				double q11 = matrix[y1][x1];
+				double q21 = matrix[y1][x2];
+				double q12 = matrix[y2][x1];
+				double q22 = matrix[y2][x2];
+
+				double xWeight = scaleX - (int)scaleX;
+				double yWeight = scaleY - (int)scaleY;
+
+				double w11 = (1 - xWeight) * (1 - yWeight);
+				double w21 = xWeight * (1 - yWeight);
+				double w12 = (1 - xWeight) * yWeight;
+				double w22 = xWeight * yWeight;
+
+				res[x][y] = q11 * w11 + q21 * w21 + q12 * w12 + q22 * w22;
+			}
+		}
+
+		return res;
 
 	}
 
 
 	void ChangeMatrixSize(std::vector < std::vector < double>>& matrix) {
 		if (matrix.size() < imageHeight || matrix[0].size() < imageWidth) {
-			Padding(matrix);
+			IncreaseMatrixeSize(matrix);
 		}
 		else if (matrix.size() > imageHeight || matrix[0].size() > imageWidth) {
-			BilinearInterpolation(matrix);
+			matrix = BilinearInterpolation(matrix);
 		}
+		Padding(matrix);
 	}
 
 	void FullForward(std::vector < std::vector < double>>& matrix) {
-		ChangeMatrixSize(matrix);
+		//ChangeMatrixSize(matrix);
 		SetImageMatrix(matrix);
 		Forward(0);
+		std::vector<double> vec = GetMapOfSigns(0, 0);
+		std::cout << std::sqrt(vec.size()) << std::endl;
+		std::cout << 0 << " forward done" << std::endl;
+		std::cout << "Filters in block " << blocks[0]->numOfFilters << std::endl;
 		for (int i = 1; i < numOfBlocks; i++) {
 			Forward(i, true);
+			vec = GetMapOfSigns(i, 0);
+			std::cout << std::sqrt(vec.size()) << std::endl;
 			std::cout << i << " forward done" << std::endl;
+			std::cout << "Filters in block " << blocks[i]->numOfFilters << std::endl;
 		}
 	}
 
@@ -365,13 +442,17 @@ int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 	CNN c;
-	std::vector < std::vector < double>> matrix(224, std::vector < double>(224, 0.01));
-	InitMatrix(matrix);
-	c.FullForward(matrix);
+	std::vector < std::vector < double>> matrix(8, std::vector < double>(8, 0.01));
+	std::vector < std::vector < double>> res;
+	res = c.MatrixForPooling(2, matrix);
+	//InitMatrix(matrix);
+	//c.FullForward(matrix);
+	c.ShowMatrix(res);
 	auto end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> duration = end - start;
 
 	std::cout << "¬ÂÏˇ ‚˚ÔÓÎÌÂÌËˇ: " << duration.count() << std::endl;
 	return 0;
+
 }
