@@ -9,8 +9,9 @@
 6. - [x] Save map of signs into channel
 7. - [x] First channel done
 8. - [x] Check names of functions and variables(Grammar)
-9. - [ ] Padding
-10. - [ ] Bilinear interpolation
+9. - [x] Padding
+10. - [x] Bilinear interpolation
+11. - [ ] Change pooling with new function
 
 
 
