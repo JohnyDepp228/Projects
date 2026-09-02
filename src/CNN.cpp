@@ -119,7 +119,8 @@ public:
 		}
 		res += bias;
 
-		return res;
+		return ReLu(res);
+
 	}
 
 	double MaxPooling(const std::vector<double>& smallMapOfSigns) {
@@ -140,7 +141,7 @@ public:
 		}
 	}
 
-	std::vector < std::vector < double>> FullConvolution(const std::vector < std::vector < double>>& matrix, const int& biggerMatHeight, const int& biggerMatWiedth,
+	std::vector < std::vector < double>> FullConvolution(std::vector < std::vector < double>>& matrix, const int& biggerMatHeight, const int& biggerMatWiedth,
 		const int& smallerMatHeight, const int& smallerMatWeight, int& newHeight, int& newWidth, const int& channelIndex, const int& filterIndex) {
 		newHeight = (biggerMatHeight - smallerMatHeight) + 1;
 		newWidth = (biggerMatWiedth - smallerMatWeight) + 1;
@@ -184,19 +185,6 @@ public:
 		}
 		return res2;
 	}
-
-
-	/*std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns, const int& smallerMatHeight,
-		const int& smallerMatWidth, const int& newH, const int& newW) {
-		std::vector < std::vector < double>> smallerMapOfSigns(newH - smallerMatHeight + 1, std::vector < double>(newW - smallerMatWidth + 1, 0));
-		for (int i = 0; i <= newH - smallerMatHeight; i++) {
-			for (int j = 0; j <= newW - smallerMatWidth; j++) {
-				smallerMapOfSigns[i][j] = MaxPooling(GetSmallerMatrixFromMatrix(i, j, mapOfSigns, 2, 2));
-			}
-		}
-
-		return smallerMapOfSigns;
-	}*/
 
 	std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns) {
 		int stride = 2;
@@ -423,7 +411,23 @@ public:
 
 
 
+	//Activation Functions
 
+	double LeakyReLu(double res) {
+		return res > 0 ? res : res * 0.01;
+	}
+
+	double DirectiveLeakyReLu(double res) {
+		return res > 0 ? res : 0.01;
+	}
+
+	double ReLu(double res) {
+		return res > 0 ? res : 0;
+	}
+
+	double DirectiveReLu(double res) {
+		return res > 0 ? 1 : 0;
+	}
 
 	//Setter & Getters
 	std::vector<double> GetMapOfSigns(int channelIndex, int filterIndex) const {
@@ -457,6 +461,8 @@ int main()
 	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 127));
 
 	std::vector<double> res = c.FullForward(matrix);
+
+	c.ShowVector(res);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
