@@ -480,6 +480,11 @@ public:
 		firstToSecondHiddenWeights = std::vector<std::vector<double>>(numOfFirstHiddenLayerNeurons, std::vector<double>(numOfSecondHiddenLayerNeurons, 0));
 		secondToThirdHiddenWeights = std::vector<std::vector<double>>(numOfSecondHiddenLayerNeurons, std::vector<double>(numOfThirdHiddenLayerNeurons, 0));
 		thirdHiddenToOutputWeights = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0));
+
+		InitMatrixWeights(fullConToFirstHiddenWeights);
+		InitMatrixWeights(firstToSecondHiddenWeights);
+		InitMatrixWeights(secondToThirdHiddenWeights);
+		InitMatrixWeights(thirdHiddenToOutputWeights);
 	}
 
 	double Weight(const double& leftBoard, const double& rightBoard) {
@@ -489,10 +494,10 @@ public:
 		return dis(gen);
 	}
 
-	void InitMatrix(std::vector < std::vector < double>>& matrix) {
+	void InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
-				matrix[i][j] = j;
+				matrix[i][j] = Weight(-0.5, 0.5);
 			}
 		}
 	}
