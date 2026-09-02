@@ -57,8 +57,8 @@ private:
 	int poolingWindowWidth = 2;
 
 
-	int imageHeight = 224;
-	int imageWidth = 224;
+	int imageHeight = 840;
+	int imageWidth = 840;
 
 	int numOfBlocks = 7;
 	int numOfFiltersInBlock = 8;
@@ -157,9 +157,9 @@ public:
 	void BlokOfConvNPool(const int& channelIndex, const int& filterIndex, std::vector < std::vector < double>>& newFilter) {
 		int newHeight = 0;
 		int newWidth = 0;
-		newFilter = FullConvolution(newFilter, newFilter.size(), newFilter[0].size(), filterHeight, filterWeight, newHeight, newWidth, channelIndex, filterIndex);
-		newFilter = FullConvolution(newFilter, newHeight, newWidth, filterHeight, filterWeight, newHeight, newWidth, channelIndex, filterIndex);
-		newFilter = Pooling(newFilter, poolingWindowHeight, poolingWindowWidth, newHeight, newWidth);
+		std::vector < std::vector < double>> conv1 = FullConvolution(newFilter, newFilter.size(), newFilter[0].size(), filterHeight, filterWeight, newHeight, newWidth, channelIndex, filterIndex);
+		std::vector < std::vector < double>> conv2 = FullConvolution(conv1, conv1.size(), conv1[0].size(), filterHeight, filterWeight, newHeight, newWidth, channelIndex, filterIndex);
+		newFilter = Pooling(conv2);
 	}
 
 	std::vector < std::vector < double>> MatrixForPooling(const int& stride, const std::vector < std::vector < double>>& mapOfSigns) {
@@ -186,7 +186,7 @@ public:
 	}
 
 
-	std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns, const int& smallerMatHeight,
+	/*std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns, const int& smallerMatHeight,
 		const int& smallerMatWidth, const int& newH, const int& newW) {
 		std::vector < std::vector < double>> smallerMapOfSigns(newH - smallerMatHeight + 1, std::vector < double>(newW - smallerMatWidth + 1, 0));
 		for (int i = 0; i <= newH - smallerMatHeight; i++) {
@@ -196,6 +196,21 @@ public:
 		}
 
 		return smallerMapOfSigns;
+	}*/
+
+	std::vector < std::vector < double>> Pooling(const std::vector < std::vector < double>>& mapOfSigns) {
+		int stride = 2;
+		int sizeH = mapOfSigns.size() / stride;
+		int sizeW = mapOfSigns.size() / stride;
+
+		std::vector<double> res;
+		std::vector < std::vector < double>> res2 = MatrixForPooling(stride, mapOfSigns);
+		for (auto n : res2) {
+			res.push_back(MaxPooling(n));
+		}
+
+
+		return VectorIntoMatrix(res);
 	}
 
 	std::vector < std::vector < double>> GetPhotoMatrix() const {
@@ -259,9 +274,6 @@ public:
 			matrix = photoMatrix;
 			//std::cout << "Filter index" << i << std::endl;
 			BlokOfConvNPool(channelIndex, i, matrix);
-			if (matrix.size() > 1) {
-				BlokOfConvNPool(channelIndex, i, matrix);
-			}
 			SetMapOfSigns(channelIndex, i, MatrixIntoVector(matrix));
 			//ShowMatrix(matrix);
 			matrix.clear();
@@ -276,12 +288,7 @@ public:
 		for (int i = 0; i < size; i++) {
 			matrix = matrixPrev;
 			//std::cout << "Filter index" << i << std::endl;
-			if (matrix.size() > 1) {
-				BlokOfConvNPool(channelIndex, i, matrix);
-			}
-			if (matrix.size() > 1) {
-				BlokOfConvNPool(channelIndex, i, matrix);
-			}
+			BlokOfConvNPool(channelIndex, i, matrix);
 			SetMapOfSigns(channelIndex, i, MatrixIntoVector(matrix));
 			//ShowMatrix(matrix);
 			matrix.clear();
@@ -389,21 +396,22 @@ public:
 		Padding(matrix);
 	}
 
-	void FullForward(std::vector < std::vector < double>>& matrix) {
-		//ChangeMatrixSize(matrix);
+	std::vector<double> FullForward(std::vector < std::vector < double>>& matrix) {
+		ChangeMatrixSize(matrix);
 		SetImageMatrix(matrix);
 		Forward(0);
-		std::vector<double> vec = GetMapOfSigns(0, 0);
-		std::cout << std::sqrt(vec.size()) << std::endl;
-		std::cout << 0 << " forward done" << std::endl;
-		std::cout << "Filters in block " << blocks[0]->numOfFilters << std::endl;
+
 		for (int i = 1; i < numOfBlocks; i++) {
 			Forward(i, true);
-			vec = GetMapOfSigns(i, 0);
-			std::cout << std::sqrt(vec.size()) << std::endl;
-			std::cout << i << " forward done" << std::endl;
-			std::cout << "Filters in block " << blocks[i]->numOfFilters << std::endl;
 		}
+
+		int size = GetFiltersNum(numOfBlocks - 1);
+		std::vector<double> res(size, 0);
+		for (int i = 0; i < size; i++) {
+			res[i] = (GAP(VectorIntoMatrix(GetMapOfSigns(numOfBlocks - 1, i))));
+		}
+
+		return res;
 	}
 
 	~CNN() {
@@ -434,6 +442,10 @@ public:
 		this->photoMatrix = matrix;
 	}
 
+	int GetFiltersNum(int channelIndex) {
+		return blocks[channelIndex]->numOfFilters;
+	}
+
 };
 
 
@@ -442,17 +454,15 @@ int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 	CNN c;
-	std::vector < std::vector < double>> matrix(8, std::vector < double>(8, 0.01));
-	std::vector < std::vector < double>> res;
-	res = c.MatrixForPooling(2, matrix);
-	//InitMatrix(matrix);
-	//c.FullForward(matrix);
-	c.ShowMatrix(res);
+	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 127));
+
+	std::vector<double> res = c.FullForward(matrix);
+
 	auto end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> duration = end - start;
 
-	std::cout << "Время выполнения: " << duration.count() << std::endl;
+	std::cout << "Execution time: " << duration.count() << std::endl;
 	return 0;
 
 }
