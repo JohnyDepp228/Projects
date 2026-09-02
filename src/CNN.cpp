@@ -453,6 +453,90 @@ public:
 };
 
 
+class Classifier {
+private:
+	int numOfFullyConnectedLayerNeurons = 512;
+	int numOfFirstHiddenLayerNeurons = 460;
+	int numOfSecondHiddenLayerNeurons = 230;
+	int numOfThirdHiddenLayerNeurons = 130;
+	int numOfOutputLayerNeurons = 100;
+	std::vector<double> fullyConnectedLayer;
+	std::vector<double> firstHiddenLayer;
+	std::vector<double> secondHiddenLayer;
+	std::vector<double> thirdHiddenLayer;
+	std::vector<double> outputLayer;
+	std::vector<std::vector<double>> fullConToFirstHiddenWeights;
+	std::vector<std::vector<double>> firstToSecondHiddenWeights;
+	std::vector<std::vector<double>> secondToThirdHiddenWeights;
+	std::vector<std::vector<double>> thirdHiddenToOutputWeights;
+public:
+	Classifier() {
+		firstHiddenLayer = std::vector<double>(numOfFirstHiddenLayerNeurons, 0);
+		secondHiddenLayer = std::vector<double>(numOfSecondHiddenLayerNeurons, 0);
+		thirdHiddenLayer = std::vector<double>(numOfThirdHiddenLayerNeurons, 0);
+		outputLayer = std::vector<double>(numOfOutputLayerNeurons, 0);
+
+		fullConToFirstHiddenWeights = std::vector<std::vector<double>>(numOfFullyConnectedLayerNeurons, std::vector<double>(numOfFirstHiddenLayerNeurons, 0));
+		firstToSecondHiddenWeights = std::vector<std::vector<double>>(numOfFirstHiddenLayerNeurons, std::vector<double>(numOfSecondHiddenLayerNeurons, 0));
+		secondToThirdHiddenWeights = std::vector<std::vector<double>>(numOfSecondHiddenLayerNeurons, std::vector<double>(numOfThirdHiddenLayerNeurons, 0));
+		thirdHiddenToOutputWeights = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0));
+	}
+
+	double Weight(const double& leftBoard, const double& rightBoard) {
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_real_distribution<double> dis(leftBoard, rightBoard);
+		return dis(gen);
+	}
+
+	void InitMatrix(std::vector < std::vector < double>>& matrix) {
+		for (int i = 0; i < matrix.size(); i++) {
+			for (int j = 0; j < matrix[0].size(); j++) {
+				matrix[i][j] = j;
+			}
+		}
+	}
+
+	double OutLayerSum() {
+		double res = 0.0;
+
+		for (const auto& n : outputLayer) {
+			res += std::exp(n);
+		}
+
+		return res;
+	}
+
+	//Activation Functions
+
+	double LeakyReLu(double res) {
+		return res > 0 ? res : res * 0.01;
+	}
+
+	double DirectiveLeakyReLu(double res) {
+		return res > 0 ? res : 0.01;
+	}
+
+	double ReLu(double res) {
+		return res > 0 ? res : 0;
+	}
+
+	double DirectiveReLu(double res) {
+		return res > 0 ? 1 : 0;
+	}
+
+	double SoftMax(double res) {
+		return std::exp(res) / OutLayerSum();
+	}
+
+	//Setters & Getters
+
+	void SetFullyConnectedLayer(const std::vector<double>& vec) {
+		this->fullyConnectedLayer = vec;
+	}
+};
+
+
 
 int main()
 {
