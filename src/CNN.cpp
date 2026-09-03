@@ -49,7 +49,7 @@ struct Channel {
 class CNN {
 private:
 	std::vector<std::vector<double>> photoMatrix;
-	double bias = 1.0;
+	double bias = 0.4;
 
 	int filterHeight = 3;
 	int filterWeight = 3;
@@ -231,7 +231,7 @@ public:
 	std::vector < std::vector < double>> VectorIntoMatrix(const std::vector<double>& vec) {
 		int matHeight = std::sqrt((double)vec.size());
 		int matWidth = std::sqrt((double)vec.size());
-		std::vector < std::vector < double>> res(matHeight, std::vector<double>(matWidth, 0));
+		std::vector < std::vector < double>> res(matHeight, std::vector<double>(matWidth, 0.0));
 		if (matHeight == 0) {
 			matHeight = 1;
 		}
@@ -326,7 +326,7 @@ public:
 
 
 	void Padding(std::vector < std::vector < double>>& matrix) {
-		std::vector<double> vec(matrix[0].size() + 2, 0);
+		std::vector<double> vec(matrix[0].size() + 2, 0.0);
 		for (auto& n : matrix) {
 
 			n.insert(n.begin(), 0.0);
@@ -385,6 +385,7 @@ public:
 	}
 
 	std::vector<double> FeatureExtraction(std::vector < std::vector < double>>& matrix) {
+		NormalizeImage(matrix);
 		ChangeMatrixSize(matrix);
 		SetImageMatrix(matrix);
 		FirstForward(0);
@@ -402,6 +403,14 @@ public:
 		return res;
 	}
 
+	void NormalizeImage(std::vector<std::vector<double>>& matrix) {
+		for (auto& n : matrix) {
+			for (auto& j : n) {
+				j = j / 255.0;
+			}
+		}
+	}
+
 	~CNN() {
 		for (int i = 0; i < numOfBlocks; i++) {
 			delete[] blocks[i];
@@ -414,19 +423,19 @@ public:
 	//Activation Functions
 
 	double LeakyReLu(double res) {
-		return res > 0 ? res : res * 0.01;
+		return res > 0.0 ? res : res * 0.01;
 	}
 
 	double DirectiveLeakyReLu(double res) {
-		return res > 0 ? res : 0.01;
+		return res > 0.0 ? res : 0.01;
 	}
 
 	double ReLu(double res) {
-		return res > 0 ? res : 0.0;
+		return res > 0.0 ? res : 0.0;
 	}
 
 	double DirectiveReLu(double res) {
-		return res > 0 ? 1 : 0.0;
+		return res > 0.0 ? 1 : 0.0;
 	}
 
 	//Setter & Getters
@@ -471,6 +480,8 @@ private:
 	std::vector<std::vector<double>> thirdHiddenToOutputWeights;
 
 	double(Classifier::* ActivationFunction)(double);
+
+	double bias = 0.3;
 public:
 	Classifier() {
 		firstHiddenLayer = std::vector<double>(numOfFirstHiddenLayerNeurons, 0);
@@ -524,6 +535,7 @@ public:
 		}
 
 		for (int i = 0; i < res.size(); i++) {
+			res[i] += bias;
 			res[i] = (this->*ActivationFunction)(res[i]);
 		}
 
@@ -586,19 +598,19 @@ public:
 	//Activation Functions
 
 	double LeakyReLu(double res) {
-		return res > 0 ? res : res * 0.01;
+		return res > 0.0 ? res : res * 0.01;
 	}
 
 	double DirectiveLeakyReLu(double res) {
-		return res > 0 ? res : 0.01;
+		return res > 0.0 ? res : 0.01;
 	}
 
 	double ReLu(double res) {
-		return res > 0 ? res : 0.0;
+		return res > 0.0 ? res : 0.0;
 	}
 
 	double DirectiveReLu(double res) {
-		return res > 0 ? 1 : 0.0;
+		return res > 0.0 ? 1.0 : 0.0;
 	}
 
 	double SoftMax(double res) {
@@ -623,6 +635,7 @@ int Predict() {
 	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 40));
 
 	std::vector<double> res = c.FeatureExtraction(matrix);
+
 
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
