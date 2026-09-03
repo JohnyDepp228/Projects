@@ -84,7 +84,7 @@ public:
 	std::vector<double> InitFilterWeight(const int& filterSize) {
 		std::vector<double> filter(filterSize, 0);
 		for (auto& n : filter) {
-			n = Weight(-0.5, 0.5);
+			n = Weight(-0.1, 0.1);
 		}
 		return filter;
 	}
@@ -255,7 +255,7 @@ public:
 		return res;
 	}
 
-	void Forward(const int& channelIndex) {
+	void FirstForward(const int& channelIndex) {
 		std::vector < std::vector < double>> matrix;
 		int size = blocks[channelIndex]->numOfFilters;
 		for (int i = 0; i < size; i++) {
@@ -269,7 +269,7 @@ public:
 	}
 
 
-	void Forward(const int& channelIndex, bool ChannelSum) {
+	void RemaningForwards(const int& channelIndex) {
 		std::vector < std::vector < double>> matrix;
 		std::vector < std::vector < double>> matrixPrev = VectorIntoMatrix(ChannelMatrixSum(channelIndex - 1));
 		int size = blocks[channelIndex]->numOfFilters;
@@ -384,13 +384,13 @@ public:
 		Padding(matrix);
 	}
 
-	std::vector<double> FullForward(std::vector < std::vector < double>>& matrix) {
+	std::vector<double> FeatureExtraction(std::vector < std::vector < double>>& matrix) {
 		ChangeMatrixSize(matrix);
 		SetImageMatrix(matrix);
-		Forward(0);
+		FirstForward(0);
 
 		for (int i = 1; i < numOfBlocks; i++) {
-			Forward(i, true);
+			RemaningForwards(i);
 		}
 
 		int size = GetFiltersNum(numOfBlocks - 1);
@@ -422,11 +422,11 @@ public:
 	}
 
 	double ReLu(double res) {
-		return res > 0 ? res : 0;
+		return res > 0 ? res : 0.0;
 	}
 
 	double DirectiveReLu(double res) {
-		return res > 0 ? 1 : 0;
+		return res > 0 ? 1 : 0.0;
 	}
 
 	//Setter & Getters
@@ -469,6 +469,8 @@ private:
 	std::vector<std::vector<double>> firstToSecondHiddenWeights;
 	std::vector<std::vector<double>> secondToThirdHiddenWeights;
 	std::vector<std::vector<double>> thirdHiddenToOutputWeights;
+
+	double(Classifier::* ActivationFunction)(double);
 public:
 	Classifier() {
 		firstHiddenLayer = std::vector<double>(numOfFirstHiddenLayerNeurons, 0);
@@ -497,7 +499,7 @@ public:
 	void InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
-				matrix[i][j] = Weight(-0.5, 0.5);
+				matrix[i][j] = Weight(-0.1, 0.1);
 			}
 		}
 	}
@@ -512,6 +514,75 @@ public:
 		return res;
 	}
 
+	std::vector<double> HiddenLayersCalcul(const std::vector<double>& layer, const std::vector<std::vector<double>>& layerWeights) {
+		std::vector<double> res(layerWeights[0].size(), 0.0);
+
+		for (int i = 0; i < layerWeights.size(); i++) {
+			for (int j = 0; j < layerWeights[i].size(); j++) {
+				res[j] += (layer[j] * layerWeights[i][j]);
+			}
+		}
+
+		for (int i = 0; i < res.size(); i++) {
+			res[i] = (this->*ActivationFunction)(res[i]);
+		}
+
+		return res;
+	}
+
+
+	void Classification() {
+		ActivationFunction = &Classifier::ReLu;
+
+		firstHiddenLayer = HiddenLayersCalcul(fullyConnectedLayer, fullConToFirstHiddenWeights);
+
+		secondHiddenLayer = HiddenLayersCalcul(firstHiddenLayer, firstToSecondHiddenWeights);
+
+		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights);
+
+		ActivationFunction = &Classifier::Linaer;
+		outputLayer = HiddenLayersCalcul(thirdHiddenLayer, thirdHiddenToOutputWeights);
+		ApplySoftMax();
+	}
+
+	void ApplySoftMax() {
+		for (auto& n : outputLayer) {
+			n = SoftMax(n);
+		}
+	}
+
+	double Linaer(double res) { return res; }
+
+	int FindCorrectOutNeuro() {
+		auto it = std::max_element(outputLayer.begin(), outputLayer.end());
+		auto res = outputLayer.begin();
+		for (int i = 0; i < outputLayer.size(); i++) {
+			if ((res + i) == it) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	void ShowLayer(int i) {
+		auto show = [](const std::vector<double>& layer) {
+			for (auto n : layer) {
+				std::cout << n << "\t";
+			}
+			std::cout << std::endl;
+			};
+
+		switch (i) {
+		case 1: show(fullyConnectedLayer); break;
+		case 2: show(firstHiddenLayer); break;
+		case 3: show(secondHiddenLayer); break;
+		case 4: show(thirdHiddenLayer); break;
+		case 5: show(outputLayer); break;
+		default:
+			std::cout << "No such layer" << std::endl;
+		}
+	}
+
 	//Activation Functions
 
 	double LeakyReLu(double res) {
@@ -523,15 +594,15 @@ public:
 	}
 
 	double ReLu(double res) {
-		return res > 0 ? res : 0;
+		return res > 0 ? res : 0.0;
 	}
 
 	double DirectiveReLu(double res) {
-		return res > 0 ? 1 : 0;
+		return res > 0 ? 1 : 0.0;
 	}
 
 	double SoftMax(double res) {
-		return std::exp(res) / OutLayerSum();
+		return std::exp(res) / Classifier::OutLayerSum();
 	}
 
 	//Setters & Getters
@@ -539,25 +610,39 @@ public:
 	void SetFullyConnectedLayer(const std::vector<double>& vec) {
 		this->fullyConnectedLayer = vec;
 	}
+
+
+	std::vector<double> GetOutLayer() const {
+		return this->outputLayer;
+	}
 };
 
+int Predict() {
+	CNN c;
+	Classifier cl;
+	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 40));
+
+	std::vector<double> res = c.FeatureExtraction(matrix);
+
+	cl.SetFullyConnectedLayer(res);
+	cl.Classification();
+
+	return cl.FindCorrectOutNeuro();
+}
 
 
 int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
-	CNN c;
-	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 127));
 
-	std::vector<double> res = c.FullForward(matrix);
-
-	c.ShowVector(res);
+	std::cout << Predict() << std::endl;
 
 	auto end = std::chrono::high_resolution_clock::now();
 
 	std::chrono::duration<double> duration = end - start;
 
 	std::cout << "Execution time: " << duration.count() << std::endl;
+
 	return 0;
 
 }
