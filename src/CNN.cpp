@@ -3,6 +3,8 @@
 #include <math.h>
 #include <random>
 #include <chrono>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
 void InitMatrix(std::vector < std::vector < double>>& matrix) {
@@ -79,6 +81,39 @@ public:
 			numOfFiltersInBlock *= 2;
 		}
 
+	}
+
+	std::vector<std::vector<double>> LoadImage(std::string imagePath, int indexRGB) {
+		indexRGB = (indexRGB > 2 || indexRGB < 0) ? 0 : indexRGB;
+
+
+		int width = 0;
+		int height = 0;
+		int channels = 0;
+		unsigned char* res = stbi_load(imagePath.c_str(), &width, &height, &channels, 3);
+
+		std::vector<std::vector<double>> matrix(height, std::vector<double>(width, 0.0));
+
+		if (res == NULL) {
+			std::cout << "Error read image\t" << stbi_failure_reason() << std::endl;
+			return matrix;
+		}
+
+
+
+		for (int x = 0; x < height; x++) {
+			for (int y = 0; y < width; y++) {
+				int pixelIndex = (y * width + x) * 3;
+
+				matrix[x][y] = res[pixelIndex + indexRGB];
+			}
+		}
+
+
+
+		stbi_image_free(res);
+
+		return matrix;
 	}
 
 	std::vector<double> InitFilterWeight(const int& filterSize) {
@@ -632,10 +667,9 @@ public:
 int Predict() {
 	CNN c;
 	Classifier cl;
-	std::vector < std::vector < double>> matrix(512, std::vector < double>(512, 40));
+	std::vector < std::vector < double>> matrix = c.LoadImage("C:/Users/LordMegatron/Desktop/2.jpg", 0);
 
 	std::vector<double> res = c.FeatureExtraction(matrix);
-
 
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
