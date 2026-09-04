@@ -1,5 +1,8 @@
 # Projects
 
+# Speed 
+04.09.26 - 19 sec 
+
 # TODO list
 1. - [x] Сonvolution
 2. - [x] Pooling(Min,Max)
@@ -14,6 +17,15 @@
 11. - [x] Change pooling with new function
 12. - [ ] Increase speed of convulation
 13. - [ ] Add learning 
+
+# New architecture
+                      struct Channel[m]
+                     /                 \
+                    /                   \
+            struct Filter[n]      struct MapOfSigns[n]
+              /                                  \
+             /                                    \
+std::vector<double> filter               std::vector<double> mapOfSigns
 
 
 
