@@ -12,8 +12,8 @@
 9. - [x] Padding
 10. - [x] Bilinear interpolation
 11. - [x] Change pooling with new function
-12. - [ ] #Increase speed of convulation
-13. - [ ] #Add learning 
+12. - [ ] Increase speed of convulation
+13. - [ ] Add learning 
 
 
 
