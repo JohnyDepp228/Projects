@@ -16,16 +16,17 @@
 10. - [x] Bilinear interpolation
 11. - [x] Change pooling with new function
 12. - [ ] Increase speed of convulation
-13. - [ ] Add learning 
+13. - [ ] Add learning
+14. - [ ] Test new architecture of storing channels
 
-# New architecture
-                      struct Channel[m]
-                     /                 \
-                    /                   \
-            struct Filter[n]      struct MapOfSigns[n]
+# New architecture of storing channels
+                        struct Channel[m]
+                       /                 \
+                      /                   \
+              struct Filter[n]      struct MapOfSigns[n]
               /                                  \
              /                                    \
-std::vector<double> filter               std::vector<double> mapOfSigns
+    std::vector<double> filter               std::vector<double> mapOfSigns
 
 
 
