@@ -47,6 +47,100 @@ struct Channel {
 
 };
 
+struct MultiChannalImage {
+	std::vector<std::vector<double>> redColorMatrix;
+	std::vector<std::vector<double>> greenColorMatrix;
+	std::vector<std::vector<double>> blueColorMatrix;
+
+	std::vector<std::vector<double>> redColorMatrixFilter;
+	std::vector<std::vector<double>> greenColorMatrixFilter;
+	std::vector<std::vector<double>> blueColorMatrixFilter;
+
+	std::vector<std::vector<double>> mapOfSigns;
+
+	std::vector<std::vector<double>> GetSmallerMatrixFromMatrix(const int& startI, const int& startJ,
+		const std::vector<std::vector<double>>& matrix,
+		const int& smallMatrixHeight, const int& smallMatrixWidth) {
+		double res = 0.0;
+		std::vector<double> temp;
+		for (int i = startI; i < startI + smallMatrixHeight; i++) {
+			for (int j = startJ; j < startJ + smallMatrixWidth; j++) {
+				if (i < matrix.size() && j < matrix[0].size()) {
+					temp.push_back(matrix[i][j]);
+				}
+			}
+		}
+
+		return MatFromVec(temp);
+	}
+
+	void FindMapOfSign() {
+		auto matrixConv = [&](const std::vector<std::vector<double>>& matrixColor, const std::vector<std::vector<double>>& colorFilter) {
+			std::vector<double> temp;
+			std::vector<std::vector<double>> tempMatrix;
+			for (int i = 0; i < matrixColor.size() - 2; i++) {
+				for (int j = 0; j < matrixColor[i].size() - 2; j++) {
+					tempMatrix = GetSmallerMatrixFromMatrix(i, j, matrixColor, 3, 3);
+					temp.push_back(MatrixMultiplication(tempMatrix, colorFilter));
+				}
+			}
+
+
+			return MatFromVec(temp);
+			};
+
+		std::vector<std::vector<double>> redConv = matrixConv(redColorMatrix, redColorMatrixFilter);
+		std::vector<std::vector<double>> blueConv = matrixConv(blueColorMatrix, blueColorMatrixFilter);
+		std::vector<std::vector<double>> greenConv = matrixConv(greenColorMatrix, greenColorMatrixFilter);
+
+		std::vector<std::vector<double>> res = MatrixSum(redConv, blueConv);
+		res = MatrixSum(res, greenConv);
+
+		mapOfSigns = res;
+	}
+
+	double MatrixMultiplication(const std::vector<std::vector<double>>& matrixColor, const std::vector<std::vector<double>>& colorFilter) {
+		double res = 0.0;
+		for (int i = 0; i < matrixColor.size(); i++) {
+			for (int j = 0; j < matrixColor[i].size(); j++) {
+				res += matrixColor[i][j] * colorFilter[i][j];
+			}
+		}
+		return res;
+	}
+
+	std::vector<std::vector<double>> MatrixSum(const std::vector<std::vector<double>>& matrix1, const std::vector<std::vector<double>>& matrix2) {
+		std::vector<std::vector<double>> temp(matrix1.size(), std::vector<double>(matrix1[0].size(), 0.0));
+		for (int i = 0; i < matrix1.size(); i++) {
+			for (int j = 0; j < matrix1[i].size(); j++) {
+				temp[i][j] = matrix1[i][j] + matrix2[i][j];
+			}
+		}
+
+		return temp;
+	}
+
+	std::vector<std::vector<double>> MatFromVec(std::vector<double> vec) {
+		int matHeight = std::sqrt((double)vec.size());
+		int matWidth = std::sqrt((double)vec.size());
+		std::vector < std::vector < double>> res(matHeight, std::vector<double>(matWidth, 0.0));
+		if (matHeight == 0) {
+			matHeight = 1;
+		}
+		int border = vec.size() / matHeight;
+		int vecIndex = 0;
+		for (int i = 0; i < matHeight; i++) {
+			for (int j = 0; j < matWidth; j++) {
+				res[i][j] = vec[vecIndex];
+				vecIndex++;
+			}
+		}
+		return res;
+	}
+
+
+
+};
 
 class CNN {
 private:
@@ -83,8 +177,7 @@ public:
 
 	}
 
-	std::vector<std::vector<double>> LoadImage(std::string imagePath, int indexRGB) {
-		indexRGB = (indexRGB > 2 || indexRGB < 0) ? 0 : indexRGB;
+	std::vector<std::vector<double>> LoadImage(std::string imagePath) {
 
 
 		int width = 0;
@@ -105,7 +198,7 @@ public:
 			for (int y = 0; y < width; y++) {
 				int pixelIndex = (y * width + x) * 3;
 
-				matrix[x][y] = res[pixelIndex + indexRGB];
+				matrix[x][y] = res[pixelIndex];
 			}
 		}
 
@@ -271,9 +364,11 @@ public:
 			matHeight = 1;
 		}
 		int border = vec.size() / matHeight;
+		int vecIndex = 0;
 		for (int i = 0; i < matHeight; i++) {
 			for (int j = 0; j < matWidth; j++) {
-				res[i][j] = vec[j];
+				res[i][j] = vec[vecIndex];
+				vecIndex++;
 			}
 		}
 		return res;
@@ -667,7 +762,7 @@ public:
 int Predict() {
 	CNN c;
 	Classifier cl;
-	std::vector < std::vector < double>> matrix = c.LoadImage("C:/Users/LordMegatron/Desktop/2.jpg", 0);
+	std::vector < std::vector < double>> matrix = c.LoadImage("C:/Users/LordMegatron/Desktop/2.jpg");
 
 	std::vector<double> res = c.FeatureExtraction(matrix);
 
@@ -689,6 +784,7 @@ int main()
 	std::chrono::duration<double> duration = end - start;
 
 	std::cout << "Execution time: " << duration.count() << std::endl;
+	system("pause");
 
 	return 0;
 
