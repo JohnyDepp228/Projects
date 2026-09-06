@@ -18,6 +18,7 @@
 12. - [ ] Increase speed of convulation
 13. - [ ] Add learning
 14. - [ ] Test new architecture of storing channels
+15.  - [ ] Pooling and conv of blocks 2,3...(sum of channel) in new architecture
 
 # New architecture of storing channels
                         struct Channel[m]
