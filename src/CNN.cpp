@@ -3,6 +3,7 @@
 #include <math.h>
 #include <random>
 #include <chrono>
+#include <algorithm>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -139,6 +140,135 @@ struct MultiChannalImage {
 	}
 
 
+
+};
+
+
+struct Filter {
+	std::vector<double> filter;
+
+
+	void SetFilter(const std::vector<double>& filter) {
+		this->filter = filter;
+	}
+
+	std::vector<double> GetFilter() const {
+		return this->filter;
+	}
+};
+
+struct MapOfSigns {
+	std::vector<double> mapOfSigns;
+
+
+	void SetMapOfSigns(const std::vector<double>& mapOfSigns) {
+		this->mapOfSigns = mapOfSigns;
+	}
+
+	std::vector<double> GetMapOfSigns() const {
+		return this->mapOfSigns;
+	}
+
+};
+
+struct ChannelTest {
+	MapOfSigns* maps;
+	Filter* filters;
+	int amount;
+	int filterHeight = 3;
+	int filterWidth = 3;
+
+	ChannelTest(int amount) {
+		maps = new MapOfSigns[amount];
+		for (int i = 0; i < amount; i++) {
+			maps[i].mapOfSigns.resize(filterHeight * filterWidth);
+		}
+		filters = new Filter[amount];
+		for (int i = 0; i < amount; i++) {
+			filters[i].filter.resize(filterHeight * filterWidth);
+		}
+		this->amount = amount;
+	}
+
+	std::vector<double> GetSmallerMatrixFromMatrix(const int& startI, const int& startJ, const std::vector<std::vector<double>>& matrix,
+		const int& smallMatrixHeight, const int& smallMatrixWidth) {
+		double res = 0.0;
+		std::vector<double> temp;
+		for (int i = startI; i < startI + smallMatrixHeight; i++) {
+			for (int j = startJ; j < startJ + smallMatrixWidth; j++) {
+				if (i < matrix.size() && j < matrix[0].size()) {
+					temp.push_back(matrix[i][j]);
+				}
+				else {
+					temp.push_back(0.0);
+				}
+			}
+		}
+		return temp;
+	}
+
+	void CalculMaps(const std::vector<std::vector<double>>& matrix, double bias) {
+		std::vector<double> temp;
+		CleanMaps();
+		int mapIndex = 0;
+		for (int i = 0; i < matrix.size(); i++) {
+			for (int j = 0; j < matrix[i].size(); j++) {
+				temp = GetSmallerMatrixFromMatrix(i, j, matrix, filterHeight, filterWidth);
+				for (int q = 0; q < amount; q++) {
+					double sum = 0.0;
+					for (int w = 0; w < filters[q].filter.size(); w++) {
+						sum += temp[w] * filters[q].filter[w];
+					}
+					sum += bias;
+					maps[q].mapOfSigns[mapIndex] = ReLu(sum);
+				}
+				mapIndex++;
+			}
+		}
+	}
+
+	std::vector<double > RGBSum(const std::vector<double>& R, const std::vector<double>& G, const std::vector<double>& B) {
+		std::vector<double > sum(R.size(), 0.0);
+		for (int j = 0; j < R.size(); j++) {
+			sum[j] += R[j] + G[j] + B[j];
+		}
+		return sum;
+	}
+
+	void CleanMaps() {
+		for (int i = 0; i < amount; i++) {
+			maps[i].mapOfSigns.clear();
+		}
+	}
+
+	~ChannelTest() {
+		delete[] maps;
+		delete[] filters;
+	}
+
+	//Activate Functions
+
+	double LeakyReLu(double res) {
+		return res > 0.0 ? res : res * 0.01;
+	}
+
+	double DirectiveLeakyReLu(double res) {
+		return res > 0.0 ? res : 0.01;
+	}
+
+	double ReLu(double res) {
+		return res > 0.0 ? res : 0.0;
+	}
+
+	double DirectiveReLu(double res) {
+		return res > 0.0 ? 1 : 0.0;
+	}
+
+	//Setter & Getters
+
+	std::vector<double > GetMap(int index) const {
+		return maps[index].mapOfSigns;
+	}
 
 };
 
@@ -477,10 +607,10 @@ public:
 				double scaleX = (x + 0.5) * decr—oefX - 0.5;
 				double scaleY = (y + 0.5) * decr—oefY - 0.5;
 
-				int x1 = scaleX;
-				int x2 = scaleX + 1;
-				int y1 = scaleY;
-				int y2 = scaleY + 1;
+				int x1 = std::min((int)scaleX, (int)matrix[0].size() - 1);
+				int x2 = std::min((int)scaleX + 1, (int)matrix[0].size() - 1);
+				int y1 = std::min((int)scaleY, (int)matrix.size() - 1);
+				int y2 = std::min((int)scaleY + 1, (int)matrix.size() - 1);
 
 				double q11 = matrix[y1][x1];
 				double q21 = matrix[y1][x2];
@@ -762,7 +892,7 @@ public:
 int Predict() {
 	CNN c;
 	Classifier cl;
-	std::vector < std::vector < double>> matrix = c.LoadImage("C:/Users/LordMegatron/Desktop/2.jpg");
+	std::vector < std::vector < double>> matrix = c.LoadImage("C:/Users/Boss/Desktop/Ò ÙÎÂ¯ÍË/2024_12_13 FOTO/13_12_0954.jpg");
 
 	std::vector<double> res = c.FeatureExtraction(matrix);
 
