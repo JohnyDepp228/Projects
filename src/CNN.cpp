@@ -51,11 +51,13 @@ struct ChannelTest {
 	int amount;
 	int filterHeight = 3;
 	int filterWidth = 3;
+	int imageHeight = 840;
+	int imageWidth = 840;
 
 	void SetAmount(int amount) {
 		maps = new MapOfSigns[amount];
 		for (int i = 0; i < amount; i++) {
-			maps[i].mapOfSigns.resize(filterHeight * filterWidth);
+			maps[i].mapOfSigns.resize(imageHeight * imageWidth);
 		}
 		filters = new Filter[amount];
 		for (int i = 0; i < amount; i++) {
@@ -275,7 +277,7 @@ private:
 	int imageHeight = 840;
 	int imageWidth = 840;
 
-	int numOfBlocks = 7;
+	int numOfBlocks = 6;
 	int numOfFiltersInBlock = 8;
 
 	ChannelTest* channels;
@@ -705,10 +707,14 @@ int Predict() {
 	std::cout << "RGB forward done" << std::endl;
 
 	std::vector<double> res = c.Forward();
+	//std::cout << "fully connected layer" << std::endl;
+	//c.ShowVector(res);
+	//std::cout << std::endl << res.size() << std::endl;
 
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
-
+	//cl.ShowLayer(5);
+	std::cout << cl.GetOutLayer().size() << std::endl;
 	return cl.FindCorrectOutNeuro();
 }
 
