@@ -46,9 +46,9 @@ struct MapOfSigns {
 };
 
 struct ChannelTest {
-	MapOfSigns* maps;
-	Filter* filters;
-	int amount;
+	MapOfSigns* maps = nullptr;
+	Filter* filters = nullptr;
+	int amount = 0;
 	int filterHeight = 3;
 	int filterWidth = 3;
 	int imageHeight = 840;
@@ -130,14 +130,13 @@ struct ChannelTest {
 					maps[fIdx].mapOfSigns[mapIdx++] = ReLu(sum);
 				}
 			}
-
 		}
-
 	}
 
 	void Forward(double bias, const std::vector<double>& vec) {
 		DoubleConvMaps(bias, vec);
 		Pooling();
+		//CleanZeroFromMap();
 	}
 
 	void RGBForward(double bias, const std::vector<double>& R,
@@ -148,7 +147,7 @@ struct ChannelTest {
 
 	void CalculRGBMaps(double bias, const std::vector<double>& R,
 		const std::vector<double>& G, const std::vector<double>& B) {
-		CleanMaps();
+		ResetMaps();
 		int mapIndex = 0;
 		int stride = 1;
 		int height = std::sqrt(R.size());
@@ -200,9 +199,9 @@ struct ChannelTest {
 		}
 	}
 
-	void CleanMaps() {
+	void ResetMaps() {
 		for (int i = 0; i < amount; i++) {
-			maps[i].mapOfSigns.clear();
+			std::fill(maps[i].mapOfSigns.begin(), maps[i].mapOfSigns.end(), 0.0);
 		}
 	}
 
@@ -225,6 +224,12 @@ struct ChannelTest {
 			}
 			maps[i].SetMapOfSigns(temp);
 			temp.clear();
+		}
+	}
+
+	void CleanZeroFromMap() {
+		for (int i = 0; i < amount; i++) {
+			maps[i].mapOfSigns.erase(std::remove(maps[i].mapOfSigns.begin(), maps[i].mapOfSigns.end(), 0.0), maps[i].mapOfSigns.end());
 		}
 	}
 
@@ -277,15 +282,13 @@ private:
 	int imageHeight = 840;
 	int imageWidth = 840;
 
-	int numOfBlocks = 6;
+	int numOfBlocks = 7;
 	int numOfFiltersInBlock = 8;
 
 	ChannelTest* channels;
 
 public:
 	CNN() {
-
-
 		channels = new ChannelTest[numOfBlocks];
 		for (int i = 0; i < numOfBlocks; i++) {
 			channels[i].SetAmount(numOfFiltersInBlock);
@@ -306,6 +309,7 @@ public:
 
 		if (res == NULL) {
 			std::cout << "Error read image\t" << stbi_failure_reason() << std::endl;
+			exit(1);
 			return matrix;
 		}
 
@@ -390,7 +394,6 @@ public:
 	void Padding(std::vector < std::vector < double>>& matrix) {
 		std::vector<double> vec(matrix[0].size() + 2, 0.0);
 		for (auto& n : matrix) {
-
 			n.insert(n.begin(), 0.0);
 			n.push_back(0.0);
 		}
@@ -402,8 +405,8 @@ public:
 
 		std::vector < std::vector < double>> res(imageHeight, std::vector<double>(imageWidth, 0.0));
 
-		double decr—oefX = matrix.size() / imageHeight;
-		double decr—oefY = matrix[0].size() / imageWidth;
+		double decr—oefX = (double)matrix.size() / (double)imageHeight;
+		double decr—oefY = (double)matrix[0].size() / (double)imageWidth;
 		for (int x = 0; x < imageHeight; x++) {
 			for (int y = 0; y < imageWidth; y++) {
 				double scaleX = (x + 0.5) * decr—oefX - 0.5;
@@ -456,14 +459,14 @@ public:
 		int size = GetNumOFBlocks();
 		std::vector<double> t(numOfFiltersInBlock);
 		for (int i = 1; i < size; i++) {
-			std::cout << "Forward " << i << "\tdone" << std::endl;
 			channels[i].Forward(bias, channels[i - 1].ChannelSum());
 		}
 		size = channels[numOfBlocks - 1].GetNumOfFilters();
+
 		for (int i = 0; i < size; i++) {
 			t[i] = GAP(channels[numOfBlocks - 1].GetMap(i));
 		}
-
+		t.erase(std::remove(t.begin(), t.end(), 0.0), t.end());
 		return t;
 	}
 
@@ -510,6 +513,10 @@ public:
 
 	int GetNumOFBlocks() const {
 		return this->numOfBlocks;
+	}
+
+	std::vector<double> GetMap(int channelInx) const {
+		return channels[channelInx].GetMap(0);
 	}
 
 };
@@ -676,24 +683,20 @@ public:
 		this->fullyConnectedLayer = vec;
 	}
 
-
 	std::vector<double> GetOutLayer() const {
 		return this->outputLayer;
 	}
 };
 
-int Predict() {
+int Predict(std::string path) {
 	CNN c;
 	Classifier cl;
-	std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
 	std::vector < std::vector < double>> matrixR = c.LoadImage(path, 0);
 	std::vector < std::vector < double>> matrixG = c.LoadImage(path, 1);
 	std::vector < std::vector < double>> matrixB = c.LoadImage(path, 2);
-
 	c.NormalizeImage(matrixR);
 	c.NormalizeImage(matrixG);
 	c.NormalizeImage(matrixB);
-
 	c.ChangeMatrixSize(matrixR);
 	c.ChangeMatrixSize(matrixG);
 	c.ChangeMatrixSize(matrixB);
@@ -704,17 +707,11 @@ int Predict() {
 
 	c.ForwardRGB(R, G, B);
 
-	std::cout << "RGB forward done" << std::endl;
-
 	std::vector<double> res = c.Forward();
-	//std::cout << "fully connected layer" << std::endl;
-	//c.ShowVector(res);
-	//std::cout << std::endl << res.size() << std::endl;
 
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
-	//cl.ShowLayer(5);
-	std::cout << cl.GetOutLayer().size() << std::endl;
+
 	return cl.FindCorrectOutNeuro();
 }
 
@@ -723,7 +720,9 @@ int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	std::cout << Predict() << std::endl;
+	std::string path = "C:/Users/Boss/Desktop/Ò ÙÎÂ¯ÍË/2024_12_13 FOTO/13_12_0954.jpg";
+
+	std::cout << Predict(path) << std::endl;
 
 	auto end = std::chrono::high_resolution_clock::now();
 
