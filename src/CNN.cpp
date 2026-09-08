@@ -45,7 +45,7 @@ struct MapOfSigns {
 
 };
 
-struct ChannelTest {
+struct Channel {
 	MapOfSigns* maps = nullptr;
 	Filter* filters = nullptr;
 	int amount = 0;
@@ -233,7 +233,7 @@ struct ChannelTest {
 		}
 	}
 
-	~ChannelTest() {
+	~Channel() {
 		delete[] maps;
 		delete[] filters;
 	}
@@ -278,18 +278,17 @@ private:
 	int poolingWindowHeight = 2;
 	int poolingWindowWidth = 2;
 
-
 	int imageHeight = 840;
 	int imageWidth = 840;
 
 	int numOfBlocks = 7;
 	int numOfFiltersInBlock = 8;
 
-	ChannelTest* channels;
+	Channel* channels;
 
 public:
 	CNN() {
-		channels = new ChannelTest[numOfBlocks];
+		channels = new Channel[numOfBlocks];
 		for (int i = 0; i < numOfBlocks; i++) {
 			channels[i].SetAmount(numOfFiltersInBlock);
 			numOfFiltersInBlock *= 2;
@@ -298,8 +297,6 @@ public:
 	}
 
 	std::vector<std::vector<double>> LoadImage(std::string imagePath, int color) {
-
-
 		int width = 0;
 		int height = 0;
 		int channels = 0;
@@ -313,17 +310,13 @@ public:
 			return matrix;
 		}
 
-
-
 		for (int x = 0; x < height; x++) {
 			for (int y = 0; y < width; y++) {
-				int pixelIndex = (y * width + x) * 3;
+				int pixelIndex = (x * width + y) * 3;
 
-				matrix[x][y] = res[pixelIndex + color];
+				matrix[x][y] = (double)res[pixelIndex + color];
 			}
 		}
-
-
 
 		stbi_image_free(res);
 
@@ -390,7 +383,6 @@ public:
 		}
 	}
 
-
 	void Padding(std::vector < std::vector < double>>& matrix) {
 		std::vector<double> vec(matrix[0].size() + 2, 0.0);
 		for (auto& n : matrix) {
@@ -438,7 +430,6 @@ public:
 
 	}
 
-
 	void ChangeMatrixSize(std::vector < std::vector < double>>& matrix) {
 		if (matrix.size() < imageHeight || matrix[0].size() < imageWidth) {
 			IncreaseMatrixeSize(matrix);
@@ -448,8 +439,6 @@ public:
 		}
 		Padding(matrix);
 	}
-
-
 
 	void ForwardRGB(const std::vector<double>& R, const std::vector<double>& G, const std::vector<double>& B) {
 		channels[0].RGBForward(bias, R, G, B);
