@@ -337,7 +337,7 @@ public:
 		}
 	}
 
-	double GAP(const std::vector < double>& vec) {
+	double GMP(const std::vector < double>& vec) {
 
 		return *max_element(vec.begin(), vec.end());
 	}
@@ -453,7 +453,7 @@ public:
 		size = channels[numOfBlocks - 1].GetNumOfFilters();
 
 		for (int i = 0; i < size; i++) {
-			t[i] = GAP(channels[numOfBlocks - 1].GetMap(i));
+			t[i] = GMP(channels[numOfBlocks - 1].GetMap(i));
 		}
 		t.erase(std::remove(t.begin(), t.end(), 0.0), t.end());
 		return t;
@@ -518,30 +518,87 @@ private:
 	int numOfSecondHiddenLayerNeurons = 230;
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
+	double inertia = 0.01;
+	double LR = 0.002;
+
+	//layers
 	std::vector<double> fullyConnectedLayer;
 	std::vector<double> firstHiddenLayer;
 	std::vector<double> secondHiddenLayer;
 	std::vector<double> thirdHiddenLayer;
 	std::vector<double> outputLayer;
+
+	//Before ReLu
+	std::vector<double> firstHiddenLayerBeforeReLu;
+	std::vector<double> secondHiddenLayerBeforeReLu;
+	std::vector<double> thirdHiddenLayerBeforeReLu;
+
+	//Errors
+	std::vector<double> outputLayerErrors;
+	std::vector<double> firstHiddenLayerErrors;
+	std::vector<double> secondHiddenLayerErrors;
+	std::vector<double> thirdHiddenLayerErrors;
+
+	//Weights
 	std::vector<std::vector<double>> fullConToFirstHiddenWeights;
 	std::vector<std::vector<double>> firstToSecondHiddenWeights;
 	std::vector<std::vector<double>> secondToThirdHiddenWeights;
 	std::vector<std::vector<double>> thirdHiddenToOutputWeights;
+
+	//Velocity
+	std::vector<std::vector<double>> fullConToFirstHiddenVelocity;
+	std::vector<std::vector<double>> firstToSecondHiddenVelocity;
+	std::vector<std::vector<double>> secondToThirdHiddenVelocity;
+	std::vector<std::vector<double>> thirdHiddenToOutputVelocity;
+
+	//Bias
+	std::vector<double> outputLayerBias;
+	std::vector<double> firstHiddenLayerBias;
+	std::vector<double> secondHiddenLayerBias;
+	std::vector<double> thirdHiddenLayerBias;
+
 
 	double(Classifier::* ActivationFunction)(double);
 
 	double bias = 0.3;
 public:
 	Classifier() {
-		firstHiddenLayer = std::vector<double>(numOfFirstHiddenLayerNeurons, 0);
-		secondHiddenLayer = std::vector<double>(numOfSecondHiddenLayerNeurons, 0);
-		thirdHiddenLayer = std::vector<double>(numOfThirdHiddenLayerNeurons, 0);
-		outputLayer = std::vector<double>(numOfOutputLayerNeurons, 0);
+		//Layers
+		outputLayer = std::vector<double>(numOfOutputLayerNeurons, 0.0);
+		firstHiddenLayer = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
+		secondHiddenLayer = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
+		thirdHiddenLayer = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
 
-		fullConToFirstHiddenWeights = std::vector<std::vector<double>>(numOfFullyConnectedLayerNeurons, std::vector<double>(numOfFirstHiddenLayerNeurons, 0));
-		firstToSecondHiddenWeights = std::vector<std::vector<double>>(numOfFirstHiddenLayerNeurons, std::vector<double>(numOfSecondHiddenLayerNeurons, 0));
-		secondToThirdHiddenWeights = std::vector<std::vector<double>>(numOfSecondHiddenLayerNeurons, std::vector<double>(numOfThirdHiddenLayerNeurons, 0));
-		thirdHiddenToOutputWeights = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0));
+		//Before ReLu
+		firstHiddenLayerBeforeReLu = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
+		secondHiddenLayerBeforeReLu = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
+		thirdHiddenLayerBeforeReLu = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
+
+
+		//Layers errors
+		outputLayerErrors = std::vector<double>(numOfOutputLayerNeurons, 0.0);
+		firstHiddenLayerErrors = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
+		secondHiddenLayerErrors = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
+		thirdHiddenLayerErrors = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
+
+		//Weights
+		fullConToFirstHiddenWeights = std::vector<std::vector<double>>(numOfFullyConnectedLayerNeurons, std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0));
+		firstToSecondHiddenWeights = std::vector<std::vector<double>>(numOfFirstHiddenLayerNeurons, std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0));
+		secondToThirdHiddenWeights = std::vector<std::vector<double>>(numOfSecondHiddenLayerNeurons, std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0));
+		thirdHiddenToOutputWeights = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0.0));
+
+		//Velcity
+		fullConToFirstHiddenVelocity = std::vector<std::vector<double>>(numOfFullyConnectedLayerNeurons, std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0));
+		firstToSecondHiddenVelocity = std::vector<std::vector<double>>(numOfFirstHiddenLayerNeurons, std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0));
+		secondToThirdHiddenVelocity = std::vector<std::vector<double>>(numOfSecondHiddenLayerNeurons, std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0));
+		thirdHiddenToOutputVelocity = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0.0));
+
+		//Bias
+		firstHiddenLayerBias = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
+		secondHiddenLayerBias = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
+		thirdHiddenLayerBias = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
+		outputLayerBias = std::vector<double>(numOfOutputLayerNeurons, 0.0);
+
 
 		InitMatrixWeights(fullConToFirstHiddenWeights);
 		InitMatrixWeights(firstToSecondHiddenWeights);
@@ -564,6 +621,14 @@ public:
 		}
 	}
 
+	double VecSum(const std::vector<double>& vec) {
+		double sum = 0.0;
+		for (const auto& n : vec) {
+			sum += n;
+		}
+		return sum;
+	}
+
 	double OutLayerSum() {
 		double res = 0.0;
 
@@ -574,7 +639,8 @@ public:
 		return res;
 	}
 
-	std::vector<double> HiddenLayersCalcul(const std::vector<double>& layer, const std::vector<std::vector<double>>& layerWeights) {
+	std::vector<double> HiddenLayersCalcul(const std::vector<double>& layer, const std::vector<std::vector<double>>& layerWeights
+		, std::vector<double>& layerBeforeReLu, const std::vector<double>& layerBias) {
 		std::vector<double> res(layerWeights[0].size(), 0.0);
 
 		for (int i = 0; i < layerWeights.size(); i++) {
@@ -582,27 +648,28 @@ public:
 				res[j] += (layer[j] * layerWeights[i][j]);
 			}
 		}
-
+		layerBeforeReLu.resize(res.size());
 		for (int i = 0; i < res.size(); i++) {
-			res[i] += bias;
+			res[i] += layerBias[i];
+			layerBeforeReLu[i] = res[i];
 			res[i] = (this->*ActivationFunction)(res[i]);
 		}
 
 		return res;
 	}
 
-
 	void Classification() {
 		ActivationFunction = &Classifier::ReLu;
 
-		firstHiddenLayer = HiddenLayersCalcul(fullyConnectedLayer, fullConToFirstHiddenWeights);
+		firstHiddenLayer = HiddenLayersCalcul(fullyConnectedLayer, fullConToFirstHiddenWeights, firstHiddenLayerErrors, firstHiddenLayerBias);
 
-		secondHiddenLayer = HiddenLayersCalcul(firstHiddenLayer, firstToSecondHiddenWeights);
+		secondHiddenLayer = HiddenLayersCalcul(firstHiddenLayer, firstToSecondHiddenWeights, secondHiddenLayerErrors, secondHiddenLayerBias);
 
-		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights);
+		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights, thirdHiddenLayerErrors, thirdHiddenLayerBias);
 
 		ActivationFunction = &Classifier::Linaer;
-		outputLayer = HiddenLayersCalcul(thirdHiddenLayer, thirdHiddenToOutputWeights);
+		std::vector<double> dummyVec;
+		outputLayer = HiddenLayersCalcul(thirdHiddenLayer, thirdHiddenToOutputWeights, dummyVec, outputLayerBias);
 		ApplySoftMax();
 	}
 
@@ -644,6 +711,71 @@ public:
 		}
 	}
 
+	//Learning
+	void OutputLayerErrorCalcu(const std::vector<double>& targets) {
+		for (int i = 0; i < outputLayerErrors.size(); i++) {
+			outputLayerErrors[i] = (targets[i] - outputLayerErrors[i]);
+		}
+	}
+
+	void HiddenLayerErrorCalcu(const std::vector<double>& nextLayErrors, const std::vector<std::vector<double>>& nextlayerWeights,
+		const std::vector<double>& beforeRelu, std::vector<double>& currentLayErrors) {
+
+		for (int i = 0; i < currentLayErrors.size(); i++) {
+			double errSum = 0.0;
+			for (int j = 0; j < nextLayErrors.size(); j++) {
+				errSum += (nextLayErrors[j] * nextlayerWeights[i][j]);
+			}
+			currentLayErrors[i] = errSum * DirectiveReLu(beforeRelu[i]);
+		}
+	}
+
+	void Velocity(const std::vector<double>& currentLay, const std::vector<double> nextLayError, std::vector<std::vector<double>>& velocity) {
+		for (int i = 0; i < currentLay.size(); i++) {
+			for (int j = 0; j < nextLayError.size(); j++) {
+				double gradient = currentLay[i] * nextLayError[j];
+				velocity[i][j] = (inertia * velocity[i][j]) + (LR * gradient);
+			}
+		}
+	}
+
+	void UpdateLayerWieghts(const std::vector<std::vector<double>>& velocity, std::vector<std::vector<double>>& layerWeights) {
+		for (int i = 0; i < layerWeights.size(); i++) {
+			for (int j = 0; j < layerWeights[i].size(); j++) {
+				layerWeights[i][j] = layerWeights[i][j] + velocity[i][j];
+			}
+		}
+	}
+
+	void UpdateBias(std::vector<double>& layerBias, const std::vector<double>& layerErrors) {
+		for (int i = 0; i < layerBias.size(); i++) {
+			layerBias[i] = layerBias[i] + (LR * layerErrors[i]);
+		}
+	}
+
+	void Learning(const std::vector<double>& targets) {
+		OutputLayerErrorCalcu(targets);
+		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
+		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
+		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
+
+		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
+		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
+		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
+		Velocity(fullyConnectedLayer, firstHiddenLayerErrors, fullConToFirstHiddenVelocity);
+
+		UpdateLayerWieghts(thirdHiddenToOutputVelocity, thirdHiddenToOutputWeights);
+		UpdateLayerWieghts(secondToThirdHiddenVelocity, secondToThirdHiddenWeights);
+		UpdateLayerWieghts(firstToSecondHiddenVelocity, firstToSecondHiddenWeights);
+		UpdateLayerWieghts(fullConToFirstHiddenVelocity, fullConToFirstHiddenWeights);
+
+		UpdateBias(outputLayerBias, outputLayerErrors);
+		UpdateBias(thirdHiddenLayerBias, thirdHiddenLayerErrors);
+		UpdateBias(secondHiddenLayerBias, secondHiddenLayerErrors);
+		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
+
+	}
+
 	//Activation Functions
 
 	double LeakyReLu(double res) {
@@ -678,6 +810,8 @@ public:
 };
 
 int Predict(std::string path) {
+	std::vector<double> target(100, 0.0);
+	target[98] = 1.0;
 	CNN c;
 	Classifier cl;
 	std::vector < std::vector < double>> matrixR = c.LoadImage(path, 0);
@@ -700,7 +834,9 @@ int Predict(std::string path) {
 
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
-
+	std::cout << "Learning..." << std::endl;
+	cl.Learning(target);
+	std::cout << "Done" << std::endl;
 	return cl.FindCorrectOutNeuro();
 }
 
@@ -710,8 +846,9 @@ int main()
 	auto start = std::chrono::high_resolution_clock::now();
 
 	std::string path = "C:/Users/Boss/Desktop/с флешки/2024_12_13 FOTO/13_12_0954.jpg";
+	std::string path2 = "C:/Users/LordMegatron/Desktop/2.jpg";
 
-	std::cout << Predict(path) << std::endl;
+	std::cout << Predict(path2) << std::endl;
 
 	auto end = std::chrono::high_resolution_clock::now();
 
