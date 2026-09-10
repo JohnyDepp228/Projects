@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <algorithm>
+#include <iomanip>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -616,14 +617,14 @@ public:
 	void InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
-				matrix[i][j] = Weight(-0.1, 0.1);
+				matrix[i][j] = Weight(-0.2, 0.2);
 			}
 		}
 	}
 
 	double VecSum(const std::vector<double>& vec) {
 		double sum = 0.0;
-		for (const auto& n : vec) {
+		for (const double& n : vec) {
 			sum += n;
 		}
 		return sum;
@@ -632,7 +633,7 @@ public:
 	double OutLayerSum() {
 		double res = 0.0;
 
-		for (const auto& n : outputLayer) {
+		for (const double& n : outputLayer) {
 			res += std::exp(n);
 		}
 
@@ -674,7 +675,7 @@ public:
 	}
 
 	void ApplySoftMax() {
-		for (auto& n : outputLayer) {
+		for (double& n : outputLayer) {
 			n = SoftMax(n);
 		}
 	}
@@ -759,6 +760,10 @@ public:
 		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
 		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
 
+
+
+		ShowErrors(outputLayerErrors);
+
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
 		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
@@ -776,6 +781,12 @@ public:
 
 	}
 
+	void ShowErrors(const std::vector<double>& error) {
+		for (double n : error) {
+			std::cout << "Error: " << std::setprecision(10) << n << std::endl;
+		}
+	}
+
 	//Activation Functions
 
 	double LeakyReLu(double res) {
@@ -791,7 +802,7 @@ public:
 	}
 
 	double DirectiveReLu(double res) {
-		return res > 0.0 ? 1.0 : 0.0;
+		return (res > 0.0) ? 1.0 : 0.0;
 	}
 
 	double SoftMax(double res) {
