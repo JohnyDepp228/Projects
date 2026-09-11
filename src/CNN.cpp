@@ -112,7 +112,7 @@ struct Channel {
 						}
 					}
 					sum += bias;
-					t[mapIdx++] = ReLu(sum);
+					t[mapIdx++] = GeLu(sum);
 				}
 			}
 			mapIdx = 0;
@@ -128,7 +128,7 @@ struct Channel {
 						}
 					}
 					sum += bias;
-					maps[fIdx].mapOfSigns[mapIdx++] = ReLu(sum);
+					maps[fIdx].mapOfSigns[mapIdx++] = GeLu(sum);
 				}
 			}
 		}
@@ -194,7 +194,7 @@ struct Channel {
 						}
 					}
 					sum += bias;
-					maps[q].mapOfSigns[mapIndex++] = ReLu(sum);
+					maps[q].mapOfSigns[mapIndex++] = GeLu(sum);
 				}
 			}
 		}
@@ -255,6 +255,15 @@ struct Channel {
 
 	double DirectiveReLu(double res) {
 		return res > 0.0 ? 1 : 0.0;
+	}
+
+	double GeLu(double res) {
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+	}
+
+	double DirectiveGeLu(double res) {
+		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
 	}
 
 	//Setter & Getters
@@ -492,6 +501,15 @@ public:
 		return res > 0.0 ? 1 : 0.0;
 	}
 
+	double GeLu(double res) {
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+	}
+
+	double DirectiveGeLu(double res) {
+		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
+	}
+
 	//Setter & Getters
 	std::vector < std::vector < double>> GetPhotoMatrix() const {
 		return photoMatrix;
@@ -519,8 +537,8 @@ private:
 	int numOfSecondHiddenLayerNeurons = 230;
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
-	double inertia = 0.01;
-	double LR = 0.002;
+	double inertia = 0.4;
+	double LR = 0.2;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;
@@ -595,10 +613,10 @@ public:
 		thirdHiddenToOutputVelocity = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0.0));
 
 		//Bias
-		firstHiddenLayerBias = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
-		secondHiddenLayerBias = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
-		thirdHiddenLayerBias = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
-		outputLayerBias = std::vector<double>(numOfOutputLayerNeurons, 0.0);
+		firstHiddenLayerBias = std::vector<double>(numOfFirstHiddenLayerNeurons, 1.0);
+		secondHiddenLayerBias = std::vector<double>(numOfSecondHiddenLayerNeurons, 1.0);
+		thirdHiddenLayerBias = std::vector<double>(numOfThirdHiddenLayerNeurons, 1.0);
+		outputLayerBias = std::vector<double>(numOfOutputLayerNeurons, 1.0);
 
 
 		InitMatrixWeights(fullConToFirstHiddenWeights);
@@ -662,11 +680,11 @@ public:
 	void Classification() {
 		ActivationFunction = &Classifier::ReLu;
 
-		firstHiddenLayer = HiddenLayersCalcul(fullyConnectedLayer, fullConToFirstHiddenWeights, firstHiddenLayerErrors, firstHiddenLayerBias);
+		firstHiddenLayer = HiddenLayersCalcul(fullyConnectedLayer, fullConToFirstHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerBias);
 
-		secondHiddenLayer = HiddenLayersCalcul(firstHiddenLayer, firstToSecondHiddenWeights, secondHiddenLayerErrors, secondHiddenLayerBias);
+		secondHiddenLayer = HiddenLayersCalcul(firstHiddenLayer, firstToSecondHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerBias);
 
-		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights, thirdHiddenLayerErrors, thirdHiddenLayerBias);
+		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerBias);
 
 		ActivationFunction = &Classifier::Linaer;
 		std::vector<double> dummyVec;
@@ -727,7 +745,7 @@ public:
 			for (int j = 0; j < nextLayErrors.size(); j++) {
 				errSum += (nextLayErrors[j] * nextlayerWeights[i][j]);
 			}
-			currentLayErrors[i] = errSum * DirectiveReLu(beforeRelu[i]);
+			currentLayErrors[i] = errSum * DirectiveLeakyReLu(beforeRelu[i]);
 		}
 	}
 
@@ -754,15 +772,21 @@ public:
 		}
 	}
 
+	void ShowLayerOutWieght(const std::vector<std::vector<double>>& oldWeights) {
+		for (int i = 0; i < secondToThirdHiddenWeights.size(); i++) {
+			for (int j = 0; j < secondToThirdHiddenWeights[i].size(); j++) {
+
+				std::cout << "Weight new: " << secondToThirdHiddenWeights[i][j] << "\tOld weight: " << oldWeights[i][j] << std::endl << "Difference: " << secondToThirdHiddenWeights[i][j] - oldWeights[i][j] << std::endl;
+			}
+		}
+	}
+
 	void Learning(const std::vector<double>& targets) {
+		std::vector<std::vector<double>> oldWeights = secondToThirdHiddenWeights;
 		OutputLayerErrorCalcu(targets);
 		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
 		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
 		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
-
-
-
-		ShowErrors(outputLayerErrors);
 
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
@@ -779,6 +803,7 @@ public:
 		UpdateBias(secondHiddenLayerBias, secondHiddenLayerErrors);
 		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
 
+		//ShowLayerOutWieght(oldWeights);
 	}
 
 	void ShowErrors(const std::vector<double>& error) {
@@ -807,6 +832,15 @@ public:
 
 	double SoftMax(double res) {
 		return std::exp(res) / Classifier::OutLayerSum();
+	}
+
+	double GeLu(double res) {
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+	}
+
+	double DirectiveGeLu(double res) {
+		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
 	}
 
 	//Setters & Getters
@@ -847,7 +881,6 @@ int Predict(std::string path) {
 	cl.Classification();
 	std::cout << "Learning..." << std::endl;
 	cl.Learning(target);
-	std::cout << "Done" << std::endl;
 	return cl.FindCorrectOutNeuro();
 }
 
@@ -866,7 +899,7 @@ int main()
 	std::chrono::duration<double> duration = end - start;
 
 	std::cout << "Execution time: " << duration.count() << std::endl;
-	system("pause");
+	//system("pause");
 
 	return 0;
 
