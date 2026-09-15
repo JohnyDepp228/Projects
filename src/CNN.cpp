@@ -274,6 +274,10 @@ struct Channel {
 		return maps[index].mapOfSigns;
 	}
 
+	void SetMap(int index, const std::vector<double>& map) {
+		maps[index].mapOfSigns = map;
+	}
+
 	int GetNumOfFilters() const {
 		return this->amount;
 	}
@@ -341,6 +345,20 @@ public:
 		stbi_image_free(res);
 
 		return matrix;
+	}
+
+	void MatrixOfError(const std::vector<double>& fullyconnectedLayerErrors) {
+		Channel chan;
+		chan.SetAmount(numOfFiltersInBlock);
+		int el = 0;
+		for (int i = 0; i < numOfFiltersInBlock; i++) {
+			int index = channels[numOfBlocks - 1].GetMaxElementIndex(i);
+			std::vector<double> temp(channels[numOfBlocks - 1].GetMap(i).size());
+			temp[index] = fullyconnectedLayerErrors[el];
+			el++;
+			chan.SetMap(i, temp);
+		}
+
 	}
 
 	void ShowVector(const std::vector<double>& vec) {
