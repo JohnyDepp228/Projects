@@ -35,7 +35,7 @@ struct Filter {
 
 struct MapOfSigns {
 	std::vector<double> mapOfSigns;
-
+	int maxElementIndex = 0;
 
 	void SetMapOfSigns(const std::vector<double>& mapOfSigns) {
 		this->mapOfSigns.resize(mapOfSigns.size());
@@ -278,6 +278,14 @@ struct Channel {
 		return this->amount;
 	}
 
+	void SetMaxElementIndex(int mapIndex, int elIndex) {
+		maps[mapIndex].maxElementIndex = elIndex;
+	}
+
+	int GetMaxElementIndex(int mapIndex) const {
+		return maps[mapIndex].maxElementIndex;
+	}
+
 };
 
 class CNN {
@@ -352,6 +360,17 @@ public:
 	double GMP(const std::vector < double>& vec) {
 
 		return *max_element(vec.begin(), vec.end());
+	}
+
+	double GMP(const std::vector < double>& vec, int& maxElIndex) {
+		auto it = *max_element(vec.begin(), vec.end());
+		for (int i = 0; i < vec.size(); i++) {
+			if (vec[i] == it) {
+				maxElIndex = i;
+				break;
+			}
+		}
+		return it;
 	}
 
 	std::vector < std::vector < double>> VectorIntoMatrix(const std::vector<double>& vec) {
@@ -463,9 +482,10 @@ public:
 			channels[i].Forward(bias, channels[i - 1].ChannelSum());
 		}
 		size = channels[numOfBlocks - 1].GetNumOfFilters();
-
+		int maxElementIndex = 0;
 		for (int i = 0; i < size; i++) {
-			t[i] = GMP(channels[numOfBlocks - 1].GetMap(i));
+			t[i] = GMP(channels[numOfBlocks - 1].GetMap(i), maxElementIndex);
+			channels[numOfBlocks - 1].SetMaxElementIndex(i, maxElementIndex);
 		}
 		t.erase(std::remove(t.begin(), t.end(), 0.0), t.end());
 		return t;
@@ -834,7 +854,6 @@ public:
 		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
 
 		InputErrorsForBackprop();
-		ShowErrors(fullyconnectedLayerErrors);
 	}
 
 	void ShowErrors(const std::vector<double>& error) {
