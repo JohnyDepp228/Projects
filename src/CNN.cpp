@@ -10,9 +10,11 @@
 
 
 void InitMatrix(std::vector < std::vector < double>>& matrix) {
+	int num = 1;
 	for (int i = 0; i < matrix.size(); i++) {
 		for (int j = 0; j < matrix[0].size(); j++) {
-			matrix[i][j] = j;
+			matrix[i][j] = num;
+			num++;
 		}
 	}
 }
@@ -477,6 +479,10 @@ public:
 		}
 	}
 
+	void LearningConvLayers(const std::vector<double>& fullyconnectedLayerErrors) {
+		std::cout << "Learn" << std::endl;
+	}
+
 	~CNN() {
 		delete[] channels;
 	}
@@ -554,6 +560,7 @@ private:
 
 	//Errors
 	std::vector<double> outputLayerErrors;
+	std::vector<double> fullyconnectedLayerErrors;
 	std::vector<double> firstHiddenLayerErrors;
 	std::vector<double> secondHiddenLayerErrors;
 	std::vector<double> thirdHiddenLayerErrors;
@@ -595,6 +602,7 @@ public:
 
 
 		//Layers errors
+		fullyconnectedLayerErrors = std::vector<double>(numOfFullyConnectedLayerNeurons, 0.0);
 		outputLayerErrors = std::vector<double>(numOfOutputLayerNeurons, 0.0);
 		firstHiddenLayerErrors = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
 		secondHiddenLayerErrors = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
@@ -613,16 +621,38 @@ public:
 		thirdHiddenToOutputVelocity = std::vector<std::vector<double>>(numOfThirdHiddenLayerNeurons, std::vector<double>(numOfOutputLayerNeurons, 0.0));
 
 		//Bias
-		firstHiddenLayerBias = std::vector<double>(numOfFirstHiddenLayerNeurons, 1.0);
-		secondHiddenLayerBias = std::vector<double>(numOfSecondHiddenLayerNeurons, 1.0);
-		thirdHiddenLayerBias = std::vector<double>(numOfThirdHiddenLayerNeurons, 1.0);
-		outputLayerBias = std::vector<double>(numOfOutputLayerNeurons, 1.0);
+		firstHiddenLayerBias = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.001);
+		secondHiddenLayerBias = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.001);
+		thirdHiddenLayerBias = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.001);
+		outputLayerBias = std::vector<double>(numOfOutputLayerNeurons, 0.001);
 
 
 		InitMatrixWeights(fullConToFirstHiddenWeights);
 		InitMatrixWeights(firstToSecondHiddenWeights);
 		InitMatrixWeights(secondToThirdHiddenWeights);
 		InitMatrixWeights(thirdHiddenToOutputWeights);
+	}
+	std::vector<std::vector<double>> TransponMatrix(const std::vector<std::vector<double>>& matrix) {
+
+		std::vector<std::vector<double>> temp(matrix[0].size(), std::vector<double>(matrix.size(), 0.0));
+		for (int i = 0; i < matrix.size(); i++) {
+			for (int j = 0; j < matrix[i].size(); j++) {
+				temp[j][i] = matrix[i][j];
+			}
+		}
+		return temp;
+	}
+
+	void InputErrorsForBackprop() {
+		std::vector<std::vector<double>> temp = TransponMatrix(fullConToFirstHiddenWeights);
+		std::fill(fullyconnectedLayerErrors.begin(), fullyconnectedLayerErrors.end(), 0.0);
+		for (int i = 0; i < fullyConnectedLayer.size(); i++) {
+			double errSum = 0.0;
+			for (int j = 0; j < firstHiddenLayerErrors.size(); j++) {
+				errSum += (firstHiddenLayerErrors[j] * temp[j][i]);
+			}
+			fullyconnectedLayerErrors[i] = errSum * DirectiveLeakyReLu(fullyConnectedLayer[i]);
+		}
 	}
 
 	double Weight(const double& leftBoard, const double& rightBoard) {
@@ -781,7 +811,7 @@ public:
 		}
 	}
 
-	void Learning(const std::vector<double>& targets) {
+	void LearningClassifier(const std::vector<double>& targets) {
 		std::vector<std::vector<double>> oldWeights = secondToThirdHiddenWeights;
 		OutputLayerErrorCalcu(targets);
 		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
@@ -803,7 +833,8 @@ public:
 		UpdateBias(secondHiddenLayerBias, secondHiddenLayerErrors);
 		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
 
-		//ShowLayerOutWieght(oldWeights);
+		InputErrorsForBackprop();
+		ShowErrors(fullyconnectedLayerErrors);
 	}
 
 	void ShowErrors(const std::vector<double>& error) {
@@ -852,6 +883,10 @@ public:
 	std::vector<double> GetOutLayer() const {
 		return this->outputLayer;
 	}
+
+	std::vector<double> GetInputErrors() const {
+		return this->fullyconnectedLayerErrors;
+	}
 };
 
 int Predict(std::string path) {
@@ -880,7 +915,8 @@ int Predict(std::string path) {
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
 	std::cout << "Learning..." << std::endl;
-	cl.Learning(target);
+	cl.LearningClassifier(target);
+	c.LearningConvLayers(cl.GetInputErrors());
 	return cl.FindCorrectOutNeuro();
 }
 
