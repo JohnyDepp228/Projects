@@ -22,10 +22,24 @@ void InitMatrix(std::vector < std::vector < double>>& matrix) {
 
 struct Filter {
 	std::vector<double> filter;
+	std::vector<double> velocity;
+	double LR = 0.01;
 
+	void UpdateVelocity(const std::vector<double>& matrixOfError) {
+		for (int i = 0; i < matrixOfError.size(); i++) {
+			this->velocity[i] = (0.9 * this->velocity[i]) + (LR * matrixOfError[i]);
+		}
+	}
+
+	void UpdateWeights() {
+		for (int i = 0; i < filter.size(); i++) {
+			filter[i] -= velocity[i];
+		}
+	}
 
 	void SetFilter(const std::vector<double>& filter) {
 		this->filter = filter;
+		this->velocity.resize(filter.size());
 	}
 
 	std::vector<double> GetFilter() const {
@@ -36,7 +50,54 @@ struct Filter {
 struct MapOfSigns {
 	std::vector<double> mapOfSigns;
 	std::vector<double> ErrorMapOfSigns;
+	std::vector<double> MatrixOfError;
+	double E = 0;
 	int maxElementIndex = 0;
+
+	void FindE() {
+		for (int i = 0; i < mapOfSigns.size(); i++) {
+			E += (mapOfSigns[i] * ErrorMapOfSigns[i]);
+		}
+	}
+
+	void CalculMatrixOfError(int filterWidth, int filterHeight) {
+		FindE();
+		MatrixOfError.resize(filterWidth * filterHeight);
+		int idx = 0;
+		int increaseIdx = -1;
+		for (int i = 0; i < MatrixOfError.size(); i++) {
+			int offset = 0;
+			if (i < 3) {
+				offset -= filterHeight;
+
+			}
+			else if (i >= 3 && i < 6) {
+				offset = 0;
+
+			}
+			else if (i > 5) {
+				offset = filterHeight;
+			}
+
+			idx = maxElementIndex + offset + increaseIdx;
+			if (CheckIdx(idx, mapOfSigns)) {
+				MatrixOfError[i] = 0;
+			}
+			else {
+				MatrixOfError[i] = E * mapOfSigns[idx];
+			}
+			increaseIdx++;
+			if (increaseIdx > 1) {
+				increaseIdx = -1;
+			}
+		}
+
+
+	}
+
+	bool CheckIdx(int idx, const std::vector<double>& vec) {
+		return (idx >= vec.size() || idx < 0);
+	}
 
 	void SetMapOfSigns(const std::vector<double>& mapOfSigns) {
 		this->mapOfSigns.resize(mapOfSigns.size());
@@ -60,6 +121,10 @@ struct MapOfSigns {
 		return this->maxElementIndex;
 	}
 
+	std::vector<double> GetMatrixOfError() const {
+		return this->MatrixOfError;
+	}
+
 };
 
 struct Channel {
@@ -78,17 +143,17 @@ struct Channel {
 		}
 		filters = new Filter[amount];
 		for (int i = 0; i < amount; i++) {
-			filters[i].filter.resize(filterHeight * filterWidth);
-			InitFilterWeight(filters[i].filter);
+			filters[i].SetFilter(InitFilterWeight());
 		}
 		this->amount = amount;
 	}
 
-	void InitFilterWeight(std::vector<double>& filter) {
+	std::vector<double> InitFilterWeight() {
+		std::vector<double> filter(filterHeight * filterWidth);
 		for (auto& n : filter) {
 			n = Weight(-0.1, 0.1);
 		}
-
+		return filter;
 	}
 
 	double Weight(const double& leftBoard, const double& rightBoard) {
@@ -250,6 +315,22 @@ struct Channel {
 		}
 	}
 
+	void CalculMatrixOfErrors() {
+		for (int i = 0; i < amount; i++) {
+			maps[i].CalculMatrixOfError(filterHeight, filterHeight);
+
+		}
+	}
+
+	void UpdateFilterWeights() {
+		std::vector<double> temp;
+		for (int i = 0; i < amount; i++) {
+			temp = maps[i].GetMatrixOfError();
+			filters[i].UpdateVelocity(temp);
+			filters[i].UpdateWeights();
+		}
+	}
+
 	~Channel() {
 		delete[] maps;
 		delete[] filters;
@@ -308,6 +389,14 @@ struct Channel {
 		return maps[mapIndex].GetMaxElIdx();
 	}
 
+	std::vector<double > GetMatrixOfError(int mapIndex) const {
+		return maps[mapIndex].GetMatrixOfError();
+	}
+
+	std::vector<double > GetFilter(int filterIndex) const {
+		return filters[filterIndex].GetFilter();
+	}
+
 };
 
 class CNN {
@@ -333,6 +422,7 @@ public:
 		channels = new Channel[numOfBlocks];
 		for (int i = 0; i < numOfBlocks; i++) {
 			channels[i].SetAmount(numOfFiltersInBlock);
+
 			numOfFiltersInBlock *= 2;
 		}
 
@@ -364,8 +454,15 @@ public:
 
 		return matrix;
 	}
+	void UpdateFiltersWeights(int channalIdx) {
+		channels[channalIdx].UpdateFilterWeights();
+	}
 
-	void MatrixOfError(const std::vector<double>& fullyconnectedLayerErrors) {
+	void CalculMatrixOfErrorsInChannel(int channalIdx) {
+		channels[channalIdx].CalculMatrixOfErrors();
+	}
+
+	void MarkingErrorsOnMap(const std::vector<double>& fullyconnectedLayerErrors) {
 		int el = 0;
 		for (int i = 0; i < fullyconnectedLayerErrors.size(); i++) {
 			int index = channels[numOfBlocks - 1].GetMaxElementIndex(i);
@@ -519,7 +616,6 @@ public:
 			maxElementIndex = 0;
 			t[i] = GMP(channels[numOfBlocks - 1].GetMap(i), maxElementIndex);
 			channels[numOfBlocks - 1].SetMaxElementIndex(i, maxElementIndex);
-			std::cout << "Max element idx: " << maxElementIndex << std::endl;
 		}
 		t.erase(std::remove(t.begin(), t.end(), 0.0), t.end());
 		return t;
@@ -534,11 +630,15 @@ public:
 	}
 
 	void LearningConvLayers(const std::vector<double>& fullyconnectedLayerErrors) {
+		std::cout << "Filter before" << std::endl;
+		ShowVector(channels[numOfBlocks - 1].GetFilter(0));
 		std::cout << "Learn" << std::endl;
-		MatrixOfError(fullyconnectedLayerErrors);
+		MarkingErrorsOnMap(fullyconnectedLayerErrors);
+		CalculMatrixOfErrorsInChannel(numOfBlocks - 1);
+		UpdateFiltersWeights(numOfBlocks - 1);
+		std::cout << "Filter after" << std::endl;
+		ShowVector(channels[numOfBlocks - 1].GetFilter(0));
 
-		//ShowVector(channels[numOfBlocks - 1].maps[0].ErrorMapOfSigns);
-		//ShowVector(channels[numOfBlocks - 1].maps[1].ErrorMapOfSigns);
 	}
 
 	~CNN() {
