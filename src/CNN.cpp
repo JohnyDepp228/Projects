@@ -557,12 +557,12 @@ public:
 
 		std::vector < std::vector < double>> res(imageHeight, std::vector<double>(imageWidth, 0.0));
 
-		double decr�oefX = (double)matrix.size() / (double)imageHeight;
-		double decr�oefY = (double)matrix[0].size() / (double)imageWidth;
+		double decrÑoefX = (double)matrix.size() / (double)imageHeight;
+		double decrÑoefY = (double)matrix[0].size() / (double)imageWidth;
 		for (int x = 0; x < imageHeight; x++) {
 			for (int y = 0; y < imageWidth; y++) {
-				double scaleX = (x + 0.5) * decr�oefX - 0.5;
-				double scaleY = (y + 0.5) * decr�oefY - 0.5;
+				double scaleX = (x + 0.5) * decrÑoefX - 0.5;
+				double scaleY = (y + 0.5) * decrÑoefY - 0.5;
 
 				int x1 = std::min((int)scaleX, (int)matrix[0].size() - 1);
 				int x2 = std::min((int)scaleX + 1, (int)matrix[0].size() - 1);
@@ -920,6 +920,8 @@ public:
 
 	//Learning
 	void OutputLayerErrorCalcu(const std::vector<double>& targets) {
+		//переделать так чтоб передавался индекс нейрона который правильный и он становился равен 1 а остальные нейроны будут равно 0 и так считать ошибку 
+		
 		for (int i = 0; i < outputLayerErrors.size(); i++) {
 			outputLayerErrors[i] = (targets[i] - outputLayerErrors[i]);
 		}
@@ -1082,7 +1084,7 @@ int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	std::string path = "C:/Users/Boss/Desktop/� ������/2024_12_13 FOTO/13_12_0954.jpg";
+	std::string path = "C:/Users/Boss/Desktop/ñ ôëåøêè/2024_12_13 FOTO/13_12_0954.jpg";
 	std::string path2 = "C:/Users/LordMegatron/Desktop/2.jpg";
 
 	std::cout << Predict(path2) << std::endl;
