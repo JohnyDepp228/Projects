@@ -2,51 +2,69 @@
 #define DATASETGENERATOR_H
 #include <vector>
 #include <random>
+#include <iostream>
 
 struct Dataset {
-	std::vector<double> dangerLevel;
-	std::vector<std::string> logs;
-	std::vector<std::string> methods;
-	std::vector<std::string> pages;
-	std::vector<std::string> protocol;
-	std::vector<std::string> agent;
+	std::vector<double> map;
+	int correctAnswer = 0;
 
 
-	std::vector<std::string> SQL;
-	std::vector<std::string> XSS;
-	std::vector<std::string> Win;
-
-	int testListSize;
-	int uniqueWordsAmount = 37;
-
-	Dataset(int testListSize) {
-		this->testListSize = testListSize;
-		dangerLevel.resize(testListSize);
-		InitLogsDB();
-	}
-	Dataset() {
-
-	}
-	void InitLogsDB();
-	int Index(int leftBoard, int rightBoard);
-	std::string CreateLog(const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
-		const std::vector<std::string>& agent,
-		const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &danger);
-
-	bool DangerLog();
-
-	std::vector<std::string> GetLogs() const {
-		return logs;
+	void SetAnswer(int answer) {
+		this->correctAnswer = answer;
 	}
 
-	std::vector<double> GetLogsDanger() const {
-		return dangerLevel;
+	void SetMap(const std::vector<double> &map) {
+		this->map = map;
 	}
 
-	int GetNumOfUniqueWords() const {
-		return uniqueWordsAmount;
+	int GetAnswer() const {
+		return this->correctAnswer;
 	}
 
+	std::vector<double>  GetMap() const {
+		return this->map;
+	}
+
+};
+
+
+class GenerateDataset {
+private:
+	int datasetSize = 0;
+	Dataset* dataset;
+
+public:
+	GenerateDataset(int size) {
+		this->datasetSize = size;
+		dataset = new Dataset[size];
+        CreateDataset();
+	}
+    int GetWinner(const std::vector<double>& map);
+
+    bool IsGameOver(const std::vector<double>& map);
+
+    int GetRandomMove(const std::vector<double>& map);
+
+    int Minimax(std::vector<double>& map, bool oTurn);
+
+    int GetBestMove(std::vector<double>& map);
+
+	void GenerateGame(int& datasetIndex);
+
+	void CreateDataset();
+
+	std::vector<double> GetMap(int &index) {
+
+		return dataset[index].GetMap();
+	}
+
+    int GetAnswer(int& index) {
+
+        return dataset[index].GetAnswer();
+    }
+	~GenerateDataset() {
+		delete[] dataset;
+	}
 };
 
 #endif 

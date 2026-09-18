@@ -1,58 +1,204 @@
 #include "DatasetGenerator.h"
 
 
-int Dataset::Index(int leftBoard, int rightBoard) {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_int_distribution<int> dis(leftBoard, rightBoard);
-	return dis(gen);
+int GenerateDataset::GetWinner(const std::vector<double>& map) {
+    int lines[8][3] =
+    {
+        {0, 1, 2},
+        {3, 4, 5},
+        {6, 7, 8},
+
+        {0, 3, 6},
+        {1, 4, 7},
+        {2, 5, 8},
+
+        {0, 4, 8},
+        {2, 4, 6}
+    };
+
+    for (int i = 0; i < 8; i++)
+    {
+        int a = lines[i][0];
+        int b = lines[i][1];
+        int c = lines[i][2];
+
+        if (map[a] != -1 &&
+            map[a] == map[b] &&
+            map[b] == map[c])
+        {
+            return (int)map[a];
+        }
+    }
+
+    return -1;
 }
 
-void Dataset::InitLogsDB() {
-    this-> methods = { "GET", "POST", "PUT", "DELETE" };
-    this->pages = { "/index.html", "/login.php", "/profile", "/shop/items", "/assets/style.css", "/js/main.js", "/contacts" };
-    this->protocol = { "HTTP/1.1", "HTTP/2.0" };
-    this->agent = { "Mozilla/5.0", "Chrome/120.0", "Safari/13.1", "Curl/7.68.0" };
+bool GenerateDataset::IsGameOver(const std::vector<double>& map) {
+    if (GetWinner(map) != -1)
+        return true;
 
+    for (int i = 0; i < 9; i++)
+    {
+        if (map[i] == -1)
+            return false;
+    }
 
-    this->SQL = { "' OR '1'='1'", "admin' --", "' UNION SELECT NULL, username, password FROM users --",
-    "1; DROP TABLE users; --", "' OR 1=1 --'", "1' AND 1=2 UNION SELECT", "OR 1=1" };
-    this->XSS = { "<script>alert('xss')</script>", "javascript:alert(1)", "<img src=x onerror=alert(1)>",
-    "<svg/onload=alert(1)>", "element.innerHTML = <script>" };
-    this->Win = { "../../../../etc/passwd", "..\\..\\..\\windows\\win.ini", "/etc/shadow",
-    "%2e%2e%2f%2e%2e%2fetc%2fpasswd", "../boot.ini" };
+    return true;
+}
 
+int GenerateDataset::GetRandomMove(const std::vector<double>& map) {
+    std::vector<int> freeCells;
 
-    for (int i = 0; i < Dataset::testListSize; i++) {
-        int targetDanger = DangerLog();
-        if (targetDanger == 1) {
-            Dataset::dangerLevel[i] = 0.9;
+    for (int i = 0; i < 9; i++)
+    {
+        if (map[i] == -1)
+            freeCells.push_back(i);
+    }
+
+    if (freeCells.empty())
+        return -1;
+
+    return freeCells[rand() % freeCells.size()];
+}
+
+int GenerateDataset::Minimax(std::vector<double>& map, bool oTurn) {
+    int winner = GetWinner(map);
+
+    if (winner == 0)
+        return 10;
+
+    if (winner == 1)
+        return -10;
+
+    bool full = true;
+
+    for (int i = 0; i < 9; i++)
+    {
+        if (map[i] == -1)
+        {
+            full = false;
+            break;
         }
-        else {
-            Dataset::dangerLevel[i] = 0.1;
+    }
+
+    if (full)
+        return 0;
+
+    if (oTurn)
+    {
+        int best = -1000;
+
+        for (int i = 0; i < 9; i++)
+        {
+            if (map[i] == -1)
+            {
+                map[i] = 0;
+
+                int score = Minimax(map, false);
+
+                map[i] = -1;
+
+                if (score > best)
+                    best = score;
+            }
         }
-        logs.push_back(CreateLog(methods, pages, protocol, agent, SQL, XSS, Win, targetDanger));
+
+        return best;
+    }
+    else
+    {
+        int best = 1000;
+
+        for (int i = 0; i < 9; i++)
+        {
+            if (map[i] == -1)
+            {
+                map[i] = 1;
+
+                int score = Minimax(map, true);
+
+                map[i] = -1;
+
+                if (score < best)
+                    best = score;
+            }
+        }
+
+        return best;
     }
 }
 
-std::string Dataset::CreateLog(const std::vector<std::string>& methods, const std::vector<std::string>& pages, const std::vector<std::string>& protocol,
-    const std::vector<std::string>& agent,
-    const std::vector<std::string>& SQL, const std::vector<std::string>& XSS, const std::vector<std::string>& Win,const int &danger)
-{
-    std::string res = methods[(int)Index(0,methods.size() - 1)] + " " +  pages[(int)Index(0, pages.size() - 1)] + " " + protocol[(int)Index(0, protocol.size() -1)]
-        + " " + agent[Index(0, agent.size() - 1)]+ " " ;
-    if (danger == 1) {
-        int attackType = Index(1, 3);
-        switch (attackType) {
-        case 1: res += SQL[Index(0, SQL.size() - 1)]; break;
-        case 2: res += XSS[Index(0, XSS.size() - 1)]; break;
-        case 3: res += Win[Index(0, Win.size() - 1)]; break;
+int GenerateDataset::GetBestMove(std::vector<double>& map) {
+    int bestMove = -1;
+    int bestScore = -1000;
+
+    for (int i = 0; i < 9; i++)
+    {
+        if (map[i] == -1)
+        {
+            map[i] = 0;
+
+            int score = Minimax(map, false);
+
+            map[i] = -1;
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestMove = i;
+            }
         }
     }
-    return res;
 
+    return bestMove;
 }
 
-bool Dataset::DangerLog() {
-    return (int)Index(0, 1);
+void GenerateDataset::GenerateGame(int& datasetIndex) {
+    std::vector<double> map(9, -1);
+
+    bool xTurn = true;
+
+    while (!IsGameOver(map))
+    {
+        if (xTurn)
+        {
+            int move = GetRandomMove(map);
+
+            if (move == -1)
+                break;
+
+            map[move] = 1;
+
+            xTurn = false;
+        }
+        else
+        {
+            std::vector<double> currentMap = map;
+
+            int correctAnswer = GetBestMove(map);
+
+            if (correctAnswer == -1)
+                break;
+
+            dataset[datasetIndex].SetMap(currentMap);
+            dataset[datasetIndex].SetAnswer(correctAnswer);
+
+            datasetIndex++;
+
+            map[correctAnswer] = 0;
+
+            xTurn = true;
+        }
+    }
+}
+
+void GenerateDataset::CreateDataset() {
+    int datasetIndex = 0;
+    std::cout << "Dataset gen start " << std::endl;
+    while (datasetIndex < GenerateDataset::datasetSize)
+    {   
+        std::cout << "Dataset index " << datasetIndex << std::endl;
+        GenerateDataset::GenerateGame(datasetIndex);
+    }
+    std::cout << "Dataset gen done " << std::endl;
 }
