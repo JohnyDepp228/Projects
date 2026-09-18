@@ -5,14 +5,14 @@
 Уменьшено число входных/выходных нейронов -> 9
 Число нейронов на скрытом слое -> 64
 Что здесь есть
-• многослойный перцептрон;
-• обучение через backpropagation;
-• Softmax;
-• Cross-Entropy;
-• Momentum / Velocity;
-• генерация датасета из сыгранных партий;
-• сохранение и загрузка весов;
-• вывод игрового поля в консоли.
+- многослойный перцептрон;
+- обучение через backpropagation;
+- Softmax;
+- Cross-Entropy;
+- Momentum / Velocity;
+- генерация датасета из сыгранных партий;
+- сохранение и загрузка весов;
+- вывод игрового поля в консоли.
 
 # Архитектура нейросети
 ![architect](./architect.jpg)
@@ -49,15 +49,16 @@ target - output
 # Результат обучения
 Для удобства loss выводится в процентах
 Количество эпох:
-Epochs: 105
-Начальный Loss: 184.677
-Initial Loss: 184.677
-Конечный Loss: 5.16695
-Final Loss: 5.16695
+- Epochs: 105
+- Начальный Loss: 184.677
+- Initial Loss: 184.677
+- Конечный Loss: 5.16695
+- Final Loss: 5.16695
 # Пример поля
 ![map](./map.png)
 # Technologies
-• C++
-• STL
-• Neural Networks
-• Backpropagation
+- C++
+- STL
+- Neural Networks
+- Backpropagation
+- CMake
