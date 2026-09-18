@@ -1,10 +1,13 @@
-cmake_minimum_required(VERSION 4.2)
-
-project(ClientServer 
-	VERSION 4.1
+cmake_minimum_required(VERSION 4.1) 
+project(TicTacToe
 	LANGUAGES CXX
 	)
 
+add_executable(TicTacToe
+    main.cpp 
+    perceptron.cpp 
+    DatasetGenerator.cpp 
+    SaveConfig.cpp 
+)
 
-add_subdirectory(server)
-add_subdirectory(client)
+
