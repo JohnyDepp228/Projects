@@ -1,139 +1,127 @@
 #include "perceptron.h"
 #include <Windows.h>
-
-class Server {
-private:
-	HANDLE serverPipe;
-	DWORD pipeReadLimit = 1024;
-	DWORD pipeWriteLimit = 1024;
-
-	DWORD limitOfReadBytes = 1024;
-
-	std::string log;
-
-	bool danger;
-
-public:
-	Server() {
-		serverPipe = CreateNamedPipeW(
-			L"\\\\.\\pipe\\Server_pipe",
-			PIPE_ACCESS_DUPLEX,
-			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_ACCEPT_REMOTE_CLIENTS,
-			PIPE_UNLIMITED_INSTANCES,
-			pipeReadLimit,
-			pipeWriteLimit,
-			NMPWAIT_WAIT_FOREVER,
-			NULL);
-		danger = false;
+#include <iomanip>
 
 
-		if (serverPipe == INVALID_HANDLE_VALUE) {
-			std::cout << "Can't create pipe\t" << GetLastError() << std::endl;
-			return;
-		}
-	}
-
-	void ReadLog() {
-		std::cout << "Waiting for client to write " << std::endl;
-		std::cout << "Get signal to read" << std::endl;
-		char buffer[1024] = { 0 };
-		limitOfReadBytes = 1024;
-		DWORD readBytes = 0;
-		bool readLog = ReadFile(serverPipe, buffer, limitOfReadBytes, &readBytes, NULL);
-
-		if (!readLog) {
-			std::cout << "Error to read from Pipe\t" << GetLastError() << std::endl;
-		}
-		else {
-			this->log = std::string(buffer, readBytes);
-		}
-	}
-
-	void ClientWait() {
-		std::cout << "Waiting for client connection..." << std::endl;
-		ConnectNamedPipe(serverPipe, NULL);
-		std::cout << "Connected" << std::endl;
-	}
-
-	std::string GetLog() const {
-		return log;
-	}
-
-	void SetDanger(bool danger) {
-		this->danger = danger;
-	}
-
-	void WriteAnswer() {
-		std::string str;
-		limitOfReadBytes = 1000;
-		DWORD wroteBytes = 0;
-		bool writeDanger = WriteFile(serverPipe, &this->danger, sizeof(bool), &wroteBytes, NULL);
-
-		if (!writeDanger) {
-			std::cout << "Error to write to Pipe\t" << GetLastError() << std::endl;
-		}
-		else {
-			std::cout << "Sent success" << std::endl;
-		}
-		FlushFileBuffers(serverPipe);
-	}
-
-	~Server() {
-		CloseHandle(serverPipe);
-	}
-
+enum Turn {
+	zero = 0,
+	cross = 1,
+	empty = -1
 };
 
 
+void ShowMap(const std::vector<double>& map) {
+	std::cout << "+---------+---------+---------+" << std::endl;
+		for (int i = 0; i < map.size(); i++) {
+			char ch = ' ';
+			if (map[i] == zero) {
+				ch = 'O';
+			}
+			else if (map[i] == cross) {
+				ch = 'X';
+			}
+			std::cout << "| "
+				<< std::setw(7) << std::fixed << std::setprecision(3)
+				<< ch
+				<< " ";
+
+			if (i % 3 == 2) {
+				std::cout << "|" << std::endl;
+				std::cout << "+---------+---------+---------+" << std::endl;
+			}
+		}
+}
+
+void MakeStep(std::vector<double>& map,int turn) {
+	ShowMap(map);
+	std::cout << std::endl << "Enter your step: ";
+	int x = 0;
+	std::cin >> x;
+	x--;
+	if (x < 0 || x > map.size()) {
+		std::cout << "Invalid step" << std::endl;
+	}
+	else if(map[x] != Turn::empty) {
+		std::cout << "Invalid step" << std::endl;
+	}
+	else {
+		map[x] = turn;
+	}
+
+}
+
+void MakePerceptronStep(std::vector<double>& map, int index) {
+	map[index] = Turn::zero;
+
+}
+
+int GetWinner(const std::vector<double>& map) {
+	int lines[8][3] =
+	{
+		{0, 1, 2},
+		{3, 4, 5},
+		{6, 7, 8},
+
+		{0, 3, 6},
+		{1, 4, 7},
+		{2, 5, 8},
+
+		{0, 4, 8},
+		{2, 4, 6}
+	};
+
+	for (int i = 0; i < 8; i++)
+	{
+		int a = lines[i][0];
+		int b = lines[i][1];
+		int c = lines[i][2];
+
+		if (map[a] != -1 &&
+			map[a] == map[b] &&
+			map[b] == map[c])
+		{
+			return (int)map[a];
+		}
+	}
+
+	return -1;
+}
+
+bool IsGameOver(const std::vector<double>& map) {
+	if (GetWinner(map) != -1)
+		return true;
+
+	for (int i = 0; i < 9; i++)
+	{
+		if (map[i] == -1)
+			return false;
+	}
+
+	return true;
+}
+
 int main() {
+	
+	Perceptron p(9, 64, 9);
+	std::vector<double> map(9, -1.0);
+	std::cout << "You playing for X" << std::endl;
+	char ch = ' ';
+	for (int i = 0; i < map.size(); i++) {
+		MakeStep(map, Turn::cross);
+		p.FullProcess(map);
+		int answer = p.GetAnswer();
+		MakePerceptronStep(map, answer);
 
-	std::string str;
-	Perceptron* p;
-	p = new Perceptron(100, 80, 1, "../../../../config/weights.txt", "../../../../config/idf.txt");
-
-	try {
-		p->Start();
-	}
-	catch (const Errors& e) {
-		if (e == Errors::DIVISIONBYZERO) {
-			std::cout << "DIVISIONBYZERO" << std::endl;
+		if (IsGameOver(map)) {
+			if (GetWinner(map) == zero) {
+				ch = 'O';
+			}
+			else if (GetWinner(map) == cross) {
+				ch = 'X';
+			}
+			std::cout <<"Winner is " << ch << std::endl;
+			break;
 		}
-		else if (e == Errors::FILEREAD) {
-			std::cout << "FILEREAD. Error code:\t" << GetLastError() << std::endl;
-		}
-		else if (e == Errors::FILEREADVEC1D) {
-			std::cout << "FILEREADVEC1D. Error code:\t" << GetLastError() << std::endl;
-		}
-		else if (e == Errors::FILEREADVEC2D) {
-			std::cout << "FILEREADVEC2D. Error code:\t" << GetLastError() << std::endl;
-		}
-		else if (e == Errors::FILEWRITE) {
-			std::cout << "FILEWRITE. Error code:\t" << GetLastError() << std::endl;
-		}
-		else if (e == Errors::FILEWRITEVEC1D) {
-			std::cout << "FILEWRITEVEC1D.\t Error code:\t" << GetLastError() << std::endl;
-		}
-		else if (e == Errors::FILEWRITEVEC2D) {
-			std::cout << "FILEWRITEVEC2D.\t Error code:\t" << GetLastError() << std::endl;
-		}
-	}
-	catch (...) {
-		std::cout << "UNKNOWN ERROR.\t Error code:\t" << GetLastError() << std::endl;
-	}
-
-
-	Server s;
-
-	s.ClientWait();
-
-	while (true) {
-		s.ReadLog();
-
-		std::cout << "Read\t" << s.GetLog() << std::endl;
-
-		s.SetDanger(p->FullProcess(s.GetLog()));
-
-		s.WriteAnswer();
 	}
 
 	return 0;

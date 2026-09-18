@@ -6,27 +6,30 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <fstream>
+#include <map>
+#include <set>
 #include <Windows.h>
+#include <conio.h>
 #include "DatasetGenerator.h"
-#include "SentenceVectorize.h"
 #include "SaveConfig.h"
 #include "Errors.h"
 
 class Perceptron {
 private:
 
-	std::vector<std::vector<double>> InputToHiddenWeights;
-	std::vector<std::vector<double>> hidenToOutputWeights;
-	std::vector<std::vector<double>> hidenToOutputLayerVelocity;
-	std::vector<std::vector<double>> inputToHiddenLayerVelocity;
+	std::vector<std::vector<double>> InputToHiddenWeights;//save
+	std::vector<std::vector<double>> hidenToOutputWeights;//save
+	std::vector<std::vector<double>> hidenToOutputLayerVelocity;//save
+	std::vector<std::vector<double>> inputToHiddenLayerVelocity;//save
 
 	std::vector<double> inputLayer;
 	std::vector<double> hidenLayer;
 	std::vector<double> hidenLayerBeforeReLu;
 	std::vector<double> outputLayer;
 
-	std::vector<double> inputToHiddenLayerBias;
-	std::vector<double> hidenToOutputLayerBias;
+	std::vector<double> inputToHiddenLayerBias;//save
+	std::vector<double> hidenToOutputLayerBias;//save
 
 	std::vector<double> inputToHidenError;
 	std::vector<double> hidenToOutputError;
@@ -37,28 +40,29 @@ private:
 
 	double LR = 0.5;
 	double inertia = 0.01;
+	double oldWeight1;
+	double oldWeight2;
 
 	unsigned int inputNeuronsAmount;
 	unsigned int hidenNeuronsAmount;
 	unsigned int outputNeuronsAmount;
 	unsigned int epoch;
 
-	std::string weightsPath;
-	std::string idfPath;
-
-	WordsVectorize* vectorize;
+	std::string path;
 
 	Dataset* dataset;
 
 public:
-	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount,std::string weightsPath,std::string idfPath);
+	Perceptron(const unsigned int& inputNeuronsAmount, const unsigned int& hidenNeuronsAmount, const unsigned int& outputNeuronsAmount);
 
-	double LeakyReLu(const double& data) {
-		return data > 0 ? data : data * 0.01;
+	double ReLu(const double& data) {
+		//return data > 0 ? data : 0;
+		return data > 0 ? data : data * 0.01; //leakyReLu
 	}
 
-	double directiveLeakyReLu(const double& data) {
-		return data > 0 ? 1.0 : 0.01;
+	double directiveReLu(const double& data) {
+		//return data > 0 ? 1.0 : 0;
+		return data > 0 ? 1.0 : 0.01; //Leaky ReLu
 	}
 
 	double Sigmoid(const double& data) {
@@ -66,7 +70,20 @@ public:
 	}
 
 	double directiveSigmoid(const double& data) {
-		return data * (1.0 - data);
+		return data * (1.0 - data); // data after sigmoid
+	}
+
+	double OutLayerSum() {
+		double res = 0.0;
+		for (const auto& n : outputLayer) {
+			res += std::exp(n);
+		}
+		return res;
+	}
+
+	double SoftMax(const double& data) {
+		double sum = OutLayerSum();
+		return std::exp(data) / sum;
 	}
 
 	void SetInputLayer(const std::vector<double>& input);
@@ -81,13 +98,11 @@ public:
 
 	double Weight(double leftBoard, double rightBoard);
 
-	void ProccedString(std::string str);
-
 	double NewVelocity(double LR, const double& neuronError, const double& neuronInput, double& oldVelocity);
 
 	void UpdateBias();
 
-	void hidenToOutError(int targetIndex);
+	void hidenToOutError(double target);
 
 	void inToHidenError();
 
@@ -95,24 +110,19 @@ public:
 
 	void UpdateWeights();
 
-	double MSE(int targetIndex);
-
-	double RMSE(int targetIndex);
-
-	void ShowHidenWeights();
+	double CrossEntrypy(double target);
 
 	void Learning();
 
-	bool FullProcess(std::string);
-
-	void Start();
+	bool FullProcess(const std::vector<double>& input);
 
 	std::vector<double> GetOutputLayer() const {
 		return outputLayer;
 	}
 
+	int GetAnswer();
+
 	~Perceptron() {
-		delete vectorize;
 		delete dataset;
 	}
 
@@ -121,3 +131,4 @@ public:
 
 
 #endif
+
