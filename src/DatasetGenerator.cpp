@@ -173,6 +173,8 @@ void GenerateDataset::GenerateGame(int& datasetIndex) {
         }
         else
         {
+            if (datasetIndex >= datasetSize)
+                break;
             std::vector<double> currentMap = map;
 
             int correctAnswer = GetBestMove(map);
@@ -195,7 +197,7 @@ void GenerateDataset::GenerateGame(int& datasetIndex) {
 void GenerateDataset::CreateDataset() {
     int datasetIndex = 0;
     std::cout << "Dataset gen start " << std::endl;
-    while (datasetIndex < GenerateDataset::datasetSize)
+    while (datasetIndex < datasetSize)
     {   
         std::cout << "Dataset index " << datasetIndex << std::endl;
         GenerateDataset::GenerateGame(datasetIndex);

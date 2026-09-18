@@ -119,6 +119,8 @@ int main() {
 			else if (GetWinner(map) == cross) {
 				ch = 'X';
 			}
+
+			ShowMap(map);
 			std::cout <<"Winner is " << ch << std::endl;
 			break;
 		}

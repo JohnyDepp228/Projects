@@ -5,7 +5,7 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 		SavePerceprtonConfig config;
 		epoch = 0;
 		unsigned int uniqueWordsInDataset = 37;
-		path = ".";
+		path = "C:/Users/LordMegatron/Desktop/Pupa/weights.txt";
 		if (config.GetFromFile(path)) {
 				config.SetConfig
 				(
@@ -180,7 +180,7 @@ Perceptron::Perceptron(const unsigned int &inputNeuronsAmount,const unsigned int
 
 	void Perceptron::Learning() {
 		std::vector<double> res;
-		int datasetSize = 1000;
+		int datasetSize = 5000;
 		GenerateDataset dataset(datasetSize);
 		int i = 0;
 		epoch = 0;
