@@ -557,12 +557,12 @@ public:
 
 		std::vector < std::vector < double>> res(imageHeight, std::vector<double>(imageWidth, 0.0));
 
-		double decrÑoefX = (double)matrix.size() / (double)imageHeight;
-		double decrÑoefY = (double)matrix[0].size() / (double)imageWidth;
+		double decrСoefX = (double)matrix.size() / (double)imageHeight;
+		double decrСoefY = (double)matrix[0].size() / (double)imageWidth;
 		for (int x = 0; x < imageHeight; x++) {
 			for (int y = 0; y < imageWidth; y++) {
-				double scaleX = (x + 0.5) * decrÑoefX - 0.5;
-				double scaleY = (y + 0.5) * decrÑoefY - 0.5;
+				double scaleX = (x + 0.5) * decrСoefX - 0.5;
+				double scaleY = (y + 0.5) * decrСoefY - 0.5;
 
 				int x1 = std::min((int)scaleX, (int)matrix[0].size() - 1);
 				int x2 = std::min((int)scaleX + 1, (int)matrix[0].size() - 1);
@@ -919,9 +919,9 @@ public:
 	}
 
 	//Learning
-	void OutputLayerErrorCalcu(const std::vector<double>& targets) {
-		//переделать так чтоб передавался индекс нейрона который правильный и он становился равен 1 а остальные нейроны будут равно 0 и так считать ошибку 
-		
+	void OutputLayerErrorCalcu(int correctNeuronIndex) {
+		std::vector<double> targets(outputLayerErrors.size(), 0.0);
+		targets[correctNeuronIndex] = 1.0;
 		for (int i = 0; i < outputLayerErrors.size(); i++) {
 			outputLayerErrors[i] = (targets[i] - outputLayerErrors[i]);
 		}
@@ -971,9 +971,9 @@ public:
 		}
 	}
 
-	void LearningClassifier(const std::vector<double>& targets) {
+	void LearningClassifier(int correctNeuronIndex) {
 		std::vector<std::vector<double>> oldWeights = secondToThirdHiddenWeights;
-		OutputLayerErrorCalcu(targets);
+		OutputLayerErrorCalcu(correctNeuronIndex);
 		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
 		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
 		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
@@ -1049,8 +1049,9 @@ public:
 };
 
 int Predict(std::string path) {
-	std::vector<double> target(100, 0.0);
-	target[98] = 1.0;
+	int datasetSize = 1000;
+	std::vector<double> correcrIndexOfNeurons(1000, 0.0);
+	correcrIndexOfNeurons[98] = 1.0;
 	CNN c;
 	Classifier cl;
 	std::vector < std::vector < double>> matrixR = c.LoadImage(path, 0);
@@ -1074,7 +1075,7 @@ int Predict(std::string path) {
 	cl.SetFullyConnectedLayer(res);
 	cl.Classification();
 	std::cout << "Learning..." << std::endl;
-	cl.LearningClassifier(target);
+	cl.LearningClassifier(98);
 	c.LearningConvLayers(cl.GetInputErrors());
 	return cl.FindCorrectOutNeuro();
 }
@@ -1084,7 +1085,7 @@ int main()
 {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	std::string path = "C:/Users/Boss/Desktop/ñ ôëåøêè/2024_12_13 FOTO/13_12_0954.jpg";
+	std::string path = "C:/Users/Boss/Desktop/с флешки/2024_12_13 FOTO/13_12_0954.jpg";
 	std::string path2 = "C:/Users/LordMegatron/Desktop/2.jpg";
 
 	std::cout << Predict(path2) << std::endl;
