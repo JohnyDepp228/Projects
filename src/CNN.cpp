@@ -49,16 +49,21 @@ struct Filter {
 
 struct MapOfSigns {
 	std::vector<double> mapOfSigns;
+	std::vector<double> mapOfSignsBeforeActivate;
 	std::vector<double> ErrorMapOfSigns;
 	std::vector<double> MatrixOfError;
-	double E = 0;
+	std::vector<double> inputError;
+	double E = 0.0;
 	int maxElementIndex = 0;
 
 	void FindE() {
-		for (int i = 0; i < mapOfSigns.size(); i++) {
+		E = 0.0;
+		for (int i = 0; i < ErrorMapOfSigns.size(); i++) {
 			E += (mapOfSigns[i] * ErrorMapOfSigns[i]);
 		}
 	}
+
+
 
 	void CalculMatrixOfError(int filterWidth, int filterHeight) {
 		FindE();
@@ -91,8 +96,6 @@ struct MapOfSigns {
 				increaseIdx = -1;
 			}
 		}
-
-
 	}
 
 	bool CheckIdx(int idx, const std::vector<double>& vec) {
@@ -103,6 +106,11 @@ struct MapOfSigns {
 		this->mapOfSigns.resize(mapOfSigns.size());
 		this->ErrorMapOfSigns.resize(mapOfSigns.size(), 0.0);
 		this->mapOfSigns = mapOfSigns;
+
+	}
+
+	void SetMapBeforeActivate(const std::vector<double>& mapOfSignsBeforeActivate) {
+		this->mapOfSignsBeforeActivate = mapOfSignsBeforeActivate;
 	}
 
 	void SetErrorMapOfSigns(int idx, double error) {
@@ -115,6 +123,10 @@ struct MapOfSigns {
 
 	void SetMaxElIdx(int maxElementIndex) {
 		this->maxElementIndex = maxElementIndex;
+	}
+
+	void SetInputError(const std::vector<double>& inputError) {
+		this->inputError = inputError;
 	}
 
 	int GetMaxElIdx() const {
@@ -210,6 +222,7 @@ struct Channel {
 					}
 					sum += bias;
 					maps[fIdx].mapOfSigns[mapIdx++] = GeLu(sum);
+					maps[fIdx].mapOfSignsBeforeActivate[mapIdx++] = sum;
 				}
 			}
 		}
@@ -226,6 +239,31 @@ struct Channel {
 		CalculRGBMaps(bias, R, G, B);
 		Pooling();
 	}
+
+	std::vector<double> ChannelError() {
+		std::vector<double> temp(maps[0].ErrorMapOfSigns.size(), 0.0);
+
+		int width = std::sqrt(maps[0].GetMapOfSigns().size());
+		int height = std::sqrt(maps[0].GetMapOfSigns().size());
+		for (int i = 0; i < amount; i++) {
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					int idx = x * width + y;
+					double error = maps[i].ErrorMapOfSigns[idx];
+					for (int kx = 0; kx < 3; kx++) {
+						for (int ky = 0; ky < 3; ky++) {
+							int idxIn = (y * 3 + kx) * width + (x * 3 + ky);
+							int filIdx = kx * 3 + ky;
+
+							temp[idxIn] += error * filters[i].filter[filIdx];
+						}
+					}
+				}
+			}
+		}
+		return temp;
+	}
+
 
 	void CalculRGBMaps(double bias, const std::vector<double>& R,
 		const std::vector<double>& G, const std::vector<double>& B) {
@@ -328,6 +366,78 @@ struct Channel {
 			temp = maps[i].GetMatrixOfError();
 			filters[i].UpdateVelocity(temp);
 			filters[i].UpdateWeights();
+		}
+	}
+
+
+	//New learning variant(remove old and develop this) P.S. not checked and probably incorrect
+
+	void FilterError(const std::vector<double>& omega, int filterIdx) {
+		std::vector<double> tempFilter = filters[filterIdx].GetFilter();
+		std::vector<double> error(tempFilter.size(), 0.0);
+		for (int i = 0; i < tempFilter.size(); i++) {
+			error[i] = omega[i] * tempFilter[i];
+		}
+		filters[filterIdx].UpdateVelocity(error);
+		filters[filterIdx].UpdateWeights();
+	}
+
+
+	bool CheckIdx(int idx, const std::vector<double>& vec) {
+		return (idx >= vec.size() || idx < 0);
+	}
+
+	void InputError(const std::vector<double>& omega, int filterIdx, int maxElementIdx) {
+		std::vector<double> temp(omega.size(), 0.0);
+		int idx = 0;
+		int increaseIdx = -1;
+		for (int i = 0; i < omega.size(); i++) {
+			int offset = 0;
+			if (i < 3) {
+				offset -= filterHeight;
+
+			}
+			else if (i >= 3 && i < 6) {
+				offset = 0;
+
+			}
+			else if (i > 5) {
+				offset = filterHeight;
+			}
+
+			idx = maxElementIdx + offset + increaseIdx;
+			if (CheckIdx(idx, maps[filterIdx].mapOfSigns)) {
+				temp[i] = 0.0;
+			}
+			else {
+				temp[i] = omega[i] * maps[filterIdx].mapOfSigns[idx];
+			}
+			increaseIdx++;
+			if (increaseIdx > 1) {
+				increaseIdx = -1;
+			}
+		}
+
+		maps[filterIdx].SetInputError(temp);
+
+	}
+
+
+	std::vector<double> BackpropError(const std::vector<double>& dX, int channelIdx) {
+		std::vector<double> omega(dX.size(), 0.0);
+		for (int i = 0; i < omega.size(); i++) {
+			omega[i] = dX[i] * maps[channelIdx].mapOfSigns[i];
+		}
+		FilterError(omega, channelIdx);
+		InputError(omega, channelIdx, maps[channelIdx].GetMaxElIdx());
+
+		return maps[channelIdx].inputError;
+	}
+
+	void ChannalBackprop(const std::vector<double>& E) {
+		std::vector<double> temp = E;
+		for (int i = 0; i < amount; i++) {
+			temp = BackpropError(temp, i);
 		}
 	}
 
