@@ -5,8 +5,11 @@
 #include <chrono>
 #include <algorithm>
 #include <iomanip>
+#include <numbers> 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+
 
 
 void InitMatrix(std::vector < std::vector < double>>& matrix) {
@@ -465,12 +468,12 @@ struct Channel {
 	}
 
 	double GeLu(double res) {
-		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3))));
 	}
 
 	double DirectiveGeLu(double res) {
-		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
-		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
+		double y = std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) * (1 + 0.134145 * std::pow(res, 2));
 	}
 
 	//Setter & Getters
@@ -776,12 +779,12 @@ public:
 	}
 
 	double GeLu(double res) {
-		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3))));
 	}
 
 	double DirectiveGeLu(double res) {
-		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
-		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
+		double y = std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) * (1 + 0.134145 * std::pow(res, 2));
 	}
 
 	//Setter & Getters
@@ -1135,12 +1138,12 @@ public:
 	}
 
 	double GeLu(double res) {
-		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3))));
+		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3))));
 	}
 
 	double DirectiveGeLu(double res) {
-		double y = std::sqrt(2 / std::_Pi_val) * (res + 0.044715 * std::pow(res, 3));
-		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::_Pi_val) * (1 + 0.134145 * std::pow(res, 2));
+		double y = std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3));
+		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) * (1 + 0.134145 * std::pow(res, 2));
 	}
 
 	//Setters & Getters
