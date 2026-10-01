@@ -212,35 +212,49 @@ struct Channel {
 				}
 			}
 			mapIdx = 0;
+			std::cout << "One conv done\n";
 			for (int i = 0; i <= tHeight - 3; i += 3) {
 				for (int j = 0; j <= tWidth - 3; j += 3) {
+					if (mapIdx >= maps[fIdx].mapOfSigns.size()) break;
 					int filter = 0;
 					double sum = 0.0;
 					int idx = i * tWidth + j;
 					for (int kx = 0; kx < 3; kx++) {
 						for (int ky = 0; ky < 3; ky++) {
 							int newIdx = idx + ((kx * tWidth) + ky);
-							sum += t[newIdx] * filters[fIdx].filter[filter++];
+							if (newIdx >= 0 && newIdx < t.size() && filter < filters[fIdx].filter.size()) {
+								sum += t[newIdx] * filters[fIdx].filter[filter++];
+							} else {
+								
+								filter++; 
+							}
 						}
 					}
 					sum += bias;
-					maps[fIdx].mapOfSigns[mapIdx++] = GeLu(sum);
-					maps[fIdx].mapOfSignsBeforeActivate[mapIdx++] = sum;
+					maps[fIdx].mapOfSigns[mapIdx] = GeLu(sum);
+					maps[fIdx].mapOfSignsBeforeActivate[mapIdx] = sum;
+					mapIdx++;
 				}
 			}
+			std::cout << "Second conv done\n";
 		}
 	}
 
 	void Forward(double bias, const std::vector<double>& vec) {
 		DoubleConvMaps(bias, vec);
 		Pooling();
+		std::cout << "Pooling done\n";
 		//CleanZeroFromMap();
 	}
 
 	void RGBForward(double bias, const std::vector<double>& R,
 		const std::vector<double>& G, const std::vector<double>& B) {
+			std::cout << "Calcul RGB start \n";
 		CalculRGBMaps(bias, R, G, B);
+		std::cout << "Calcul RGB end \n";
+		std::cout << "Pooling RGB start \n";
 		Pooling();
+		std::cout << "Pooling RGB end \n";
 	}
 
 	std::vector<double> ChannelError() {
@@ -634,7 +648,7 @@ public:
 	}
 
 	std::vector < double> MatrixIntoVector(const std::vector < std::vector < double>>& matrix) {
-		int vecSize = matrix.size() * matrix[0].size();
+		//int vecSize = matrix.size() * matrix[0].size();
 		std::vector < double> res;
 		for (const auto& row : matrix) {
 			for (const auto& col : row) {
@@ -719,10 +733,13 @@ public:
 
 	std::vector<double> Forward() {
 		int size = GetNumOFBlocks();
+		std::cout << "Size:" << size << std::endl;
 		std::vector<double> t(numOfFiltersInBlock);
 		for (int i = 1; i < size; i++) {
+			std::cout << "Channels " << i << "forward done" << std::endl;
 			channels[i].Forward(bias, channels[i - 1].ChannelSum());
 		}
+		std::cout << "Channels forward done" << std::endl;
 		size = channels[numOfBlocks - 1].GetNumOfFilters();
 		int maxElementIndex = 0;
 		for (int i = 0; i < size; i++) {
@@ -1168,8 +1185,18 @@ int Predict(std::string path) {
 	CNN c;
 	Classifier cl;
 	std::vector < std::vector < double>> matrixR = c.LoadImage(path, 0);
+
+	if(matrixR.size() > 0){
+		std::cout << "Success in red" << std::endl;
+	}
 	std::vector < std::vector < double>> matrixG = c.LoadImage(path, 1);
+	if(matrixG.size() > 0){
+		std::cout << "Success in green" << std::endl;
+	}
 	std::vector < std::vector < double>> matrixB = c.LoadImage(path, 2);
+	if(matrixB.size() > 0){
+		std::cout << "Success in blue" << std::endl;
+	}
 	c.NormalizeImage(matrixR);
 	c.NormalizeImage(matrixG);
 	c.NormalizeImage(matrixB);
@@ -1181,7 +1208,12 @@ int Predict(std::string path) {
 	std::vector<double> G = c.MatrixIntoVector(matrixG);
 	std::vector<double> B = c.MatrixIntoVector(matrixB);
 
+
+	std::cout << "Forward of RGB start" << std::endl;
+
 	c.ForwardRGB(R, G, B);
+
+	std::cout << "Forward of RGB success" << std::endl;
 
 	std::vector<double> res = c.Forward();
 
