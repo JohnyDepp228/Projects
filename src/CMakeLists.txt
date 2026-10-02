@@ -12,4 +12,4 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
 endif()
 
 
-add_executable(CNN ./CNN.cpp ./stb_image.h)
+add_executable(CNN ./CNN.cpp ./classifier.cpp ./stb_image.h)
