@@ -1,6 +1,4 @@
-*
+.vscodium/
+build/
+build_src-Debug/
 
-!*.cpp 
-!*.h 
-!*.hpp
-!CMakeLists.txt
