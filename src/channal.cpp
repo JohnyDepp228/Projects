@@ -15,6 +15,7 @@ void Channal::SetAmount(int amount) {
 		maps = new MapOfSigns[amount];
 		for (int i = 0; i < amount; i++) {
 			maps[i].mapOfSigns.resize(imageHeight * imageWidth);
+			maps[i].mapOfSignsBeforeActivate.resize(imageHeight * imageWidth);
 		}
 		filters = new Filter[amount];
 		for (int i = 0; i < amount; i++) {
@@ -83,18 +84,22 @@ void Channal::SetAmount(int amount) {
 						for (int ky = 0; ky < 3; ky++) {
 							int newIdx = idx + ((kx * tWidth) + ky);
 							if (newIdx >= 0 && newIdx < t.size() && filter < filters[fIdx].filter.size()) {
-								sum += t[newIdx] * filters[fIdx].filter[filter++];
-							} else {
-								
-								filter++; 
+								//std::cout << "Filter: " << fIdx << "\tIdx: " << filter << std::endl;
+								sum += t[newIdx] * filters[fIdx].filter[filter];
+								filter++;
+								//std::cout << "Filter: " << fIdx << "\tIdx: " << filter << std::endl;
 							}
 						}
 					}
+					//std::cout << "Sum with filter done" << std::endl;
 					sum += bias;
 					maps[fIdx].mapOfSigns[mapIdx] = GeLu(sum);
+					//std::cout << "GeLu done" << std::endl;
 					maps[fIdx].mapOfSignsBeforeActivate[mapIdx] = sum;
+					//std::cout << "Map " << mapIdx << " set"  << std::endl;
 					mapIdx++;
 				}
+				//std::cout << "MapIdx" << mapIdx << std::endl;//mapIdx = 0;
 			}
 			std::cout << "Second conv done\n";
 		}
