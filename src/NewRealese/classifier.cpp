@@ -285,15 +285,6 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		return std::exp(res) / Classifier::OutLayerSum();
 	}
 
-	double Classifier::GeLu(double res) {
-		return 0.5 * res * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3))));
-	}
-
-	double Classifier::DirectiveGeLu(double res) {
-		double y = std::sqrt(2 / std::numbers::pi) * (res + 0.044715 * std::pow(res, 3));
-		return 0.5 * (1 + tanh(y)) + 0.5 * res * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) * (1 + 0.134145 * std::pow(res, 2));
-	}
-
 	//Setters & Getters
 
 	void Classifier::SetFullyConnectedLayer(const std::vector<double>& vec) {
