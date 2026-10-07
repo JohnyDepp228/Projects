@@ -1,0 +1,27 @@
+#ifndef FILTERS_H
+#define FILTERS_H
+
+#pragma once
+#include <vector>
+#include <iostream> 
+
+class Filters
+{
+public:
+    Filters();
+    ~Filters();
+    void SetSize(int height,int width);
+
+    double GetElemet(int x,int y) const;
+    std::vector<double> Slide(const std::vector<double> &matrix,int stride);
+
+private:
+    std::vector<double> filter;
+    int width;
+    int height;
+    
+
+    //double& operator[](int x,int y);
+};
+
+#endif
