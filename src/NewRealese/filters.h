@@ -12,7 +12,7 @@ public:
     ~Filters();
     void SetSize(int height,int width);
 
-    double GetElemet(int x,int y) const;
+    double GetElement(int x,int y) const;
     std::vector<double> Slide(const std::vector<double> &matrix,int stride);
 
 private:
