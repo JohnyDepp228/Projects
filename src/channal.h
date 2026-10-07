@@ -222,6 +222,8 @@ private:
 	int filterWidth = 3;
 	int imageHeight = 840;
 	int imageWidth = 840;
+	int mapHeight = 0;
+	int mapWidth = 0;
 };
 
 #endif
