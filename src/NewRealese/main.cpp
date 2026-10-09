@@ -1,6 +1,7 @@
 #include "filters.h"
 #include <random>
 #include <chrono>
+#include "mapofsigns.h"
 
 
 double Rand(){
@@ -13,30 +14,33 @@ double Rand(){
 int main(){
     
 Filters f;
+MapOfSigns m;
 //f.SetSize(3,3);
 std::vector<double> mat(705600);
 std::vector<double> newMat;
 std::cout << std::endl << std::endl << std::endl;
 auto start = std::chrono::high_resolution_clock::now();
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
 
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
 
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
 
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
 
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
 
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
+// newMat = f.Slide(mat, 1);
+// mat = f.Slide(newMat,1);
+
+newMat = m.Pooling(mat);
 auto end = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> duration = end - start;
 std::cout << "Execution time: " << duration.count() << std::endl;
-std::cout << mat.size();
+std::cout << newMat.size();
 }
