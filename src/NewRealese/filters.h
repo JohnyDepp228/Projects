@@ -4,7 +4,8 @@
 #pragma once
 #include <vector>
 #include <iostream> 
-
+#include <math.h>
+#include <Windows.h>
 class Filters
 {
 public:
