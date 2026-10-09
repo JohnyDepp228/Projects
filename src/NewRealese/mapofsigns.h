@@ -14,6 +14,8 @@ public:
 
     std::vector<double> GetMap() const;
     std::vector<double> GetMapBeforeFun() const;
+std::vector<int> PoolingMaxIdx() const;
+
      
     void SetMap(const std::vector<double> &map);
     void SetMapBeforeFun(const std::vector<double> &mapBeforeFun);

@@ -11,6 +11,9 @@ MapOfSigns::~MapOfSigns()
 }
 std::vector<double> MapOfSigns::GetMap() const { return this->mapOfSigns; }
 std::vector<double> MapOfSigns::GetMapBeforeFun() const { return this->mapOfSignsBeforeActiveFunction; }
+std::vector<int> MapOfSigns::PoolingMaxIdx() const {
+    return this->poolingMaxNumIdx;
+}
 void MapOfSigns::SetMap(const std::vector<double> &map) {
     this->mapOfSigns = map;
 }
