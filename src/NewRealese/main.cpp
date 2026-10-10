@@ -22,18 +22,18 @@ std::cout << std::endl << std::endl << std::endl;
 auto start = std::chrono::high_resolution_clock::now();
 newMat = f.Slide(mat, 1);
 mat = f.Slide(newMat,1);
+std::cout << "Mat size before pooling:\t" << mat.size() <<std::endl;
 newMat = m.Pooling(mat);
+std::cout << "Mat size after pooling:\t" << newMat.size() <<std::endl;
+std::vector<double> w = newMat;
+std::vector<double> c;
+c = m.ReversePooling(w);
+std::cout << "Mat size after reverse pooling:\t" << c.size() <<std::endl;
+
 
 auto end = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> duration = end - start;
 std::cout << "Execution time: " << duration.count() << std::endl;
-std::cout << mat.size();
-std::vector<int> t = m.GetPoolingMaxIdx();
-std::vector<double> w = newMat;
-std::vector<double> c;
 
-std::cout << std::endl << "Reverse" << std::endl;
-c = m.ReversePooling(w);
-
-
+return 0;
 }

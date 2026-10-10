@@ -63,7 +63,6 @@ std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorM
 
     for(int i =0;i < poolingMaxNumIdx.size();i++){
         int idx = poolingMaxNumIdx[i];
-        std::cout << "Idx:\t" << idx << std::endl;
         res[idx] = errorMatrix[i];
     }
     return res;
