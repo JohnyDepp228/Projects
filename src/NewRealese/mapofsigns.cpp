@@ -11,15 +11,9 @@ MapOfSigns::~MapOfSigns()
 }
 std::vector<double> MapOfSigns::GetMap() const { return this->mapOfSigns; }
 std::vector<double> MapOfSigns::GetMapBeforeFun() const { return this->mapOfSignsBeforeActiveFunction; }
-std::vector<int> MapOfSigns::PoolingMaxIdx() const {
-    return this->poolingMaxNumIdx;
-}
-void MapOfSigns::SetMap(const std::vector<double> &map) {
-    this->mapOfSigns = map;
-}
-void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) {
-    this->mapOfSignsBeforeActiveFunction = mapBeforeFun;
-}
+std::vector<int> MapOfSigns::GetPoolingMaxIdx() const { return this->poolingMaxNumIdx; }
+void MapOfSigns::SetMap(const std::vector<double> &map) { this->mapOfSigns = map; }
+void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) { this->mapOfSignsBeforeActiveFunction = mapBeforeFun; }
 
 std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     int heightStart = std::sqrt(matrix.size());
@@ -36,12 +30,14 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
         for(int y =0;y <= width; y += poolingStride){
             double sum = 0.0;
             std::vector<double> poolMat(this->poolingHeight *this->poolingWidth );
+            std::vector<int> globalIdx;
             for(int kx  = x;kx <  x + this->poolingHeight;kx++){
                 for(int ky = y;ky < y + this->poolingWidth;ky++){
                     int idx = kx * widthStart  + ky;
                     int localPoolIdx = (kx - x) * this->poolingWidth + (ky - y);
                     
                     poolMat[localPoolIdx] = matrix[idx];   
+                    globalIdx.push_back(idx);
                 }
             }
             auto maxElem = std::max_element(poolMat.begin(),poolMat.end());
@@ -49,7 +45,8 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
             int maxIdxInPool = std::distance(poolMat.begin(), maxElem);
             int tempIdx = xTemp * newWidth + yTemp;
             temp[tempIdx] = *maxElem;
-            poolingMaxNumIdx[tempIdx] =  maxIdxInPool;
+
+            poolingMaxNumIdx[tempIdx] =  globalIdx[maxIdxInPool];
             yTemp++;
         }
         xTemp++;
@@ -58,7 +55,16 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     return temp;
 }
 
-std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorMatrix,int stride) {
+std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorMatrix) {
+    std::vector<double> res;
+    int size = std::sqrt(errorMatrix.size()) * this->poolingStride; 
 
-  return {};
+    res.resize(size * size);
+
+    for(int i =0;i < poolingMaxNumIdx.size();i++){
+        int idx = poolingMaxNumIdx[i];
+        std::cout << "Idx:\t" << idx << std::endl;
+        res[idx] = errorMatrix[i];
+    }
+    return res;
 }
