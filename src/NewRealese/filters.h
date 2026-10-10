@@ -6,6 +6,8 @@
 #include <iostream> 
 #include <math.h>
 #include <Windows.h>
+#include <random>
+
 class Filters
 {
 public:
@@ -16,13 +18,15 @@ public:
     double GetElement(int x,int y) const;
     std::vector<double> Slide(const std::vector<double> &matrix,int stride);
 
+    void FillFilter();
+
+    double RandValue(double leftBorder,double rightBorder);
+
 private:
     std::vector<double> filter;
     int width;
     int height;
-    
 
-    //double& operator[](int x,int y);
 };
 
 #endif

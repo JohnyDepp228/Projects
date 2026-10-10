@@ -2,8 +2,7 @@
 
 Filters::Filters()
 {
-    SetSize(3,3);
-    //std::cout << GetElement(0,1);
+    
 }
 
 Filters::~Filters()
@@ -17,10 +16,6 @@ Filters::~Filters()
     this->filter.resize(this->width * this->height,0.0);
  }
 
-//  double& Filters::operator()(int x,int y)
-//     {
-//         return this->filter[x * this->width + y];
-//     }
 
 double Filters::GetElement(int x,int y) const
     {
@@ -59,4 +54,17 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
     }
 
     return temp;
+}
+
+void Filters::FillFilter() {
+    for(auto &f : this->filter){
+        f = RandValue(0.5, 0.5);
+    }
+}
+
+double Filters::RandValue(double leftBorder,double rightBorder) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+	std::uniform_real_distribution<double> dis(leftBorder, rightBorder);
+	return dis(gen);
 }
