@@ -18,16 +18,16 @@ void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) { this
 std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     int heightStart = std::sqrt(matrix.size());
     int widthStart = std::sqrt(matrix.size());
-    int height = heightStart - this->poolingHeight;
-    int width = widthStart - this->poolingWidth;
-    int newWidth = ((widthStart - this->poolingWidth) / poolingStride) + 1;
-    int newHeight = ((heightStart - this->poolingHeight) / poolingStride) + 1;
-    std::vector<double> temp(newWidth  *newHeight);
-    this->poolingMaxNumIdx.resize(newWidth  * newHeight);
-    int xTemp = 0;
-    for(int x = 0;x <= height; x += poolingStride){
-        int yTemp = 0;
-        for(int y =0;y <= width; y += poolingStride){
+    int poolHeightLimit = heightStart - this->poolingHeight;
+    int poolWidthLimit = widthStart - this->poolingWidth;
+    int widthAfterPool = ((widthStart - this->poolingWidth) / poolingStride) + 1;
+    int heightAfterPool = ((heightStart - this->poolingHeight) / poolingStride) + 1;
+    std::vector<double> res(widthAfterPool  *heightAfterPool);
+    this->poolingMaxNumIdx.resize(widthAfterPool  * heightAfterPool);
+    int resX = 0;
+    for(int x = 0;x <= poolHeightLimit; x += poolingStride){
+        int resY = 0;
+        for(int y =0;y <= poolWidthLimit; y += poolingStride){
             double sum = 0.0;
             std::vector<double> poolMat(this->poolingHeight *this->poolingWidth );
             std::vector<int> globalIdx;
@@ -43,16 +43,16 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
             auto maxElem = std::max_element(poolMat.begin(),poolMat.end());
            
             int maxIdxInPool = std::distance(poolMat.begin(), maxElem);
-            int tempIdx = xTemp * newWidth + yTemp;
-            temp[tempIdx] = *maxElem;
+            int tempIdx = resX * widthAfterPool + resY;
+            res[tempIdx] = *maxElem;
 
             poolingMaxNumIdx[tempIdx] =  globalIdx[maxIdxInPool];
-            yTemp++;
+            resY++;
         }
-        xTemp++;
+        resX++;
     }
 
-    return temp;
+    return res;
 }
 
 std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorMatrix) {
@@ -66,4 +66,29 @@ std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorM
         res[idx] = errorMatrix[i];
     }
     return res;
+}
+
+void MapOfSigns::ApplyActivFun( std::vector<double> &matrix) {
+    for(int i =0;i < matrix.size();i++){
+        matrix[i] = GeLu(matrix[i]);
+    }
+}
+
+void MapOfSigns::ApplyDiractiveActivFun() {
+    for(auto &data: mapOfSignsBeforeActiveFunction){
+        data = DiractiveGeLu(data);
+    }
+}
+
+
+double MapOfSigns::GeLu(double data){
+    return 0.5 * data * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (data + 0.044715 * std::pow(data, 3))));
+
+}
+
+double MapOfSigns::DiractiveGeLu(double data) {
+    double y = std::sqrt(2 / std::numbers::pi) * (data + 0.044715 * std::pow(data, 3));
+	return 0.5 * (1 + tanh(y)) + 0.5 * data * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) 
+        * (1 + 0.134145 * std::pow(data, 2));
+
 }

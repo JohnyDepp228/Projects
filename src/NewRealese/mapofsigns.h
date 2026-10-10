@@ -6,6 +6,8 @@
 #include <cmath>
 #include <algorithm>
 #include <iostream>
+#include <numbers>
+
 
 class MapOfSigns
 {
@@ -15,7 +17,7 @@ public:
 
     std::vector<double> GetMap() const;
     std::vector<double> GetMapBeforeFun() const;
-std::vector<int> GetPoolingMaxIdx() const;
+    std::vector<int> GetPoolingMaxIdx() const;
 
      
     void SetMap(const std::vector<double> &map);
@@ -23,6 +25,13 @@ std::vector<int> GetPoolingMaxIdx() const;
 
     std::vector<double> Pooling(const std::vector<double> &matrix);
     std::vector<double> ReversePooling(const std::vector<double> &errorMatrix);
+
+    void ApplyActivFun( std::vector<double> &matrix);
+    void ApplyDiractiveActivFun();
+
+    double GeLu(double data);
+
+    double DiractiveGeLu(double data);
 
 private:
     int height;
