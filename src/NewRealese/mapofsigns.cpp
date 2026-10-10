@@ -82,13 +82,13 @@ void MapOfSigns::ApplyDiractiveActivFun() {
 
 
 double MapOfSigns::GeLu(double data){
-    return 0.5 * data * (1 + std::tanh(std::sqrt(2 / std::numbers::pi) * (data + 0.044715 * std::pow(data, 3))));
+    return 0.5 * data * (1 + std::tanh(std::sqrt(2 / this->PI) * (data + 0.044715 * std::pow(data, 3))));
 
 }
 
 double MapOfSigns::DiractiveGeLu(double data) {
-    double y = std::sqrt(2 / std::numbers::pi) * (data + 0.044715 * std::pow(data, 3));
-	return 0.5 * (1 + tanh(y)) + 0.5 * data * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / std::numbers::pi) 
+    double y = std::sqrt(2 / this->PI) * (data + 0.044715 * std::pow(data, 3));
+	return 0.5 * (1 + tanh(y)) + 0.5 * data * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / this->PI) 
         * (1 + 0.134145 * std::pow(data, 2));
 
 }

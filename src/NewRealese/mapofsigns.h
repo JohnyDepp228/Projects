@@ -42,6 +42,7 @@ private:
     std::vector<double> mapOfSigns;
     std::vector<double> mapOfSignsBeforeActiveFunction;
     std::vector<int> poolingMaxNumIdx;
+    const double PI = 3.141592653589793;
 };
 
 #endif
