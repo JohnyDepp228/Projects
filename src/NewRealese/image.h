@@ -2,7 +2,7 @@
 #define IMAGE_H
 
 #pragma once
-#include "stb_impl.cpp"
+#include "stb_image.h"
 #include <vector>
 #include <string>
 
@@ -29,9 +29,12 @@ private:
 std::vector<double> R;
 std::vector<double> G;
 std::vector<double> B;
-int imgHeight = 840;
-int imgWidth = 840;
+const int imgHeight = 840;
+const int imgWidth = 840;
 
+
+int imgHeightLoaded = 0;
+int imgWidthLoaded = 0;
 };
 
 #endif
