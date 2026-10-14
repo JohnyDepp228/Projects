@@ -46,6 +46,7 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
 
                 }
             }
+            sum += this->bias;
             int tempIdx = xTemp * newWidth + yTemp;
             temp[tempIdx] = sum;
             yTemp++;
@@ -55,6 +56,45 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
 
     return temp;
 }
+
+std::vector<double> Filters::SlideRGB(const std::vector<double> &R,const std::vector<double> &G,const std::vector<double> &B,int stride) {
+    int height = std::sqrt(R.size());
+    int width = std::sqrt(R.size());
+    int widthStart = width;
+    int heightStart = height;
+    height -= this->height;
+    width -= this->width;
+    int newWidth = ((widthStart - this->width) / stride) + 1;
+    int newHeight  =((heightStart - this->height) / stride) + 1;
+    std::vector<double> temp(newWidth * newHeight,0.0);
+    int xTemp = 0;
+    for(int x = 0;x <= height; x += stride){
+        int yTemp = 0;
+        for(int y =0;y <= width; y += stride){
+            double sum = 0.0;
+            for(int kx  = x;kx <  x + this->height;kx++){
+                for(int ky = y;ky < y + this->width;ky++){
+                    int filterIdx = kx + this->width + ky;
+                    int idx = kx * widthStart  + ky;
+                    
+                    sum += R[idx] * GetElement(kx - x,ky - y);
+                    sum += G[idx] * GetElement(kx - x,ky - y);
+                    sum += B[idx] * GetElement(kx - x,ky - y);
+
+                }
+            }
+            sum += this->bias;
+            int tempIdx = xTemp * newWidth + yTemp;
+            temp[tempIdx] = sum;
+            yTemp++;
+        }
+        xTemp++;
+    }
+
+    return temp;
+}
+
+
 
 void Filters::FillFilter() {
     for(auto &f : this->filter){
