@@ -12,6 +12,14 @@ Image::Image(std::string imagePath)
 this->R = LoadImage(imagePath,Color::red);
 this->G = LoadImage(imagePath,Color::green);
 this->B = LoadImage(imagePath,Color::blue);
+
+NormalizeImgColor(this->R);
+NormalizeImgColor(this->G);
+NormalizeImgColor(this->B);
+
+BilinearInterpolation(this->R);
+BilinearInterpolation(this->G);
+BilinearInterpolation(this->B);
 }
 
 Image::~Image()
