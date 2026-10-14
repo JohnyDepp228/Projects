@@ -33,12 +33,16 @@ public:
 
     double DiractiveGeLu(double data);
 
+    double GMP();
+
 private:
     int height;
     int width;
     int poolingWidth = 2;
     int poolingHeight = 2;
     int poolingStride = 2;
+
+    int GMPIdx;
     std::vector<double> mapOfSigns;
     std::vector<double> mapOfSignsBeforeActiveFunction;
     std::vector<int> poolingMaxNumIdx;

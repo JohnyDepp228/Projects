@@ -1,4 +1,6 @@
 #include "mapofsigns.h"
+#include <algorithm>
+#include <iterator>
 
 MapOfSigns::MapOfSigns()
 {
@@ -91,4 +93,11 @@ double MapOfSigns::DiractiveGeLu(double data) {
 	return 0.5 * (1 + tanh(y)) + 0.5 * data * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / this->PI) 
         * (1 + 0.134145 * std::pow(data, 2));
 
+}
+
+double MapOfSigns::GMP() {
+    auto max = std::max_element(this->mapOfSigns.begin(), this->mapOfSigns.end());
+    this->GMPIdx = std::distance(this->mapOfSigns.begin(), max);
+
+    return *max;
 }
