@@ -5,6 +5,7 @@
 #include "stb_image.h"
 #include <vector>
 #include <string>
+#include <iostream>
 
 class Image
 {

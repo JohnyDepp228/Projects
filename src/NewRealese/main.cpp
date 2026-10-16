@@ -1,7 +1,7 @@
-#include "filters.h"
+
 #include <random>
 #include <chrono>
-#include "mapofsigns.h"
+#include "convolutionallayer.h"
 
 
 double Rand(){
@@ -13,23 +13,18 @@ double Rand(){
 
 int main(){
     
-Filters f;
-MapOfSigns m;
-//f.SetSize(3,3);
-std::vector<double> mat(705600);
-std::vector<double> newMat;
-std::cout << std::endl << std::endl << std::endl;
+ConvolutionalLayer convLay;
+convLay.SetChannalsNum(6);
+convLay.SetChannalsSize(16);
 auto start = std::chrono::high_resolution_clock::now();
-newMat = f.Slide(mat, 1);
-mat = f.Slide(newMat,1);
-std::cout << "Mat size before pooling:\t" << mat.size() <<std::endl;
-newMat = m.Pooling(mat);
-std::cout << "Mat size after pooling:\t" << newMat.size() <<std::endl;
-std::vector<double> w = newMat;
-std::vector<double> c;
-c = m.ReversePooling(w);
-std::cout << "Mat size after reverse pooling:\t" << c.size() <<std::endl;
 
+try{
+	std::vector<double> res = convLay.Forward();
+	std::cout << res.size();
+}
+catch(const char *msg){
+	std::cout << msg;
+}
 
 auto end = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> duration = end - start;

@@ -27,6 +27,7 @@ public:
     std::vector<double> ReversePooling(const std::vector<double> &errorMatrix);
 
     void ApplyActivFun( std::vector<double> &matrix);
+    
     void ApplyDiractiveActivFun();
 
     double GeLu(double data);
@@ -34,6 +35,7 @@ public:
     double DiractiveGeLu(double data);
 
     double GMP();
+
 
 private:
     int height;
@@ -47,6 +49,7 @@ private:
     std::vector<double> mapOfSignsBeforeActiveFunction;
     std::vector<int> poolingMaxNumIdx;
     const double PI = 3.141592653589793;
+    double bias = 1.0;
 };
 
 #endif

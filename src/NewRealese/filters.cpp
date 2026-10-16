@@ -38,15 +38,14 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
             double sum = 0.0;
             for(int kx  = x;kx <  x + this->height;kx++){
                 for(int ky = y;ky < y + this->width;ky++){
-                    int filterIdx = kx + this->width + ky;
+                    
                     int idx = kx * widthStart  + ky;
                     
                     sum += matrix[idx] * GetElement(kx - x,ky - y);
-                   // std::cout << matrix[idx] << "\t";
 
                 }
             }
-            sum += this->bias;
+            sum += bias;
             int tempIdx = xTemp * newWidth + yTemp;
             temp[tempIdx] = sum;
             yTemp++;
@@ -74,8 +73,8 @@ std::vector<double> Filters::SlideRGB(const std::vector<double> &R,const std::ve
             double sum = 0.0;
             for(int kx  = x;kx <  x + this->height;kx++){
                 for(int ky = y;ky < y + this->width;ky++){
-                    int filterIdx = kx + this->width + ky;
-                    int idx = kx * widthStart  + ky;
+                    
+                    int idx = kx * widthStart + ky;
                     
                     sum += R[idx] * GetElement(kx - x,ky - y);
                     sum += G[idx] * GetElement(kx - x,ky - y);

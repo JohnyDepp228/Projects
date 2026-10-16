@@ -14,7 +14,7 @@ MapOfSigns::~MapOfSigns()
 std::vector<double> MapOfSigns::GetMap() const { return this->mapOfSigns; }
 std::vector<double> MapOfSigns::GetMapBeforeFun() const { return this->mapOfSignsBeforeActiveFunction; }
 std::vector<int> MapOfSigns::GetPoolingMaxIdx() const { return this->poolingMaxNumIdx; }
-void MapOfSigns::SetMap(const std::vector<double> &map) { this->mapOfSigns = map; }
+void MapOfSigns::SetMap(const std::vector<double> &map) { this->mapOfSigns = map;this->width = this->height = std::sqrt(map.size());}
 void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) { this->mapOfSignsBeforeActiveFunction = mapBeforeFun; }
 
 std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
@@ -98,6 +98,7 @@ double MapOfSigns::DiractiveGeLu(double data) {
 double MapOfSigns::GMP() {
     auto max = std::max_element(this->mapOfSigns.begin(), this->mapOfSigns.end());
     this->GMPIdx = std::distance(this->mapOfSigns.begin(), max);
-
     return *max;
 }
+
+

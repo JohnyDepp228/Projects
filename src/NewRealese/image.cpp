@@ -13,6 +13,7 @@ this->R = LoadImage(imagePath,Color::red);
 this->G = LoadImage(imagePath,Color::green);
 this->B = LoadImage(imagePath,Color::blue);
 
+
 NormalizeImgColor(this->R);
 NormalizeImgColor(this->G);
 NormalizeImgColor(this->B);
@@ -37,13 +38,17 @@ std::vector<double> Image::LoadImage(std::string imagePath, int color) {
 			throw error;
 			exit(1);
 		}
-
+		int imgIdx = 0;
+		std::cout << "read img 1\n";
+		std::cout << imgHeightLoaded << " " << imgWidthLoaded << std::endl;
 		for (int x = 0; x < imgHeightLoaded; x++) {
 			for (int y = 0; y < imgWidthLoaded; y++) {
 				int pixelIndex = (x * imgWidthLoaded + y) * 3;
-                img[pixelIndex] =  (double)res[pixelIndex + color];
+                img[imgIdx] =  (double)res[pixelIndex + color];
+				imgIdx++;
 			}
 		}
+
 
 		stbi_image_free(res);
 
