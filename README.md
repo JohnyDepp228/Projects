@@ -5,6 +5,8 @@ cnn
 
 09.09.26 - 3 sec
 
+16.10.2026 5.967 sec (New release) 
+
 # TODO list
 1. - [x] Сonvolution
 2. - [x] Pooling(Min,Max)
