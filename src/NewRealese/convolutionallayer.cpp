@@ -35,8 +35,10 @@ std::vector<double> ConvolutionalLayer::Forward() {
         channals[0].SetFiltersParams(channalsSize, 3, 3);
         channals[0].SetChannalSize(channalsSize);
         temp  = channals[0].ConvResRGB(im.GetRedMatrix(),im.GetGreenMatrix(), im.GetBlueMatrix());
+       // channals[0].SetInput(temp);
         channalsSize*= 2;
         for(int i =1;i < this->channalNum - 1;i++){
+            std::cout << "Channal idx: " << i << std::endl;
             channals[i].SetFiltersParams(channalsSize, 3, 3);
             
             channals[i].SetChannalSize(channalsSize);
@@ -49,6 +51,7 @@ std::vector<double> ConvolutionalLayer::Forward() {
         }
         channals[channalNum -1].SetFiltersParams(channalsSize, 3, 3);
         channals[channalNum -1].SetChannalSize(channalsSize);
+        channals[channalNum -1].SetInput(temp);
         res = channals[channalNum -1].ChannalGMP(temp);
     }
 

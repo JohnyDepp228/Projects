@@ -30,6 +30,7 @@ void Channals::ConvBlock(int idx,std::vector<double> &mat) {
         maps[idx].ApplyActivFun(temp);
         mat = maps[idx].Pooling(temp);
         maps[idx].SetMap(mat);
+        std::cout << "Map size: " << mat.size() << std::endl;
     }
 }
 
@@ -98,6 +99,8 @@ std::vector<double> Channals::ChannalGMP(const std::vector<double> &matrix) {
     for(int i =0;i < this->maps.size();i++){
         res[i] = maps[i].GMP();
     }
+
+
     return res;
 }
 
@@ -115,11 +118,14 @@ void Channals::ReversGMP(const std::vector<double> &classifierError) {
 void Channals::ChannalLearn() {
     std::cout << "Learning channal size of " << channalSize << std::endl;
     for(int i =0;i < channalSize;i++){
+        maps[i].SetOriginalInput(this->inputMat);
+        std::cout << "Channal learn set size of input layer: " << this->inputMat.size() << std::endl;
        // std::cout << "Learning idx " << i << std::endl;
         std::vector<double> temp = MultiMapWithErrorMap(i, maps[i].GetErrorMap());
         maps[i].ApplyDiractiveActivFun(temp);
         std::vector<double> temp1;
-        std::cout << "Filter slide size: "<<temp.size();
+       // temp1 = maps[i].ReversePooling(temp);
+        std::cout << "Filter slide size: "<<temp.size() << std::endl;
         temp1 = maps[i].MapsSlide(temp);
         std::cout << "Filters map for learn size: " << temp1.size() << std::endl;
         std::cout << "Old filter weight\n";
@@ -129,7 +135,7 @@ void Channals::ChannalLearn() {
             }
         }
         std::cout << std::endl;
-        filters[i].LearnFilters(temp);
+        filters[i].LearnFilters(temp1);
         std::cout << "New filter weight\n";
         for(int i =0;i < 3;i++){
             for(int j = 0;j < 3;j++){
@@ -137,7 +143,7 @@ void Channals::ChannalLearn() {
             }
         }
         std::cout << std::endl;
-        maps[i].SetPrevLayerError(filters[i].SlideWithReversed(temp,1));
+        maps[i].SetPrevLayerError(filters[i].SlideWithReversed(temp1,1));
     }
 }
 
