@@ -21,6 +21,7 @@ NormalizeImgColor(this->B);
 BilinearInterpolation(this->R);
 BilinearInterpolation(this->G);
 BilinearInterpolation(this->B);
+
 }
 
 Image::~Image()

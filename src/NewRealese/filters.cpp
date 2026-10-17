@@ -136,7 +136,7 @@ std::vector<double> Filters::SlideRGB(const std::vector<double> &R,const std::ve
 
 void Filters::FillFilter() {
     for(auto &f : this->filter){
-        f = RandValue(0.5, 0.5);
+        f = RandValue(-1.0, 1.0);
     }
 }
 
