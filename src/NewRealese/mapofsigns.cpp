@@ -16,6 +16,9 @@ std::vector<int> MapOfSigns::GetPoolingMaxIdx() const { return this->poolingMaxN
 std::vector<double> MapOfSigns::GetErrorMap() const {
     return this->errorMat;
 }
+std::vector<double> MapOfSigns::GetPrevLayerError() const {
+    return this->PrevLayerError;
+}
 void MapOfSigns::SetMap(const std::vector<double> &map) { this->mapOfSigns = map;this->width = this->height = std::sqrt(map.size());}
 void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) { this->mapOfSignsBeforeActiveFunction = mapBeforeFun; }
 
@@ -71,15 +74,18 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     return res;
 }
 
-std::vector<double> MapOfSigns::ReversePooling(const std::vector<double> &errorMatrix) {
+std::vector<double> MapOfSigns::ReversePooling() {
     std::vector<double> res;
-    int size = std::sqrt(errorMatrix.size()) * this->poolingStride; 
+    if(PrevLayerError.size() <= 0){
+        throw std::string("prev layer size <= 0");
+    }
+    int size = std::sqrt(PrevLayerError.size()) * this->poolingStride; 
 
     res.resize(size * size);
 
     for(int i =0;i < poolingMaxNumIdx.size();i++){
         int idx = poolingMaxNumIdx[i];
-        res[idx] = errorMatrix[i];
+        res[idx] = PrevLayerError[i];
     }
     return res;
 }

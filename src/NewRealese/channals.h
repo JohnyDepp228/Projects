@@ -31,6 +31,8 @@ public:
 
     void ReversGMP(const std::vector<double> &classifierError);
 
+    void ChannalLearnGMP(const std::vector<double> &classifierError);
+
     void ChannalLearn();
 
     std::vector<double> MultiMapWithErrorMap(int mapIdx,const std::vector<double> &errorMap);
@@ -39,6 +41,11 @@ public:
 
     std::vector<double> GetInput()const;
 
+    void SetErrorMap(int mapIdx,const std::vector<double> &error);
+
+    std::vector<double> GetErrorMap(int mapIdx)const;
+
+    int GetChannelSize() const;
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;

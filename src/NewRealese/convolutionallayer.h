@@ -20,6 +20,8 @@ public:
 
     void Backpropageation(const std::vector<double> &classifierError);
 
+    void SetPrevLayerErrorMap(int currentChannelIdx,int prevChannelIdx);
+
 private:
     int channalNum;
     int channalsSize;

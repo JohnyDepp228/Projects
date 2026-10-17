@@ -20,7 +20,8 @@ public:
     std::vector<double> GetMap() const;
     std::vector<double> GetMapBeforeFun() const;
     std::vector<int> GetPoolingMaxIdx() const;
-     std::vector<double> GetErrorMap() const;
+    std::vector<double> GetErrorMap() const;
+    std::vector<double> GetPrevLayerError() const;
 
      
     void SetMap(const std::vector<double> &map);
@@ -30,7 +31,7 @@ public:
     void SetOriginalInput(const std::vector<double> &input);
 
     std::vector<double> Pooling(const std::vector<double> &matrix);
-    std::vector<double> ReversePooling(const std::vector<double> &errorMatrix);
+    std::vector<double> ReversePooling();
 
     void ApplyActivFun( std::vector<double> &matrix);
     

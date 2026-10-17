@@ -35,7 +35,6 @@ std::vector<double> ConvolutionalLayer::Forward() {
         channals[0].SetFiltersParams(channalsSize, 3, 3);
         channals[0].SetChannalSize(channalsSize);
         temp  = channals[0].ConvResRGB(im.GetRedMatrix(),im.GetGreenMatrix(), im.GetBlueMatrix());
-       // channals[0].SetInput(temp);
         channalsSize*= 2;
         for(int i =1;i < this->channalNum - 1;i++){
             std::cout << "Channal idx: " << i << std::endl;
@@ -60,12 +59,35 @@ std::vector<double> ConvolutionalLayer::Forward() {
 
 void ConvolutionalLayer::Backpropageation(const std::vector<double> &classifierError) {
     try{
-
-        channals[channalNum -1].ReversGMP(classifierError);
-        channals[channalNum -1].ChannalLearn();
+        channals[channalNum -1].ChannalLearnGMP(classifierError);
         std::cout << "\nSuccess in learn\n";
+        SetPrevLayerErrorMap(channalNum -1,channalNum -2);
+        for(int i = channalNum - 2;i > 0;i--){
+            channals[i].ChannalLearn();
+            SetPrevLayerErrorMap(i,i- 1);
+        }
     }
     catch(const std::string &msg){
         std::cout << "Error in backpropagation " + msg;
     }
+}
+
+void ConvolutionalLayer::SetPrevLayerErrorMap(int currentChannelIdx,int prevChannelIdx) {
+    int currentSize = channals[currentChannelIdx].GetChannelSize();
+    int prevSizez = channals[prevChannelIdx].GetChannelSize();
+    if(currentChannelIdx > currentSize || currentChannelIdx < 0 ){
+        throw std::string("Current channel idx is invalid");
+    }
+    else if(prevChannelIdx > prevSizez || prevChannelIdx < 0 ){
+        throw std::string("Prev channel idx is invalid");
+    }
+    else{
+        int size = channals[prevChannelIdx].GetChannelSize();
+        for(int i =0;i < prevSizez;i++){
+             std::vector<double> errorMap = channals[currentChannelIdx].GetErrorMap(0);
+            channals[prevChannelIdx].SetErrorMap(0, errorMap);
+        }
+    }
+       
+
 }
