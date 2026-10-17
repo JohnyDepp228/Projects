@@ -21,6 +21,10 @@ double Filters::GetElement(int x,int y) const
     {
         return this->filter[(x * this->width) + y]; 
     }
+double Filters::GetElementFromReversed(int x,int y) const 
+    {
+        return this->revFilter[(x * this->width) + y];
+    }
 std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride) {
     int height = std::sqrt(matrix.size());
     int width = std::sqrt(matrix.size());
@@ -42,6 +46,41 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
                     int idx = kx * widthStart  + ky;
                     
                     sum += matrix[idx] * GetElement(kx - x,ky - y);
+
+                }
+            }
+            sum += bias;
+            int tempIdx = xTemp * newWidth + yTemp;
+            temp[tempIdx] = sum;
+            yTemp++;
+        }
+        xTemp++;
+    }
+
+    return temp;
+}
+
+std::vector<double> Filters::SlideWithReversed(const std::vector<double> &matrix,int stride) {
+    int height = std::sqrt(matrix.size());
+    int width = std::sqrt(matrix.size());
+    int widthStart = width;
+    int heightStart = height;
+    height -= this->height;
+    width -= this->width;
+    int newWidth = ((widthStart - this->width) / stride) + 1;
+    int newHeight  =((heightStart - this->height) / stride) + 1;
+    std::vector<double> temp(newWidth * newHeight,0.0);
+    int xTemp = 0;
+    for(int x = 0;x <= height; x += stride){
+        int yTemp = 0;
+        for(int y =0;y <= width; y += stride){
+            double sum = 0.0;
+            for(int kx  = x;kx <  x + this->height;kx++){
+                for(int ky = y;ky < y + this->width;ky++){
+                    
+                    int idx = kx * widthStart  + ky;
+                    
+                    sum += matrix[idx] * GetElementFromReversed(kx - x,ky - y);
 
                 }
             }
@@ -106,4 +145,17 @@ double Filters::RandValue(double leftBorder,double rightBorder) {
     std::mt19937 gen(rd());
 	std::uniform_real_distribution<double> dis(leftBorder, rightBorder);
 	return dis(gen);
+}
+
+void Filters::LearnFilters(const std::vector<double> &errorMat) {
+    revFilter = filter;
+    std::reverse(revFilter.begin(),revFilter.end());
+    int size = width * height;
+    for(int i =0;i < size;i++){
+        filter[i] -= LR * errorMat[i]; 
+    }
+}
+
+std::vector<double> Filters::GetReverseFilter() const {
+    return this->revFilter;
 }

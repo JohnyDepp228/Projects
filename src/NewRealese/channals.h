@@ -6,6 +6,7 @@
 #include <string>
 #include "filters.h"
 #include "mapofsigns.h"
+#include <iostream>
 
 
 class Channals
@@ -28,10 +29,21 @@ public:
 
     std::vector<double> ChannalGMP(const std::vector<double> &matrix);
 
+    void ReversGMP(const std::vector<double> &classifierError);
+
+    void ChannalLearn();
+
+    std::vector<double> MultiMapWithErrorMap(int mapIdx,const std::vector<double> &errorMap);
+
+    void SetInput(const std::vector<double> &input);
+
+    std::vector<double> GetInput()const;
+
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;
     std::string imgPath;
+    std::vector<double> inputMat;
     const int convStride = 1;
     int channalSize = 1;
 };

@@ -1,4 +1,5 @@
 #include "convolutionallayer.h"
+#include "channals.h"
 #include "image.h"
 
 ConvolutionalLayer::ConvolutionalLayer()
@@ -39,6 +40,8 @@ std::vector<double> ConvolutionalLayer::Forward() {
             channals[i].SetFiltersParams(channalsSize, 3, 3);
             
             channals[i].SetChannalSize(channalsSize);
+
+            channals[i].SetInput(temp);
             
             temp = channals[i].ChannalRes(temp);
            
@@ -50,4 +53,16 @@ std::vector<double> ConvolutionalLayer::Forward() {
     }
 
     return res;
+}
+
+void ConvolutionalLayer::Backpropageation(const std::vector<double> &classifierError) {
+    try{
+
+        channals[channalNum -1].ReversGMP(classifierError);
+        channals[channalNum -1].ChannalLearn();
+        std::cout << "\nSuccess in learn\n";
+    }
+    catch(const std::string &msg){
+        std::cout << "Error in backpropagation " + msg;
+    }
 }

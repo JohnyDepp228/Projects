@@ -13,8 +13,23 @@ MapOfSigns::~MapOfSigns()
 std::vector<double> MapOfSigns::GetMap() const { return this->mapOfSigns; }
 std::vector<double> MapOfSigns::GetMapBeforeFun() const { return this->mapOfSignsBeforeActiveFunction; }
 std::vector<int> MapOfSigns::GetPoolingMaxIdx() const { return this->poolingMaxNumIdx; }
+std::vector<double> MapOfSigns::GetErrorMap() const {
+    return this->errorMat;
+}
 void MapOfSigns::SetMap(const std::vector<double> &map) { this->mapOfSigns = map;this->width = this->height = std::sqrt(map.size());}
 void MapOfSigns::SetMapBeforeFun(const std::vector<double> &mapBeforeFun) { this->mapOfSignsBeforeActiveFunction = mapBeforeFun; }
+
+void MapOfSigns::SetErrorMap(const std::vector<double> &errorMap) {
+    this->errorMat = errorMap;
+}
+
+void MapOfSigns::SetPrevLayerError(const std::vector<double> &preLayerError) {
+    this->PrevLayerError = preLayerError;
+}
+
+void MapOfSigns::SetOriginalInput(const std::vector<double> &input) {
+    this->originalInput = input;
+}
 
 std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     int heightStart = std::sqrt(matrix.size());
@@ -75,8 +90,8 @@ void MapOfSigns::ApplyActivFun( std::vector<double> &matrix) {
     }
 }
 
-void MapOfSigns::ApplyDiractiveActivFun() {
-    for(auto &data: mapOfSignsBeforeActiveFunction){
+void MapOfSigns::ApplyDiractiveActivFun(std::vector<double> &errorMat) {
+    for(auto &data: errorMat){
         data = DiractiveGeLu(data);
     }
 }
@@ -98,6 +113,47 @@ double MapOfSigns::GMP() {
     auto max = std::max_element(this->mapOfSigns.begin(), this->mapOfSigns.end());
     this->GMPIdx = std::distance(this->mapOfSigns.begin(), max);
     return *max;
+}
+
+int MapOfSigns::GetGMPIDx() const {
+    return this->GMPIdx;
+}
+
+std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
+    std::cout << "DEBUG MapsSlide -> originalInput size: " << originalInput.size() 
+              << " | errorMap size: " << errorMap.size() << std::endl;
+    if(originalInput.size() == 0){
+        throw std::string("Empty mapOfSigns before active function");
+    }
+    int smallerMatHeight = std::sqrt(errorMap.size());
+    int smallerMapWidth = std::sqrt(errorMap.size());
+    int biggerMatWidth = std::sqrt(originalInput.size());
+    int biggerMatHeight = std::sqrt(originalInput.size());
+
+    int newWidth = ((biggerMatWidth - smallerMapWidth) / 1) + 1;
+    int newHeight  =((biggerMatHeight - smallerMatHeight) / 1) + 1;
+    std::vector<double> temp(newWidth * newHeight,0.0);
+    for(int x = 0;x < newHeight; x += 1){
+       
+        for(int y =0;y < newWidth; y += 1){
+            double sum = 0.0;
+            for(int kx  = 0;kx <  smallerMatHeight;kx++){
+                for(int ky = 0;ky < smallerMapWidth;ky++){
+                    
+                    int errorIdx = kx * smallerMapWidth  + ky;
+
+                    int idx = (x + kx) * biggerMatWidth + (y + ky);
+                    
+                    sum += originalInput[idx] * errorMap[errorIdx];
+
+                }
+            }
+            int tempIdx = x * newWidth + y;
+            temp[tempIdx] = sum;
+        }
+    }
+
+    return temp;
 }
 
 

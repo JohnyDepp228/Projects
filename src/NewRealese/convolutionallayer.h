@@ -4,6 +4,7 @@
 #pragma once
 #include "channals.h"
 #include "image.h"
+#include <iostream>
 
 class ConvolutionalLayer
 {
@@ -16,6 +17,8 @@ public:
     void SetChannalsSize(int);
 
     std::vector<double> Forward();
+
+    void Backpropageation(const std::vector<double> &classifierError);
 
 private:
     int channalNum;

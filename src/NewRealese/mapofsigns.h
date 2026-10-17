@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <numbers>
 #include <iterator>
+#include <string>
+#include <iostream>
 
 
 class MapOfSigns
@@ -18,23 +20,31 @@ public:
     std::vector<double> GetMap() const;
     std::vector<double> GetMapBeforeFun() const;
     std::vector<int> GetPoolingMaxIdx() const;
+     std::vector<double> GetErrorMap() const;
 
      
     void SetMap(const std::vector<double> &map);
     void SetMapBeforeFun(const std::vector<double> &mapBeforeFun);
+    void SetErrorMap(const std::vector<double> &errorMap);
+    void SetPrevLayerError(const std::vector<double> &preLayerError);
+    void SetOriginalInput(const std::vector<double> &input);
 
     std::vector<double> Pooling(const std::vector<double> &matrix);
     std::vector<double> ReversePooling(const std::vector<double> &errorMatrix);
 
     void ApplyActivFun( std::vector<double> &matrix);
     
-    void ApplyDiractiveActivFun();
+    void ApplyDiractiveActivFun(std::vector<double> &errorMat);
 
     double GeLu(double data);
 
     double DiractiveGeLu(double data);
 
     double GMP();
+
+    int GetGMPIDx() const;
+
+    std::vector<double> MapsSlide(const std::vector<double> &errorMap);
 
 
 private:
@@ -45,8 +55,12 @@ private:
     int poolingStride = 2;
 
     int GMPIdx;
+    std::vector<double> errorMat;
+    std::vector<double> originalInput;
     std::vector<double> mapOfSigns;
     std::vector<double> mapOfSignsBeforeActiveFunction;
+
+    std::vector<double> PrevLayerError;
     std::vector<int> poolingMaxNumIdx;
     const double PI = 3.141592653589793;
     double bias = 1.0;

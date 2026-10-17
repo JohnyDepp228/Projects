@@ -21,7 +21,8 @@ auto start = std::chrono::high_resolution_clock::now();
 
 try{
 	std::vector<double> res = convLay.Forward();
-	std::cout << res.size();
+	//std::cout << res.size();
+	convLay.Backpropageation(res);
 }
 catch(const std::string &msg){
 	std::cout << msg;
