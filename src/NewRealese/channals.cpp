@@ -19,7 +19,7 @@ void Channals::SetFiltersParams(int amount,int height,int width) {
 
 void Channals::ConvBlock(int idx,std::vector<double> &mat) {
     if(idx > this->filters.size() || idx > this->maps.size()){
-        throw "Invalid idx of filter/map" + std::to_string(idx);
+        throw (std::string("Invalid idx of filter/map") + std::to_string(idx));
     }
     else {
         std::vector<double> temp;
@@ -36,14 +36,13 @@ std::vector<double>  Channals::ConvResRGB(const std::vector<double> &R,const std
     std::vector<double> temp2;
     for(int i =0;i < this->channalSize;i++){
         temp = filters[i].SlideRGB(R,G,B,this->convStride);
-        std::cout << "Slide\n";
+      
         maps[i].SetMapBeforeFun(temp);
-        std::cout << "set\n";
+       
         maps[i].ApplyActivFun(temp);
-        std::cout << "active\n";
-        std::cout << "Start pooling";
+      
         temp2 = maps[i].Pooling(temp);
-        std::cout << "Pooling\n";
+       
         maps[i].SetMap(temp2);
     }
 
@@ -79,9 +78,9 @@ std::vector<double> Channals::ChannalRes(const std::vector<double> &input) {
             finalSize = currentInput.size();
         }
     }
-    std::cout << "Calcul block of conv\n";
+   
     res = ChannalSum(finalSize);
-    std::cout << "res size: " << res.size() << std::endl;
+   
     return res;
 }
 

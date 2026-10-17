@@ -2,6 +2,7 @@
 #include <random>
 #include <chrono>
 #include "convolutionallayer.h"
+#include <iostream>
 
 
 double Rand(){
@@ -22,13 +23,13 @@ try{
 	std::vector<double> res = convLay.Forward();
 	std::cout << res.size();
 }
-catch(const char *msg){
+catch(const std::string &msg){
 	std::cout << msg;
 }
 
 auto end = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> duration = end - start;
-std::cout << "Execution time: " << duration.count() << std::endl;
+std::cout << "\nExecution time: " << duration.count() << std::endl;
 
 return 0;
 }

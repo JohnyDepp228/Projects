@@ -1,6 +1,5 @@
 #include "mapofsigns.h"
-#include <algorithm>
-#include <iterator>
+
 
 MapOfSigns::MapOfSigns()
 {

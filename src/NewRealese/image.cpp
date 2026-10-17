@@ -34,13 +34,10 @@ std::vector<double> Image::LoadImage(std::string imagePath, int color) {
 
         std::vector<double> img(imgHeightLoaded* imgWidthLoaded);
 		if (res == NULL) {
-            std::string error = "Error read image\t" + (std::string)stbi_failure_reason();
+            std::string error = std::string("Error read image\t") + stbi_failure_reason();
 			throw error;
-			exit(1);
 		}
 		int imgIdx = 0;
-		std::cout << "read img 1\n";
-		std::cout << imgHeightLoaded << " " << imgWidthLoaded << std::endl;
 		for (int x = 0; x < imgHeightLoaded; x++) {
 			for (int y = 0; y < imgWidthLoaded; y++) {
 				int pixelIndex = (x * imgWidthLoaded + y) * 3;
