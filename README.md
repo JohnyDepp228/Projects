@@ -26,7 +26,7 @@ cnn
 14. - [x] Test new architecture of storing channels
 15.  - [x] Pooling and conv of blocks 2,3...(sum of channel) in new architecture
 16. - [ ] Test and doc
-17. - [ ] Find/Make dataset 
+17. - [ ] Dataset 
 
 # New architecture of storing channels
                         Class Channel[m]
