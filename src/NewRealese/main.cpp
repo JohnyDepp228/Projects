@@ -3,6 +3,7 @@
 #include <chrono>
 #include "convolutionallayer.h"
 #include <iostream>
+#include "classifier.h"
 
 
 
@@ -16,16 +17,22 @@ double Rand(){
 int main(){
     
 ConvolutionalLayer convLay;
+Classifier cl;
 convLay.SetChannalsNum(6);
 convLay.SetChannalsSize(16);
 auto start = std::chrono::high_resolution_clock::now();
 
 try{
 	std::vector<double> res = convLay.Forward();
-	//std::cout << res.size();
-	convLay.Backpropageation(res);
+	cl.SetFullyConnectedLayer(res);
+	cl.Classification();
+	cl.LearningClassifier(2);
+	std::cout << cl.GetInputErrors().size();
+	convLay.Backpropageation(cl.GetInputErrors());
 
 	std::cout << "Backprop done" << std::endl;
+
+	std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 }
 catch(const std::string &msg){
 	std::cout << msg;

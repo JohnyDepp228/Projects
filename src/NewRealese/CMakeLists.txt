@@ -21,4 +21,5 @@ add_executable(CNN_test
     ./image.cpp 
     ./stb_impl.cpp
     ./convolutionallayer.cpp
+    ./classifier.cpp
 )
