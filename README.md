@@ -21,16 +21,18 @@ cnn
 9. - [x] Padding
 10. - [x] Bilinear interpolation
 11. - [x] Change pooling with new function
-12. - [ ] Increase speed of convulation(Add Multi threads)
-13. - [ ] Add learning
+12. - [x] Increase speed of convulation(Add Multi threads)
+13. - [x] Add learning
 14. - [x] Test new architecture of storing channels
 15.  - [x] Pooling and conv of blocks 2,3...(sum of channel) in new architecture
+16. - [ ] Test and doc
+17. - [ ] Find/Make dataset 
 
 # New architecture of storing channels
-                        struct Channel[m]
+                        Class Channel[m]
                        /                 \
                       /                   \
-              struct Filter[n]      struct MapOfSigns[n]
+              Class Filter[n]      Class MapOfSigns[n]
               /                                  \
              /                                    \
     std::vector<double> filter               std::vector<double> mapOfSigns
@@ -40,3 +42,10 @@ cnn
 # Test LIST
 - [ ] Test Сonvolution and MaxPooling/MinPooling
 - [ ] Test GAP
+
+
+## Activ. functions
+
+* conv-> GeLu 
+
+* classifier -> ReLu + SoftMax
