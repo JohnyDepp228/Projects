@@ -7,6 +7,8 @@ cnn
 
 16.10.2026 5.967 sec (New release) 
 
+21.10.2026 13 sec forward + learning of conv layer and classifier(one pass)
+
 # TODO list
 1. - [x] Сonvolution
 2. - [x] Pooling(Min,Max)
