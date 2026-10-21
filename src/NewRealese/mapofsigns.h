@@ -31,7 +31,7 @@ public:
     void SetOriginalInput(const std::vector<double> &input);
 
     std::vector<double> Pooling(const std::vector<double> &matrix);
-    std::vector<double> ReversePooling();
+    std::vector<double> ReversePooling(int targetSize);
 
     void ApplyActivFun( std::vector<double> &matrix);
     

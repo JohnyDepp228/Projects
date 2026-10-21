@@ -5,6 +5,7 @@
 #include <iostream>
 
 
+
 double Rand(){
     std::random_device rd;
 		std::mt19937 gen(rd());
@@ -23,6 +24,8 @@ try{
 	std::vector<double> res = convLay.Forward();
 	//std::cout << res.size();
 	convLay.Backpropageation(res);
+
+	std::cout << "Backprop done" << std::endl;
 }
 catch(const std::string &msg){
 	std::cout << msg;

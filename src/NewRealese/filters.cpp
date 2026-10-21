@@ -150,6 +150,8 @@ double Filters::RandValue(double leftBorder,double rightBorder) {
 void Filters::LearnFilters(const std::vector<double> &errorMat) {
     revFilter = filter;
     std::reverse(revFilter.begin(),revFilter.end());
+
+    
     int size = width * height;
     for(int i =0;i < size;i++){
         filter[i] -= LR * errorMat[i]; 

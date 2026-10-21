@@ -19,7 +19,7 @@ public:
 
     void ConvBlock(int idx,std::vector<double> &mat);
 
-    std::vector<double>  ConvResRGB(const std::vector<double> &R,const std::vector<double> &G,const std::vector<double> &B);
+    std::vector<double>  ConvResGray(const std::vector<double> &gray);
     
     std::vector<double> ChannalSum(int matSize);
 
@@ -46,6 +46,8 @@ public:
     std::vector<double> GetErrorMap(int mapIdx)const;
 
     int GetChannelSize() const;
+
+    std::vector<double> GetPrevLayerError(int mapIdx);
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;

@@ -74,18 +74,21 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     return res;
 }
 
-std::vector<double> MapOfSigns::ReversePooling() {
-    std::vector<double> res;
-    if(PrevLayerError.size() <= 0){
+std::vector<double> MapOfSigns::ReversePooling(int targetSize) {
+    std::vector<double> res(targetSize,0.0);
+    if(errorMat.size() <= 0){
         throw std::string("prev layer size <= 0");
     }
-    int size = std::sqrt(PrevLayerError.size()) * this->poolingStride; 
+    //int size = std::sqrt(PrevLayerError.size()) * this->poolingStride; 
 
-    res.resize(size * size);
+    int safeLimit = std::min(poolingMaxNumIdx.size(), errorMat.size());
 
-    for(int i =0;i < poolingMaxNumIdx.size();i++){
+    for(int i = 0; i < safeLimit; i++){
         int idx = poolingMaxNumIdx[i];
-        res[idx] = PrevLayerError[i];
+        
+        if (idx < res.size()) {
+            res[idx] = errorMat[i];
+        }
     }
     return res;
 }

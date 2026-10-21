@@ -34,18 +34,19 @@ void Channals::ConvBlock(int idx,std::vector<double> &mat) {
     }
 }
 
-std::vector<double>  Channals::ConvResRGB(const std::vector<double> &R,const std::vector<double> &G,const std::vector<double> &B) {
+std::vector<double>  Channals::ConvResGray(const std::vector<double> &gray) {
     std::vector<double> temp;
     std::vector<double> temp2;
+    SetInput(gray);
     for(int i =0;i < this->channalSize;i++){
-        temp = filters[i].SlideRGB(R,G,B,this->convStride);
+        temp = filters[i].Slide(gray,this->convStride);
       
         maps[i].SetMapBeforeFun(temp);
        
         maps[i].ApplyActivFun(temp);
       
         temp2 = maps[i].Pooling(temp);
-       
+        
         maps[i].SetMap(temp2);
     }
 
@@ -73,6 +74,7 @@ void Channals::SetChannalSize(int size) {
 
 std::vector<double> Channals::ChannalRes(const std::vector<double> &input) {
     std::vector<double> res;
+    this->inputMat = input;
     int finalSize;
     for(int i =0;i < this->channalSize;i++){
         std::vector<double> currentInput = input; 
@@ -142,48 +144,79 @@ void Channals::ChannalLearnGMP(const std::vector<double> &classifierError) {
             }
         }
         std::cout << std::endl;
-        maps[i].SetPrevLayerError(filters[i].SlideWithReversed(temp1,1));
+        maps[i].SetPrevLayerError(filters[i].SlideWithReversed(temp,1));
     }
 }
 
 void Channals::ChannalLearn() {
     std::cout << "Start channal learning" << std::endl;
-    for(int i =0;i < channalSize;i++){
-        maps[i].ReversePooling();
+    for(int i = 0; i < channalSize; i++){
+        int targetSize = maps[i].GetMapBeforeFun().size();
+       std::vector<double> unpooledMap =  maps[i].ReversePooling(targetSize);
         std::cout << "Reverse pooling done in idx " << i << std::endl;
         maps[i].SetOriginalInput(this->inputMat);
-         std::vector<double> temp = MultiMapWithErrorMap(i, maps[i].GetErrorMap());
-          std::cout << "Multi map with error pooling done in idx " << i << std::endl;
+        
+        std::vector<double> currentErrorMap = maps[i].GetErrorMap();
+        std::vector<double> temp = MultiMapWithErrorMap(i, unpooledMap);
+        std::cout << "Multi map with error pooling done in idx " << i << std::endl;
+         // ДЕБАГ 1: Проверяем ошибку до активации
+        double sum1 = 0; for(double v : temp) sum1 += std::abs(v);
+        std::cout << "Sum after MultiMap: " << sum1 << std::endl;
+
+
         maps[i].ApplyDiractiveActivFun(temp);
         std::vector<double> temp1;
-        std::cout << "Filter slide size: "<<temp.size() << std::endl;
+        std::cout << "Filter slide size: " << temp.size() << std::endl;
+        // ДЕБАГ 2: Проверяем ошибку ПОСЛЕ производной активации (Подозреваемый №1)
+        double sum2 = 0; for(double v : temp) sum2 += std::abs(v);
+        std::cout << "Sum after ActivFun Derivative: " << sum2 << std::endl;
         temp1 = maps[i].MapsSlide(temp);
-         std::cout << "MAp slide done in idx " << i << std::endl;
+        // ДЕБАГ 3: Проверяем градиент весов
+        double sum3 = 0; for(double v : temp1) sum3 += std::abs(v);
+        std::cout << "Sum of weight gradients (temp1): " << sum3 << std::endl;
+        std::cout << "Map slide done in idx " << i << std::endl;
         std::cout << "Filters map for learn size: " << temp1.size() << std::endl;
+        
         std::cout << "Old filter weight\n";
-         for(int i =0;i < 3;i++){
-            for(int j = 0;j < 3;j++){
-                std::cout << filters[i].GetElement(i, j);
+        for(int k = 0; k < 3; k++){
+            for(int j = 0; j < 3; j++){
+                std::cout << filters[i].GetElement(k, j); 
             }
         }
         std::cout << std::endl;
+        
         filters[i].LearnFilters(temp1);
         std::cout << "Learn learning done in idx " << i << std::endl;
+        
         std::cout << "New filter weight\n";
-        for(int i =0;i < 3;i++){
-            for(int j = 0;j < 3;j++){
-                std::cout << filters[i].GetElement(i, j);
+        for(int k = 0; k < 3; k++){
+            for(int j = 0; j < 3; j++){
+                std::cout << filters[i].GetElement(k, j);
             }
         }
         std::cout << std::endl;
-        maps[i].SetPrevLayerError(filters[i].SlideWithReversed(temp1,1));
+        
+      
+        std::vector<double> prevLayerError = filters[i].SlideWithReversed(temp, 1);
+        
+       
+        if (prevLayerError.empty()) {
+            throw std::string("SlideWithReversed returned empty vector for map " + std::to_string(i));
+        }
+        
+        maps[i].SetPrevLayerError(prevLayerError);
     }
 }
 
 
 
+
 std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<double> &errorMap) {
     std::vector<double> res = maps[mapIdx].GetMapBeforeFun();
+    if (res.size() != errorMap.size()) {
+        throw std::string("Size mismatch in MultiMapWithErrorMap: res is " + 
+                          std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()));
+    }
     for(int i =0;i < res.size();i++){
         res[i] *= errorMap[i];
     }
@@ -209,6 +242,10 @@ std::vector<double> Channals::GetErrorMap(int mapIdx)const {
 
 int Channals::GetChannelSize() const {
     return this->channalSize;
+}
+
+std::vector<double> Channals::GetPrevLayerError(int mapIdx) {
+    return maps[mapIdx].GetPrevLayerError();
 }
 
 
