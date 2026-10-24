@@ -141,7 +141,6 @@ private:
 
 	double(Classifier::* ActivationFunction)(double);
 
-	double bias = 0.3;
 };
 
 #endif

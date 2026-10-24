@@ -38,7 +38,7 @@ private:
     std::vector<double> revFilter;
     int width;
     int height;
-    double bias = 1.0;
+    double bias = 0.001;
     double LR = 0.00001;
 
 };

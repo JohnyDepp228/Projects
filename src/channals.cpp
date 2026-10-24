@@ -1,4 +1,5 @@
 #include "channals.h"
+#include <string>
 
 Channals::Channals()
 {
@@ -125,7 +126,7 @@ void Channals::ChannalLearnGMP(const std::vector<double> &classifierError) {
         maps[i].SetOriginalInput(this->inputMat);
       
         temp = MultiMapWithErrorMap(i, maps[i].GetErrorMap());
-
+        
         maps[i].ApplyDiractiveActivFun(temp);
        
         temp1 = maps[i].MapsSlide(temp);
@@ -143,14 +144,15 @@ void Channals::ChannalLearn() {
     std::vector<double> prevLayerError;
     for(int i = 0; i < channalSize; i++){
         int targetSize = maps[i].GetMapBeforeFun().size();
+
         unpooledMap =  maps[i].ReversePooling(targetSize);
-      
+       
         maps[i].SetOriginalInput(this->inputMat);
 
         temp = MultiMapWithErrorMap(i, unpooledMap);
-
-        maps[i].ApplyDiractiveActivFun(temp);
        
+        maps[i].ApplyDiractiveActivFun(temp);
+        
         temp1 = maps[i].MapsSlide(temp);
        
         filters[i].LearnFilters(temp1);
@@ -175,7 +177,13 @@ std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<
                           std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()));
     }
     for(int i =0;i < res.size();i++){
+        if(std::isnan(errorMap[i])){
+            throw std::string("Nan when map multi in error map " + std::to_string(i) + "\n");
+        } 
         res[i] *= errorMap[i];
+        if (std::isnan(res[i])){
+            throw std::string("Nan when map multi in res map " + std::to_string(i) + "\t" + std::to_string(errorMap[i]) + "\n");
+        } 
     }
 
     return res;
@@ -203,6 +211,13 @@ int Channals::GetChannelSize() const {
 
 std::vector<double> Channals::GetPrevLayerError(int mapIdx) {
     return maps[mapIdx].GetPrevLayerError();
+}
+
+bool Channals::HasNaN(const std::vector<double> &vec) {
+    for(int i = 0;i < vec.size();i++){
+        if (std::isnan(vec[i])) return true;
+    }
+    return false;
 }
 
 

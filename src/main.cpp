@@ -56,7 +56,7 @@ try{
 		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 	}
 }
-catch (const std::string& msg) {
+	catch (const std::string& msg) {
         std::cout << "Caught string exception: " << msg << std::endl;
     }
     catch (const std::exception& e) {

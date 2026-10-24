@@ -82,9 +82,10 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
+		double bound = std::sqrt(2.0 / matrix.size());
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
-				matrix[i][j] = Weight(-0.2, 0.2);
+				matrix[i][j] = Weight(-bound, bound);
 			}
 		}
 	}
@@ -257,6 +258,11 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		if (HasNaN(firstHiddenLayerErrors)) {
 			throw std::string("Nan in firstHiddenLayerErrors");
     	}
+
+		InputErrorsForBackprop();
+		if (HasNaN(fullyconnectedLayerErrors)) {
+			throw std::string("Nan in fullyconnectedLayerErrors");
+    	}
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
 		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
@@ -271,11 +277,6 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		UpdateBias(thirdHiddenLayerBias, thirdHiddenLayerErrors);
 		UpdateBias(secondHiddenLayerBias, secondHiddenLayerErrors);
 		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
-
-		InputErrorsForBackprop();
-		if (HasNaN(fullyconnectedLayerErrors)) {
-			throw std::string("Nan in fullyconnectedLayerErrors");
-    	}
 	}
 
 	void Classifier::ShowErrors(const std::vector<double>& error) {
@@ -308,6 +309,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	double Classifier::DirectiveReLu(double res) {
+
 		return (res > 0.0) ? 1.0 : 0.0;
 	}
 

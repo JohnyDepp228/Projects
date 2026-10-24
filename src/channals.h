@@ -47,6 +47,8 @@ public:
     int GetChannelSize() const;
 
     std::vector<double> GetPrevLayerError(int mapIdx);
+
+    bool HasNaN(const std::vector<double> &vec);
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;

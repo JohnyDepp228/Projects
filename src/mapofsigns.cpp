@@ -1,4 +1,5 @@
 #include "mapofsigns.h"
+#include <string>
 
 
 MapOfSigns::MapOfSigns()
@@ -52,6 +53,7 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
         int resY = 0;
         for(int y =0;y <= poolWidthLimit; y += poolingStride){
             double sum = 0.0;
+            globalIdx.clear();
             for(int kx  = x;kx <  x + this->poolingHeight;kx++){
                 for(int ky = y;ky < y + this->poolingWidth;ky++){
                     int idx = kx * widthStart  + ky;
@@ -90,6 +92,9 @@ std::vector<double> MapOfSigns::ReversePooling(int targetSize) {
         if (idx < res.size()) {
             res[idx] = errorMat[i];
         }
+        if (std::isnan(errorMat[i])){
+            throw std::string("Nan when reverse pooling" + std::to_string(i) + "\n");
+        } 
     }
     return res;
 }
@@ -104,7 +109,7 @@ void MapOfSigns::ApplyDiractiveActivFun(std::vector<double> &errorMat) {
     if(errorMat.size() != mapOfSignsBeforeActiveFunction.size()){
         throw std::string("Size of errorMat != size of mamapOfSignsBeforeActiveFunction");
     }
-    for(int i = 0; i< errorMat.size(); i++){
+    for(int i = 0; i < errorMat.size(); i++){
         errorMat[i] *= DiractiveGeLu(mapOfSignsBeforeActiveFunction[i]);
     }
 }
@@ -140,7 +145,7 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
 
     for (size_t i = 0; i < errorMap.size(); ++i) {
         if (std::isnan(errorMap[i])) {
-            throw std::string("In MapsSlide sent errorMap, already with NaN at ");
+            throw std::string("In MapsSlide sent errorMap, already with NaN at " + std::to_string(i));
         }
     }
     int smallerMatHeight = std::sqrt(errorMap.size());

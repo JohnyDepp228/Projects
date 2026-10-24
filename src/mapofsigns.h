@@ -63,7 +63,7 @@ private:
     std::vector<double> PrevLayerError;
     std::vector<int> poolingMaxNumIdx;
     const double PI = 3.141592653589793;
-    double bias = 1.0;
+    double bias = 0.0001;
 };
 
 #endif

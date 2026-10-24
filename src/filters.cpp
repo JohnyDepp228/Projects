@@ -67,8 +67,8 @@ std::vector<double> Filters::SlideWithReversed(const std::vector<double> &matrix
     int heightStart = height;
     height -= this->height;
     width -= this->width;
-    int newWidth = ((widthStart - this->width) / stride) + 1;
-    int newHeight  =((heightStart - this->height) / stride) + 1;
+    int newWidth = ((widthStart + this->width) / stride) - 1;
+    int newHeight  =((heightStart + this->height) / stride) - 1;
     std::vector<double> temp(newWidth * newHeight,0.0);
     int xTemp = 0;
     for(int x = 0;x <= height; x += stride){
