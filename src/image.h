@@ -29,8 +29,8 @@ private:
 std::vector<double> R;
 std::vector<double> G;
 std::vector<double> B;
-const int imgHeight = 840;
-const int imgWidth = 840;
+const int imgHeight = 410;
+const int imgWidth = 410;
 
 
 int imgHeightLoaded = 0;

@@ -100,8 +100,11 @@ void MapOfSigns::ApplyActivFun( std::vector<double> &matrix) {
 }
 
 void MapOfSigns::ApplyDiractiveActivFun(std::vector<double> &errorMat) {
-    for(auto &data: errorMat){
-        data = DiractiveGeLu(data);
+    if(errorMat.size() != mapOfSignsBeforeActiveFunction.size()){
+        throw std::string("Size of errorMat != size of mamapOfSignsBeforeActiveFunction");
+    }
+    for(int i = 0; i< errorMat.size(); i++){
+        errorMat[i] *= DiractiveGeLu(mapOfSignsBeforeActiveFunction[i]);
     }
 }
 
@@ -134,6 +137,14 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
     if(originalInput.size() == 0){
         throw std::string("Empty mapOfSigns before active function");
     }
+
+
+    for (size_t i = 0; i < errorMap.size(); ++i) {
+        if (std::isnan(errorMap[i])) {
+            std::cout << "In MapsSlide sent errorMap, already with NaN at " << i << std::endl;
+            throw std::string("NaN detected in input errorMap");
+        }
+    }
     int smallerMatHeight = std::sqrt(errorMap.size());
     int smallerMapWidth = std::sqrt(errorMap.size());
     int biggerMatWidth = std::sqrt(originalInput.size());
@@ -159,8 +170,15 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
             }
             int tempIdx = x * newWidth + y;
             temp[tempIdx] = sum;
+
+              if (std::isnan(sum)) {
+                std::cout << "!!! Catch NaN in MapsSlide x=" << x << ", y=" << y << std::endl;
+                throw std::string("NaN generated inside MapsSlide loop");
+            }
         }
     }
+
+    
 
     return temp;
 }

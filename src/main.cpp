@@ -4,6 +4,7 @@
 #include "convolutionallayer.h"
 #include <iostream>
 #include "classifier.h"
+#include <float.h>
 
 
 
@@ -15,7 +16,7 @@ double Rand(){
 }
 
 int main(){
-    
+ 
 ConvolutionalLayer convLay;
 Classifier cl;
 convLay.SetChannalsNum(6);
@@ -34,9 +35,15 @@ try{
 
 	std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 }
-catch(const std::string &msg){
-	std::cout << msg;
-}
+catch (const std::string& msg) {
+        std::cout << "Caught string exception: " << msg << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Caught std::exception: " << e.what() << std::endl;
+    }
+    catch (...) {
+        std::cout << "Unknown crash occurred!" << std::endl;
+    }
 
 auto end = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> duration = end - start;

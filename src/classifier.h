@@ -74,11 +74,13 @@ public:
 
 	double DirectiveReLu(double res);
 
-	double SoftMax(double res);
+	double SoftMax(double res,double outputSum);
 
 	double GeLu(double res);
 
 	double DirectiveGeLu(double res);
+
+	bool HasNaN(const std::vector<double>& vec);
 
 	//Setters & Getters
 
@@ -95,7 +97,7 @@ private:
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
 	double inertia = 0.4;
-	double LR = 0.2;
+	double LR = 0.0001;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;

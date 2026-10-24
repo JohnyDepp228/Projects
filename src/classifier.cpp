@@ -1,4 +1,5 @@
 #include "classifier.h"
+#include <algorithm>
 
 Classifier::Classifier()
 {
@@ -113,7 +114,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 
 		for (int i = 0; i < layerWeights.size(); i++) {
 			for (int j = 0; j < layerWeights[i].size(); j++) {
-				res[j] += (layer[j] * layerWeights[i][j]);
+				res[j] += (layer[i] * layerWeights[i][j]);
 			}
 		}
 		layerBeforeReLu.resize(res.size());
@@ -142,8 +143,14 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::ApplySoftMax() {
+		double res = 0.0;
+		double maxOutput  = *std::max_element(outputLayer.begin(), outputLayer.end());
+		for (const double& n : outputLayer) {
+			res += std::exp(n - maxOutput);
+		}
+
 		for (double& n : outputLayer) {
-			n = SoftMax(n);
+			n = SoftMax(n - maxOutput,res);
 		}
 	}
 
@@ -184,7 +191,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		std::vector<double> targets(outputLayerErrors.size(), 0.0);
 		targets[correctNeuronIndex] = 1.0;
 		for (int i = 0; i < outputLayerErrors.size(); i++) {
-			outputLayerErrors[i] = (targets[i] - outputLayerErrors[i]);
+			outputLayerErrors[i] = (targets[i] - outputLayer[i]);
 		}
 	}
 
@@ -234,11 +241,23 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 
 	void Classifier::LearningClassifier(int correctNeuronIndex) {
 		std::vector<std::vector<double>> oldWeights = secondToThirdHiddenWeights;
-		OutputLayerErrorCalcu(correctNeuronIndex);
-		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
-		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
-		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
 
+		OutputLayerErrorCalcu(correctNeuronIndex);
+		if (HasNaN(outputLayerErrors)) {
+			throw std::string("Nan in outputLayerErrors");
+    	}
+		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
+		if (HasNaN(thirdHiddenLayerErrors)) {
+			throw std::string("Nan in thirdHiddenLayerErrors");
+    	}
+		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
+		if (HasNaN(secondHiddenLayerErrors)) {
+			throw std::string("Nan in secondHiddenLayerErrors");
+    	}
+		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
+		if (HasNaN(firstHiddenLayerErrors)) {
+			throw std::string("Nan in firstHiddenLayerErrors");
+    	}
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
 		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
@@ -255,6 +274,9 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		UpdateBias(firstHiddenLayerBias, firstHiddenLayerErrors);
 
 		InputErrorsForBackprop();
+		if (HasNaN(fullyconnectedLayerErrors)) {
+			throw std::string("Nan in fullyconnectedLayerErrors");
+    	}
 	}
 
 	void Classifier::ShowErrors(const std::vector<double>& error) {
@@ -281,8 +303,14 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		return (res > 0.0) ? 1.0 : 0.0;
 	}
 
-	double Classifier::SoftMax(double res) {
-		return std::exp(res) / Classifier::OutLayerSum();
+	double Classifier::SoftMax(double res,double outputSum) {
+		return std::exp(res) / outputSum;
+	}
+
+
+	bool Classifier::HasNaN(const std::vector<double>& vec) {
+    	for (double n : vec) if (std::isnan(n) || std::isinf(n)) return true;
+    		return false;
 	}
 
 	//Setters & Getters
