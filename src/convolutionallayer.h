@@ -22,6 +22,10 @@ public:
 
     void SetPrevLayerErrorMap(int currentChannelIdx,int prevChannelIdx);
 
+    void SetImage(std::string path);
+
+    void SetChannelsParams();
+
 private:
     int channalNum;
     int channalsSize;

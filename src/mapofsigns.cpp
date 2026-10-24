@@ -41,15 +41,17 @@ std::vector<double> MapOfSigns::Pooling(const std::vector<double> &matrix) {
     int poolWidthLimit = widthStart - this->poolingWidth;
     int widthAfterPool = ((widthStart - this->poolingWidth) / poolingStride) + 1;
     int heightAfterPool = ((heightStart - this->poolingHeight) / poolingStride) + 1;
-    std::vector<double> res(widthAfterPool  *heightAfterPool);
     this->poolingMaxNumIdx.resize(widthAfterPool  * heightAfterPool);
+
+    std::vector<double> res(widthAfterPool  *heightAfterPool);
+    std::vector<double> poolMat(this->poolingHeight *this->poolingWidth );
+    std::vector<int> globalIdx;
     int resX = 0;
+
     for(int x = 0;x <= poolHeightLimit; x += poolingStride){
         int resY = 0;
         for(int y =0;y <= poolWidthLimit; y += poolingStride){
             double sum = 0.0;
-            std::vector<double> poolMat(this->poolingHeight *this->poolingWidth );
-            std::vector<int> globalIdx;
             for(int kx  = x;kx <  x + this->poolingHeight;kx++){
                 for(int ky = y;ky < y + this->poolingWidth;ky++){
                     int idx = kx * widthStart  + ky;
@@ -79,7 +81,6 @@ std::vector<double> MapOfSigns::ReversePooling(int targetSize) {
     if(errorMat.size() <= 0){
         throw std::string("prev layer size <= 0");
     }
-    //int size = std::sqrt(PrevLayerError.size()) * this->poolingStride; 
 
     int safeLimit = std::min(poolingMaxNumIdx.size(), errorMat.size());
 
@@ -132,8 +133,6 @@ int MapOfSigns::GetGMPIDx() const {
 }
 
 std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
-    std::cout << "DEBUG MapsSlide -> originalInput size: " << originalInput.size() 
-              << " | errorMap size: " << errorMap.size() << std::endl;
     if(originalInput.size() == 0){
         throw std::string("Empty mapOfSigns before active function");
     }
@@ -141,8 +140,7 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
 
     for (size_t i = 0; i < errorMap.size(); ++i) {
         if (std::isnan(errorMap[i])) {
-            std::cout << "In MapsSlide sent errorMap, already with NaN at " << i << std::endl;
-            throw std::string("NaN detected in input errorMap");
+            throw std::string("In MapsSlide sent errorMap, already with NaN at ");
         }
     }
     int smallerMatHeight = std::sqrt(errorMap.size());
@@ -172,7 +170,6 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
             temp[tempIdx] = sum;
 
               if (std::isnan(sum)) {
-                std::cout << "!!! Catch NaN in MapsSlide x=" << x << ", y=" << y << std::endl;
                 throw std::string("NaN generated inside MapsSlide loop");
             }
         }

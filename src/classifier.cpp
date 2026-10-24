@@ -64,14 +64,13 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::InputErrorsForBackprop() {
-		std::vector<std::vector<double>> temp = TransponMatrix(fullConToFirstHiddenWeights);
 		std::fill(fullyconnectedLayerErrors.begin(), fullyconnectedLayerErrors.end(), 0.0);
 		for (int i = 0; i < fullyConnectedLayer.size(); i++) {
 			double errSum = 0.0;
 			for (int j = 0; j < firstHiddenLayerErrors.size(); j++) {
-				errSum += (firstHiddenLayerErrors[j] * temp[j][i]);
+				errSum += (firstHiddenLayerErrors[j] * fullConToFirstHiddenWeights[i][j]);
 			}
-			fullyconnectedLayerErrors[i] = errSum * DirectiveLeakyReLu(fullyConnectedLayer[i]);
+			fullyconnectedLayerErrors[i] = errSum ;
 		}
 	}
 
@@ -191,7 +190,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		std::vector<double> targets(outputLayerErrors.size(), 0.0);
 		targets[correctNeuronIndex] = 1.0;
 		for (int i = 0; i < outputLayerErrors.size(); i++) {
-			outputLayerErrors[i] = (targets[i] - outputLayer[i]);
+			outputLayerErrors[i] = (outputLayer[i]  - targets[i]);
 		}
 	}
 
@@ -203,7 +202,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 			for (int j = 0; j < nextLayErrors.size(); j++) {
 				errSum += (nextLayErrors[j] * nextlayerWeights[i][j]);
 			}
-			currentLayErrors[i] = errSum * DirectiveLeakyReLu(beforeRelu[i]);
+			currentLayErrors[i] = errSum * DirectiveReLu(beforeRelu[i]);
 		}
 	}
 
@@ -219,14 +218,14 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	void Classifier::UpdateLayerWieghts(const std::vector<std::vector<double>>& velocity, std::vector<std::vector<double>>& layerWeights) {
 		for (int i = 0; i < layerWeights.size(); i++) {
 			for (int j = 0; j < layerWeights[i].size(); j++) {
-				layerWeights[i][j] = layerWeights[i][j] + velocity[i][j];
+				layerWeights[i][j] = layerWeights[i][j] - velocity[i][j];
 			}
 		}
 	}
 
 	void Classifier::UpdateBias(std::vector<double>& layerBias, const std::vector<double>& layerErrors) {
 		for (int i = 0; i < layerBias.size(); i++) {
-			layerBias[i] = layerBias[i] + (LR * layerErrors[i]);
+			layerBias[i] = layerBias[i] - (LR * layerErrors[i]);
 		}
 	}
 
@@ -285,18 +284,27 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		}
 	}
 
+	double Classifier::GetError() const{
+    	double totalLoss = 0.0;
+   			for (double err : outputLayerErrors) {
+        		totalLoss += std::abs(err); 
+    		}
+    	return totalLoss / outputLayerErrors.size();
+	}
+		
+
 	//Activation Functions
 
 	double Classifier::LeakyReLu(double res) {
-		return res > 0.0 ? res : res * 0.01;
+		return (res > 0.0) ? res : res * 0.01;
 	}
 
 	double Classifier::DirectiveLeakyReLu(double res) {
-		return res > 0.0 ? res : 0.01;
+		return (res > 0.0) ? res : 0.01;
 	}
 
 	double Classifier::ReLu(double res) {
-		return res > 0.0 ? res : 0.0;
+		return (res > 0.0) ? res : 0.0;
 	}
 
 	double Classifier::DirectiveReLu(double res) {

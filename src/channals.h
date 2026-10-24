@@ -6,7 +6,6 @@
 #include <string>
 #include "filters.h"
 #include "mapofsigns.h"
-#include <iostream>
 
 
 class Channals

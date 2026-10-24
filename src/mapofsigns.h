@@ -8,7 +8,6 @@
 #include <numbers>
 #include <iterator>
 #include <string>
-#include <iostream>
 
 
 class MapOfSigns

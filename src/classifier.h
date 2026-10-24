@@ -90,6 +90,8 @@ public:
 
 	std::vector<double> GetInputErrors() const;
 
+	double GetError() const;
+
 private:
     int numOfFullyConnectedLayerNeurons = 512;
 	int numOfFirstHiddenLayerNeurons = 460;
