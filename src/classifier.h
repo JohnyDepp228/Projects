@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <numbers> 
+#include <string>
 
 
 
@@ -99,7 +100,7 @@ private:
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
 	double inertia = 0.4;
-	double LR = 0.0001;
+	double LR = 0.001;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;

@@ -174,9 +174,12 @@ std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<
     std::vector<double> res = maps[mapIdx].GetMapBeforeFun();
     if (res.size() != errorMap.size()) {
         throw std::string("Size mismatch in MultiMapWithErrorMap: res is " + 
-                          std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()));
+                          std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()) + "\n");
     }
     for(int i =0;i < res.size();i++){
+        if (std::isinf(res[i])) {
+            throw std::string("Res is INF before multiplication at index " + std::to_string(i)+ "\n");
+        }
         if(std::isnan(errorMap[i])){
             throw std::string("Nan when map multi in error map " + std::to_string(i) + "\n");
         } 

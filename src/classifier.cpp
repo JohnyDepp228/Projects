@@ -75,8 +75,8 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	double Classifier::Weight(const double& leftBoard, const double& rightBoard) {
-		std::random_device rd;
-		std::mt19937 gen(rd());
+		static std::random_device rd;
+		static std::mt19937 gen(rd());
 		std::uniform_real_distribution<double> dis(leftBoard, rightBoard);
 		return dis(gen);
 	}
@@ -143,6 +143,12 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::ApplySoftMax() {
+		for (size_t i = 0; i < outputLayer.size(); ++i) {
+        if (std::isnan(outputLayer[i]) || std::isinf(outputLayer[i])) {
+            throw std::string("ApplySoftMax: outputLayer already contains NaN/INF at index " 
+                              + std::to_string(i) + " BEFORE calculation!");
+        	}
+    	}
 		double res = 0.0;
 		double maxOutput  = *std::max_element(outputLayer.begin(), outputLayer.end());
 		for (const double& n : outputLayer) {
@@ -263,6 +269,19 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		if (HasNaN(fullyconnectedLayerErrors)) {
 			throw std::string("Nan in fullyconnectedLayerErrors");
     	}
+
+		 auto clip_gradients = [](std::vector<double>& errors) {
+        	for (double& err : errors) {
+            	if (err > 1.0)  err = 1.0;
+            	if (err < -1.0) err = -1.0;
+        		}
+    		};
+
+    	clip_gradients(outputLayerErrors);
+    	clip_gradients(thirdHiddenLayerErrors);
+    	clip_gradients(secondHiddenLayerErrors);
+    	clip_gradients(firstHiddenLayerErrors);
+    	clip_gradients(fullyconnectedLayerErrors);
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
 		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
@@ -301,7 +320,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	double Classifier::DirectiveLeakyReLu(double res) {
-		return (res > 0.0) ? res : 0.01;
+		return (res > 0.0) ? 1.0 : 0.01;
 	}
 
 	double Classifier::ReLu(double res) {
@@ -309,7 +328,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	double Classifier::DirectiveReLu(double res) {
-
+		if (std::isnan(res)) return 0.0;
 		return (res > 0.0) ? 1.0 : 0.0;
 	}
 

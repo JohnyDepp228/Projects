@@ -26,14 +26,15 @@ auto start = std::chrono::high_resolution_clock::now();
 try{
 	int epoch = 0;
 	double error;
-	std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
+	//std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
+	std::string path = "C:/Users/Boss/Desktop/2.jpg";
 	int correctAnswer1 = 2;
-	std::string path2 = "C:/Users/LordMegatron/Desktop/3.png";
+	//std::string path2 = "C:/Users/LordMegatron/Desktop/3.png";
 	int correctAnswer2 = 3;
 	std::cout << "Learning\n";
 	convLay.SetImage(path);
 	convLay.SetChannelsParams();
-	while(epoch < 50){
+	while(epoch < 10){
 		std::cout << "Epoch:\t" << epoch << std::endl;
 		std::vector<double> res = convLay.Forward();
 		cl.SetFullyConnectedLayer(res);

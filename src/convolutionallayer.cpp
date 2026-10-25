@@ -59,7 +59,6 @@ void ConvolutionalLayer::Backpropageation(const std::vector<double> &classifierE
             std::cout << "Current layer:  " << i << std::endl;
             channals[i].ChannalLearn();
             
-            
             if (i > 0) {
                 SetPrevLayerErrorMap(i, i - 1);
             }

@@ -145,7 +145,7 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
 
     for (size_t i = 0; i < errorMap.size(); ++i) {
         if (std::isnan(errorMap[i])) {
-            throw std::string("In MapsSlide sent errorMap, already with NaN at " + std::to_string(i));
+            throw std::string("In MapsSlide sent errorMap, already with NaN at " + std::to_string(i) + "\n");
         }
     }
     int smallerMatHeight = std::sqrt(errorMap.size());
