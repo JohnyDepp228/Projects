@@ -26,35 +26,70 @@ auto start = std::chrono::high_resolution_clock::now();
 try{
 	int epoch = 0;
 	double error;
-	//std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
-	std::string path = "C:/Users/Boss/Desktop/2.jpg";
+	std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
+	//std::string path = "C:/Users/Boss/Desktop/2.jpg";
 	int correctAnswer1 = 2;
-	//std::string path2 = "C:/Users/LordMegatron/Desktop/3.png";
+	std::string path2 = "C:/Users/LordMegatron/Desktop/3.png";
 	int correctAnswer2 = 3;
 	std::cout << "Learning\n";
-	convLay.SetImage(path);
 	convLay.SetChannelsParams();
-	while(epoch < 10){
+	while(epoch < 20){
 		std::cout << "Epoch:\t" << epoch << std::endl;
-		std::vector<double> res = convLay.Forward();
-		cl.SetFullyConnectedLayer(res);
+		convLay.SetImage(path);
+		std::vector<double> forwardRes  = convLay.Forward();
+		cl.SetFullyConnectedLayer(forwardRes);
 		cl.Classification();
+		cl.LearningClassifier(correctAnswer1);
+		convLay.Backpropageation(cl.GetInputErrors());
+		std::cout << "Backprop done" << std::endl;
+		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
+		std::cout << "Error:\t" << cl.GetError() << std::endl;
 
-		cl.LearningClassifier(2);
+		
+		convLay.SetImage(path2);
+		forwardRes = convLay.Forward();
+		cl.SetFullyConnectedLayer(forwardRes);
+		cl.Classification();
+		cl.LearningClassifier(correctAnswer2);
 		convLay.Backpropageation(cl.GetInputErrors());
 		std::cout << "Backprop done" << std::endl;
 		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 		std::cout << "Error:\t" << cl.GetError() << std::endl;
 		epoch++;
 	}
+
+	convLay.SetImage(path);
 	for(int i =0;i < 3;i++){
-		std::cout << "Test " << i << std::endl;
+		std::cout << "Test 1" << i << std::endl;
 		std::vector<double> res = convLay.Forward();
 		std::cout << "Forward on test " << i << " done" <<std::endl;
 		cl.SetFullyConnectedLayer(res);
 		cl.Classification();
 		std::cout << "Classification on test " << i << " done" <<std::endl;
 		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
+		if(cl.FindCorrectOutNeuro() == correctAnswer1){
+			std::cout << "Passed test " << i << std::endl;
+		}
+		else {
+			std::cout << "Failed test " << i << std::endl;
+		}
+	}
+
+	convLay.SetImage(path2);
+	for(int i =0;i < 3;i++){
+		std::cout << "Test 2" << i << std::endl;
+		std::vector<double> res = convLay.Forward();
+		std::cout << "Forward on test " << i << " done" <<std::endl;
+		cl.SetFullyConnectedLayer(res);
+		cl.Classification();
+		std::cout << "Classification on test " << i << " done" <<std::endl;
+		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
+		if(cl.FindCorrectOutNeuro() == correctAnswer2){
+			std::cout << "Passed test " << i << std::endl;
+		}
+		else {
+			std::cout << "Failed test " << i << std::endl;
+		}
 	}
 }
 	catch (const std::string& msg) {

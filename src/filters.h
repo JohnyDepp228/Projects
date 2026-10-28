@@ -39,7 +39,7 @@ private:
     int width;
     int height;
     double bias = 0.001;
-    double LR = 0.00001;
+    double LR = 0.0001;
 
 };
 

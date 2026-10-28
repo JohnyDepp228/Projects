@@ -99,7 +99,7 @@ private:
 	int numOfSecondHiddenLayerNeurons = 230;
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
-	double inertia = 0.4;
+	double inertia = 0.1;
 	double LR = 0.001;
 
 	//layers

@@ -1,4 +1,5 @@
 #include "channals.h"
+#include <iterator>
 #include <string>
 
 Channals::Channals()
@@ -154,6 +155,11 @@ void Channals::ChannalLearn() {
         maps[i].ApplyDiractiveActivFun(temp);
         
         temp1 = maps[i].MapsSlide(temp);
+
+        for (double& grad : temp1) {
+                if (grad > 1.0)  grad = 1.0;
+                if (grad < -1.0) grad = -1.0;
+        }
        
         filters[i].LearnFilters(temp1);
         
@@ -177,6 +183,9 @@ std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<
                           std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()) + "\n");
     }
     for(int i =0;i < res.size();i++){
+        if (std::isnan(res[i])) {
+        throw std::string("res[i] is ALREADY NaN before multiplication! Convolutions are broken on Forward Pass!\n");
+        }
         if (std::isinf(res[i])) {
             throw std::string("Res is INF before multiplication at index " + std::to_string(i)+ "\n");
         }

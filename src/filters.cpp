@@ -1,4 +1,5 @@
 #include "filters.h"
+#include <string>
 
 Filters::Filters()
 {
@@ -135,8 +136,9 @@ std::vector<double> Filters::SlideRGB(const std::vector<double> &R,const std::ve
 
 
 void Filters::FillFilter() {
+    double bound = std::sqrt(2.0 / (width * height)); 
     for(auto &f : this->filter){
-        f = RandValue(-1.0, 1.0);
+        f = RandValue(-bound, bound);
     }
 }
 
@@ -154,6 +156,9 @@ void Filters::LearnFilters(const std::vector<double> &errorMat) {
     
     int size = width * height;
     for(int i =0;i < size;i++){
+        if (std::isnan(errorMat[i]) || std::isinf(errorMat[i])) {
+            throw std::string("Nan/ inf in learning filters in errorMat at " + std::to_string(i) + "\n"); 
+        }
         filter[i] -= LR * errorMat[i]; 
     }
 }

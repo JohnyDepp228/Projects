@@ -82,7 +82,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
-		double bound = std::sqrt(2.0 / matrix.size());
+		double bound = std::sqrt(2.0 / matrix[0].size());
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
 				matrix[i][j] = Weight(-bound, bound);
@@ -246,42 +246,57 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::LearningClassifier(int correctNeuronIndex) {
+		std::fill(outputLayerErrors.begin(), outputLayerErrors.end(), 0.0);
+    	std::fill(thirdHiddenLayerErrors.begin(), thirdHiddenLayerErrors.end(), 0.0);
+    	std::fill(secondHiddenLayerErrors.begin(), secondHiddenLayerErrors.end(), 0.0);
+    	std::fill(firstHiddenLayerErrors.begin(), firstHiddenLayerErrors.end(), 0.0);
+    	std::fill(fullyconnectedLayerErrors.begin(), fullyconnectedLayerErrors.end(), 0.0);
+
 		std::vector<std::vector<double>> oldWeights = secondToThirdHiddenWeights;
 
+
+		 auto clip_gradients = [](std::vector<double>& errors) {
+        	for (double& err : errors) {
+				if(std::isnan(err) || std::isinf(err)){
+					err = 0.0;
+				}
+				else{
+					if (err > 1.0)  err = 1.0;
+            		if (err < -1.0) err = -1.0;
+				}
+            	
+        		}
+    		};
+
+
 		OutputLayerErrorCalcu(correctNeuronIndex);
+		clip_gradients(outputLayerErrors);
 		if (HasNaN(outputLayerErrors)) {
 			throw std::string("Nan in outputLayerErrors");
     	}
 		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
+		clip_gradients(thirdHiddenLayerErrors);
 		if (HasNaN(thirdHiddenLayerErrors)) {
 			throw std::string("Nan in thirdHiddenLayerErrors");
     	}
 		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
+		clip_gradients(secondHiddenLayerErrors);
 		if (HasNaN(secondHiddenLayerErrors)) {
 			throw std::string("Nan in secondHiddenLayerErrors");
     	}
 		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
+		clip_gradients(firstHiddenLayerErrors);
 		if (HasNaN(firstHiddenLayerErrors)) {
 			throw std::string("Nan in firstHiddenLayerErrors");
     	}
 
 		InputErrorsForBackprop();
+		clip_gradients(fullyconnectedLayerErrors);
 		if (HasNaN(fullyconnectedLayerErrors)) {
 			throw std::string("Nan in fullyconnectedLayerErrors");
     	}
 
-		 auto clip_gradients = [](std::vector<double>& errors) {
-        	for (double& err : errors) {
-            	if (err > 1.0)  err = 1.0;
-            	if (err < -1.0) err = -1.0;
-        		}
-    		};
-
-    	clip_gradients(outputLayerErrors);
-    	clip_gradients(thirdHiddenLayerErrors);
-    	clip_gradients(secondHiddenLayerErrors);
-    	clip_gradients(firstHiddenLayerErrors);
-    	clip_gradients(fullyconnectedLayerErrors);
+    	
 		Velocity(thirdHiddenLayer, outputLayerErrors, thirdHiddenToOutputVelocity);
 		Velocity(secondHiddenLayer, thirdHiddenLayerErrors, secondToThirdHiddenVelocity);
 		Velocity(firstHiddenLayer, secondHiddenLayerErrors, firstToSecondHiddenVelocity);
