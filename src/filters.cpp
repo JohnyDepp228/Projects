@@ -81,7 +81,9 @@ std::vector<double> Filters::SlideWithReversed(const std::vector<double> &matrix
                 for(int ky = y;ky < y + this->width;ky++){
                     
                     int idx = kx * widthStart  + ky;
-                    
+                    if(this->revFilter.size() <= 0){
+                        throw std::string("Reversed filter is empty");
+                    }
                     sum += matrix[idx] * GetElementFromReversed(kx - x,ky - y);
 
                 }
