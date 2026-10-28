@@ -8,6 +8,7 @@
 #include <numbers>
 #include <iterator>
 #include <string>
+#include <iostream>
 
 
 class MapOfSigns
@@ -63,7 +64,7 @@ private:
     std::vector<double> PrevLayerError;
     std::vector<int> poolingMaxNumIdx;
     const double PI = 3.141592653589793;
-    double bias = 0.0001;
+    double bias = 0.01;
 };
 
 #endif

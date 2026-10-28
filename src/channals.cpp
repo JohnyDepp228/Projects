@@ -1,6 +1,5 @@
 #include "channals.h"
-#include <iterator>
-#include <string>
+#include <cmath>
 
 Channals::Channals()
 {
@@ -151,15 +150,24 @@ void Channals::ChannalLearn() {
         maps[i].SetOriginalInput(this->inputMat);
 
         temp = MultiMapWithErrorMap(i, unpooledMap);
+
+        for(int j =0;j < temp.size();j++){
+            if(!std::isfinite(temp[i])){
+                std::cout << "Invalid Before GeLu in map\t" << i << "\tIndex:\t" << j << "\tValue\t" << temp[j] << std::endl; 
+                throw std::string("Before Gelu");
+            }
+        }
        
         maps[i].ApplyDiractiveActivFun(temp);
+
+        for(int j =0;j < temp.size();j++){
+            if(!std::isfinite(temp[j])){
+                std::cout << "Invalid After GeLu in map\t" << i << "\tIndex:\t" << j << "\tValue\t" << temp[j] << std::endl; 
+                throw std::string("After Gelu");
+            }
+        }
         
         temp1 = maps[i].MapsSlide(temp);
-
-        for (double& grad : temp1) {
-                if (grad > 1.0)  grad = 1.0;
-                if (grad < -1.0) grad = -1.0;
-        }
        
         filters[i].LearnFilters(temp1);
         
@@ -183,18 +191,18 @@ std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<
                           std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()) + "\n");
     }
     for(int i =0;i < res.size();i++){
-        if (std::isnan(res[i])) {
-        throw std::string("res[i] is ALREADY NaN before multiplication! Convolutions are broken on Forward Pass!\n");
+        if (!std::isfinite(res[i])) {
+        throw std::string("res[i] is invalid before multiplication!\n");
         }
-        if (std::isinf(res[i])) {
-            throw std::string("Res is INF before multiplication at index " + std::to_string(i)+ "\n");
+        if (!std::isfinite(res[i])) {
+            throw std::string("Res is invalid before multiplication at index " + std::to_string(i)+ "\n");
         }
-        if(std::isnan(errorMap[i])){
-            throw std::string("Nan when map multi in error map " + std::to_string(i) + "\n");
+        if(!std::isfinite(errorMap[i])){
+            throw std::string("invalid data when map multi in error map " + std::to_string(i) + "\n");
         } 
         res[i] *= errorMap[i];
-        if (std::isnan(res[i])){
-            throw std::string("Nan when map multi in res map " + std::to_string(i) + "\t" + std::to_string(errorMap[i]) + "\n");
+        if (!std::isfinite(res[i])){
+            throw std::string("invalid data when map multi in res map " + std::to_string(i) + "\t" + std::to_string(errorMap[i]) + "\n");
         } 
     }
 
@@ -227,7 +235,7 @@ std::vector<double> Channals::GetPrevLayerError(int mapIdx) {
 
 bool Channals::HasNaN(const std::vector<double> &vec) {
     for(int i = 0;i < vec.size();i++){
-        if (std::isnan(vec[i])) return true;
+        if (!std::isfinite(vec[i])) return true;
     }
     return false;
 }

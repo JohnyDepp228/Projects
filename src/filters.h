@@ -6,7 +6,9 @@
 #include <math.h>
 #include <Windows.h>
 #include <random>
+#include <string>
 #include <algorithm>
+#include <iostream>
 
 class Filters
 {

@@ -1,5 +1,6 @@
 #include "classifier.h"
-#include <algorithm>
+#include <cmath>
+
 
 Classifier::Classifier()
 {
@@ -13,6 +14,7 @@ Classifier::Classifier()
 		firstHiddenLayerBeforeReLu = std::vector<double>(numOfFirstHiddenLayerNeurons, 0.0);
 		secondHiddenLayerBeforeReLu = std::vector<double>(numOfSecondHiddenLayerNeurons, 0.0);
 		thirdHiddenLayerBeforeReLu = std::vector<double>(numOfThirdHiddenLayerNeurons, 0.0);
+		outputLayerBeforeSoftMax = std::vector<double>(numOfOutputLayerNeurons, 0.0);
 
 
 		//Layers errors
@@ -70,7 +72,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 			for (int j = 0; j < firstHiddenLayerErrors.size(); j++) {
 				errSum += (firstHiddenLayerErrors[j] * fullConToFirstHiddenWeights[i][j]);
 			}
-			fullyconnectedLayerErrors[i] = errSum ;
+			fullyconnectedLayerErrors[i] = errSum * DirectiveReLu(fullyConnectedLayer[i]);
 		}
 	}
 
@@ -82,7 +84,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::InitMatrixWeights(std::vector < std::vector < double>>& matrix) {
-		double bound = std::sqrt(2.0 / matrix[0].size());
+		double bound = std::sqrt(6.0 / matrix.size());
 		for (int i = 0; i < matrix.size(); i++) {
 			for (int j = 0; j < matrix[0].size(); j++) {
 				matrix[i][j] = Weight(-bound, bound);
@@ -117,7 +119,6 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 				res[j] += (layer[i] * layerWeights[i][j]);
 			}
 		}
-		layerBeforeReLu.resize(res.size());
 		for (int i = 0; i < res.size(); i++) {
 			res[i] += layerBias[i];
 			layerBeforeReLu[i] = res[i];
@@ -137,14 +138,14 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		thirdHiddenLayer = HiddenLayersCalcul(secondHiddenLayer, secondToThirdHiddenWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerBias);
 
 		ActivationFunction = &Classifier::Linaer;
-		std::vector<double> dummyVec;
-		outputLayer = HiddenLayersCalcul(thirdHiddenLayer, thirdHiddenToOutputWeights, dummyVec, outputLayerBias);
+		//std::vector<double> dummyVec;
+		outputLayer = HiddenLayersCalcul(thirdHiddenLayer, thirdHiddenToOutputWeights, outputLayerBeforeSoftMax, outputLayerBias);
 		ApplySoftMax();
 	}
 
 	void Classifier::ApplySoftMax() {
 		for (size_t i = 0; i < outputLayer.size(); ++i) {
-        if (std::isnan(outputLayer[i]) || std::isinf(outputLayer[i])) {
+        if (!std::isfinite(outputLayer[i])) {
             throw std::string("ApplySoftMax: outputLayer already contains NaN/INF at index " 
                               + std::to_string(i) + " BEFORE calculation!");
         	}
@@ -256,14 +257,9 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 
 
 		 auto clip_gradients = [](std::vector<double>& errors) {
+			 double normalization_factor = errors.size();
         	for (double& err : errors) {
-				if(std::isnan(err) || std::isinf(err)){
-					err = 0.0;
-				}
-				else{
-					if (err > 1.0)  err = 1.0;
-            		if (err < -1.0) err = -1.0;
-				}
+				 err /= normalization_factor; 
             	
         		}
     		};
@@ -272,28 +268,28 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		OutputLayerErrorCalcu(correctNeuronIndex);
 		clip_gradients(outputLayerErrors);
 		if (HasNaN(outputLayerErrors)) {
-			throw std::string("Nan in outputLayerErrors");
+			throw std::string("Invalid in outputLayerErrors");
     	}
 		HiddenLayerErrorCalcu(outputLayerErrors, thirdHiddenToOutputWeights, thirdHiddenLayerBeforeReLu, thirdHiddenLayerErrors);
 		clip_gradients(thirdHiddenLayerErrors);
 		if (HasNaN(thirdHiddenLayerErrors)) {
-			throw std::string("Nan in thirdHiddenLayerErrors");
+			throw std::string("Invalid in thirdHiddenLayerErrors");
     	}
 		HiddenLayerErrorCalcu(thirdHiddenLayerErrors, secondToThirdHiddenWeights, secondHiddenLayerBeforeReLu, secondHiddenLayerErrors);
 		clip_gradients(secondHiddenLayerErrors);
 		if (HasNaN(secondHiddenLayerErrors)) {
-			throw std::string("Nan in secondHiddenLayerErrors");
+			throw std::string("Invalid in secondHiddenLayerErrors");
     	}
 		HiddenLayerErrorCalcu(secondHiddenLayerErrors, firstToSecondHiddenWeights, firstHiddenLayerBeforeReLu, firstHiddenLayerErrors);
 		clip_gradients(firstHiddenLayerErrors);
 		if (HasNaN(firstHiddenLayerErrors)) {
-			throw std::string("Nan in firstHiddenLayerErrors");
+			throw std::string("Invalid in firstHiddenLayerErrors");
     	}
 
 		InputErrorsForBackprop();
 		clip_gradients(fullyconnectedLayerErrors);
 		if (HasNaN(fullyconnectedLayerErrors)) {
-			throw std::string("Nan in fullyconnectedLayerErrors");
+			throw std::string("Invalid in fullyconnectedLayerErrors");
     	}
 
     	
@@ -343,7 +339,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	double Classifier::DirectiveReLu(double res) {
-		if (std::isnan(res)) return 0.0;
+		//if (std::isnan(res)) return 0.0;
 		return (res > 0.0) ? 1.0 : 0.0;
 	}
 

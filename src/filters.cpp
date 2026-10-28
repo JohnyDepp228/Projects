@@ -1,4 +1,5 @@
 #include "filters.h"
+#include <cmath>
 #include <string>
 
 Filters::Filters()
@@ -85,9 +86,10 @@ std::vector<double> Filters::SlideWithReversed(const std::vector<double> &matrix
 
                 }
             }
-            sum += bias;
+           
             int tempIdx = xTemp * newWidth + yTemp;
-            temp[tempIdx] = sum;
+            int filterSize = this->width  * this->height;
+            temp[tempIdx] = sum / filterSize;
             yTemp++;
         }
         xTemp++;
@@ -156,10 +158,16 @@ void Filters::LearnFilters(const std::vector<double> &errorMat) {
     
     int size = width * height;
     for(int i =0;i < size;i++){
-        if (std::isnan(errorMat[i]) || std::isinf(errorMat[i])) {
+        if (!std::isfinite(errorMat[i])) {
             throw std::string("Nan/ inf in learning filters in errorMat at " + std::to_string(i) + "\n"); 
         }
-        filter[i] -= LR * errorMat[i]; 
+        filter[i] -= LR * (errorMat[i] / size); 
+    }
+
+    for(int i =0;i < filter.size();i++){
+        if(!std::isfinite(filter[i])){
+           throw std::string("Invalid filter after learn at " + std::to_string(i) + "\t");
+        }
     }
 }
 

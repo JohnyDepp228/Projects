@@ -1,4 +1,5 @@
 #include "mapofsigns.h"
+#include <cmath>
 #include <string>
 
 
@@ -92,8 +93,8 @@ std::vector<double> MapOfSigns::ReversePooling(int targetSize) {
         if (idx < res.size()) {
             res[idx] = errorMat[i];
         }
-        if (std::isnan(errorMat[i])){
-            throw std::string("Nan when reverse pooling" + std::to_string(i) + "\n");
+        if (!std::isfinite(errorMat[i])){
+            throw std::string("Invalid data when reverse pooling" + std::to_string(i) + "\n");
         } 
     }
     return res;
@@ -110,6 +111,12 @@ void MapOfSigns::ApplyDiractiveActivFun(std::vector<double> &errorMat) {
         throw std::string("Size of errorMat != size of mamapOfSignsBeforeActiveFunction");
     }
     for(int i = 0; i < errorMat.size(); i++){
+        if(!std::isfinite(mapOfSignsBeforeActiveFunction[i]) || !std::isfinite(DiractiveGeLu(mapOfSignsBeforeActiveFunction[i]))){
+        std::cout << "GeLu error at " << i << std::endl;
+        std::cout << "Input data: " << mapOfSignsBeforeActiveFunction[i] << std::endl;
+        std::cout << "Diractive: " << DiractiveGeLu(mapOfSignsBeforeActiveFunction[i]) << std::endl;
+        throw std::string("diractiveGeLu on mapOfSignsBeforeActiveFunction is inf at " + std::to_string(i) + "\n");
+    }
         errorMat[i] *= DiractiveGeLu(mapOfSignsBeforeActiveFunction[i]);
     }
 }
@@ -121,6 +128,9 @@ double MapOfSigns::GeLu(double data){
 }
 
 double MapOfSigns::DiractiveGeLu(double data) {
+    if(!std::isfinite(data)){
+        throw std::string("Data at diractiveGeLu is inf\n");
+    }
     double y = std::sqrt(2 / this->PI) * (data + 0.044715 * std::pow(data, 3));
 	return 0.5 * (1 + tanh(y)) + 0.5 * data * (1 - std::pow(tanh(y), 2)) * std::sqrt(2 / this->PI) 
         * (1 + 0.134145 * std::pow(data, 2));
@@ -142,12 +152,6 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
         throw std::string("Empty mapOfSigns before active function");
     }
 
-
-    for (size_t i = 0; i < errorMap.size(); ++i) {
-        if (std::isnan(errorMap[i])) {
-            throw std::string("In MapsSlide sent errorMap, already with NaN at " + std::to_string(i) + "\n");
-        }
-    }
     int smallerMatHeight = std::sqrt(errorMap.size());
     int smallerMapWidth = std::sqrt(errorMap.size());
     int biggerMatWidth = std::sqrt(originalInput.size());
@@ -166,16 +170,35 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
                     int errorIdx = kx * smallerMapWidth  + ky;
 
                     int idx = (x + kx) * biggerMatWidth + (y + ky);
-                    
-                    sum += originalInput[idx] * errorMap[errorIdx];
+                    if(!std::isfinite(originalInput[idx])){
+                        std::cout << "Res:\t" << originalInput[idx] << "\tisnan" << std::isnan(originalInput[idx]) << "\tisinf\t" << std::isinf(originalInput[idx]) << std::endl;
+                         throw std::string("Invalid originalInput at " + std::to_string(idx) + "\n");
+                    }
+                    if(!std::isfinite(errorMap[errorIdx])){
+                        std::cout << "Res:\t" << errorMap[errorIdx] << "\tisnan" << std::isnan(errorMap[errorIdx]) << "\tisinf\t" << std::isinf(errorMap[errorIdx]) << std::endl;
+                         throw std::string("Invalid res at " + std::to_string(errorIdx) + "\n");
+                    }
+                    sum += (originalInput[idx] * errorMap[errorIdx]) / errorMap.size();
+
+                    if(!std::isfinite(errorMap[errorIdx])){
+                        std::cout << "Error data\t" <<errorMap[errorIdx]<<"\t" << std::isinf(errorMap[errorIdx]) << "\t" << std::isnan(errorMap[errorIdx]) << std::endl;
+                        throw std::string("Invalid errorMap at " + std::to_string(idx) + "\n");
+                    }
+                    if(!std::isfinite(originalInput[idx])){
+                         throw std::string("Invalid originalInput at " + std::to_string(idx) + "\n");
+                    }
+                    if(!std::isfinite(sum)){
+                        std::cout << "Res:\t" << sum << "\tisnan" << std::isnan(sum) << "\tisinf\t" << std::isinf(sum) << std::endl;
+                         throw std::string("Invalid res at " + std::to_string(x * newWidth + y) + "\n");
+                    }
 
                 }
             }
             int tempIdx = x * newWidth + y;
             temp[tempIdx] = sum;
 
-              if (std::isnan(sum)) {
-                throw std::string("NaN generated inside MapsSlide loop");
+              if (!std::isfinite(sum)) {
+                throw std::string("Invalid generated inside MapsSlide loop");
             }
         }
     }

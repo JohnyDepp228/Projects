@@ -5,6 +5,7 @@
 #include "channals.h"
 #include "image.h"
 #include <iostream>
+#include <string>
 
 class ConvolutionalLayer
 {

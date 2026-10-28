@@ -100,7 +100,7 @@ private:
 	int numOfThirdHiddenLayerNeurons = 130;
 	int numOfOutputLayerNeurons = 100;
 	double inertia = 0.1;
-	double LR = 0.001;
+	double LR = 0.00001;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;
@@ -113,6 +113,7 @@ private:
 	std::vector<double> firstHiddenLayerBeforeReLu;
 	std::vector<double> secondHiddenLayerBeforeReLu;
 	std::vector<double> thirdHiddenLayerBeforeReLu;
+	std::vector<double> outputLayerBeforeSoftMax;
 
 	//Errors
 	std::vector<double> outputLayerErrors;

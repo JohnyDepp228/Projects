@@ -1,7 +1,6 @@
 #include "convolutionallayer.h"
 #include "channals.h"
 #include "image.h"
-#include <string>
 
 ConvolutionalLayer::ConvolutionalLayer()
 {
