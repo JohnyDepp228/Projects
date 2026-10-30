@@ -41,8 +41,6 @@ try{
 		cl.Classification();
 		cl.LearningClassifier(correctAnswer1);
 		convLay.Backpropageation(cl.GetInputErrors());
-		std::cout << "Backprop done" << std::endl;
-		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 		std::cout << "Error:\t" << cl.GetError() << std::endl;
 
 		
@@ -52,21 +50,16 @@ try{
 		cl.Classification();
 		cl.LearningClassifier(correctAnswer2);
 		convLay.Backpropageation(cl.GetInputErrors());
-		std::cout << "Backprop done" << std::endl;
-		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 		std::cout << "Error:\t" << cl.GetError() << std::endl;
 		epoch++;
 	}
 
 	convLay.SetImage(path);
+	std::cout << "Test 1" << std::endl;
 	for(int i =0;i < 3;i++){
-		std::cout << "Test 1" << i << std::endl;
 		std::vector<double> res = convLay.Forward();
-		std::cout << "Forward on test " << i << " done" <<std::endl;
 		cl.SetFullyConnectedLayer(res);
 		cl.Classification();
-		std::cout << "Classification on test " << i << " done" <<std::endl;
-		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 		if(cl.FindCorrectOutNeuro() == correctAnswer1){
 			std::cout << "Passed test " << i << std::endl;
 		}
@@ -76,14 +69,11 @@ try{
 	}
 
 	convLay.SetImage(path2);
+	std::cout << "Test 2" << std::endl;
 	for(int i =0;i < 3;i++){
-		std::cout << "Test 2" << i << std::endl;
 		std::vector<double> res = convLay.Forward();
-		std::cout << "Forward on test " << i << " done" <<std::endl;
 		cl.SetFullyConnectedLayer(res);
 		cl.Classification();
-		std::cout << "Classification on test " << i << " done" <<std::endl;
-		std::cout << "Answer:" << cl.FindCorrectOutNeuro() << std::endl;
 		if(cl.FindCorrectOutNeuro() == correctAnswer2){
 			std::cout << "Passed test " << i << std::endl;
 		}
