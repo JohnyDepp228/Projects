@@ -1,7 +1,5 @@
 #include "channals.h"
-#include <cmath>
 #include <errhandlingapi.h>
-#include <fstream>
 
 Channals::Channals()
 {
@@ -241,42 +239,6 @@ bool Channals::HasNaN(const std::vector<double> &vec) {
     }
     return false;
 }
-
-void Channals::SaveChannelConfig() {
-    std::fstream out(this->configPath,std::ios::out | std::ios::binary);
-    int filtersNum = filters.size();
-    int mapsNum = maps.size();
-    if(out.is_open()){
-        out.write((char*)&channalSize, sizeof(int));
-        out.write((char*)&filtersNum, sizeof(int));
-        out.write((char*)&mapsNum, sizeof(int));
-    }
-    else{
-        throw std::string("Can't save config to file" + std::to_string(GetLastError()));
-        out.close();
-    }
-    out.close();
-    
-}
-
-void Channals::ReadChannelConfig() {
-     std::fstream in(this->configPath,std::ios::in | std::ios::binary);
-    int filtersNum = filters.size();
-    int mapsNum = maps.size();
-    if(in.is_open()){
-        in.read((char*)&this->channalSize, sizeof(int));
-        in.read((char*)&filtersNum, sizeof(int));
-        in.read((char*)&mapsNum, sizeof(int));
-        this->filters.resize(filtersNum);
-        this->maps.resize(mapsNum);
-    }
-    else{
-        throw std::string("Can't read config from file" + std::to_string(GetLastError()));
-        in.close();
-    }
-    in.close();
-}
-
 
 
 

@@ -13,7 +13,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang
 endif()
 
 
-add_executable(CNN_test 
+add_executable(CNN 
     ./main.cpp 
     ./filters.cpp  
     ./mapofsigns.cpp 
@@ -22,4 +22,5 @@ add_executable(CNN_test
     ./stb_impl.cpp
     ./convolutionallayer.cpp
     ./classifier.cpp
+    ./config.cpp
 )

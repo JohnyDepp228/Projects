@@ -5,7 +5,8 @@
 #include <vector> 
 #include <string>
 #include "filters.h"
-#include <fstream> 
+#include <fstream>
+#include <cmath>
 #include "mapofsigns.h"
 
 
@@ -51,9 +52,6 @@ public:
 
     bool HasNaN(const std::vector<double> &vec);
 
-    void SaveChannelConfig();
-
-    void ReadChannelConfig();
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;
@@ -61,7 +59,6 @@ private:
     std::vector<double> inputMat;
     const int convStride = 1;
     int channalSize = 1;
-    std::string configPath = "./channelParams.txt";
 };
 
 #endif
