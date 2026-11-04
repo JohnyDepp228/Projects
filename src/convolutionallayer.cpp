@@ -129,10 +129,13 @@ void ConvolutionalLayer::SetChannelsParams() {
         channals[channalNum -1].SetChannalSize(channalsSize);
     }
 
-void ConvolutionalLayer::SaveChannelConfig(std::string path) {
-    Config conf;
-
+void ConvolutionalLayer::SetConfigPath(std::string path) {
+    this->path= path;
     conf.SetPath(path);
+    conf.RmOldFIle();
+}
+
+void ConvolutionalLayer::SaveChannelConfig() {
 
     conf.SaveData("ChannelNum", this->channalNum);
     std::string name;
@@ -141,14 +144,13 @@ void ConvolutionalLayer::SaveChannelConfig(std::string path) {
         conf.SaveData(name, this->channals[i].GetChannelSize());
         name.clear();
     }
-
+    for(int i =0;i < this->channalNum;i++){
+        channals[i].SaveFiltersConfig(this->path, i);
+    }
 
 }
 
-void ConvolutionalLayer::ReadChannelConfig(std::string path) {
-    Config conf;
-
-    conf.SetPath(path);
+void ConvolutionalLayer::ReadChannelConfig() {
     int channelSize = -1;
     conf.ReadData("ChannelNum", channelSize);
     SetChannalsNum(channelSize);

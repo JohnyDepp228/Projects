@@ -176,3 +176,16 @@ void Filters::LearnFilters(const std::vector<double> &errorMat) {
 std::vector<double> Filters::GetReverseFilter() const {
     return this->revFilter;
 }
+std::vector<double> Filters::GetFilter() const { return this->filter; }
+
+void Filters::SetFilter(const std::vector<double> &filter) {
+    this->filter = filter;
+}
+
+int Filters::GetWidth() const {
+    return this->width;
+}
+
+int Filters::GetHeight() const {
+    return this->height;
+}

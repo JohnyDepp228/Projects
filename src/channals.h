@@ -8,6 +8,7 @@
 #include <fstream>
 #include <cmath>
 #include "mapofsigns.h"
+#include "config.h"
 
 
 class Channals
@@ -51,6 +52,10 @@ public:
     std::vector<double> GetPrevLayerError(int mapIdx);
 
     bool HasNaN(const std::vector<double> &vec);
+
+    void SaveFiltersConfig(std::string path,int channelIdx);
+
+    void ReadFiltersConfig(std::string path,int channelIdx);
 
 private:
     std::vector<MapOfSigns> maps;

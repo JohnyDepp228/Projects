@@ -28,16 +28,19 @@ public:
 
     void SetChannelsParams();
 
-    void SaveChannelConfig(std::string path);
+    void SetConfigPath(std::string path);
 
-    void ReadChannelConfig(std::string path);
+    void SaveChannelConfig();
+
+    void ReadChannelConfig();
 
 private:
     int channalNum;
     int channalsSize;
     std::vector<Channals> channals;
     std::vector<double> img;
-    
+    Config conf;
+    std::string path;
 };
 
 #endif

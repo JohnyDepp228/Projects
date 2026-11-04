@@ -85,8 +85,9 @@ auto start = std::chrono::high_resolution_clock::now();
 Config conf;
 try{
 	convLay.SetChannelsParams();
-	convLay.SaveChannelConfig("./config.txt");
-	convLay.ReadChannelConfig("./config.txt");
+	convLay.SetConfigPath("./config.txt");
+	convLay.SaveChannelConfig();
+	convLay.ReadChannelConfig();
 }
 catch(std::string &msg){
 	std::cout << msg << std::endl;

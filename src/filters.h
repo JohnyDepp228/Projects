@@ -18,11 +18,11 @@ public:
 
     double GetElement(int x,int y) const;
 
-     double GetElementFromReversed(int x,int y) const;
+    double GetElementFromReversed(int x,int y) const;
 
     std::vector<double> Slide(const std::vector<double> &matrix,int stride);
 
-     std::vector<double> SlideWithReversed(const std::vector<double> &matrix,int stride);
+    std::vector<double> SlideWithReversed(const std::vector<double> &matrix,int stride);
 
     std::vector<double> SlideRGB(const std::vector<double> &R,const std::vector<double> &G,const std::vector<double> &B,int stride);
 
@@ -33,6 +33,14 @@ public:
     void LearnFilters(const std::vector<double> &errorMat);
 
     std::vector<double> GetReverseFilter() const;
+
+    std::vector<double> GetFilter() const;
+
+    void SetFilter(const std::vector<double> &filter);
+
+    int GetWidth() const;
+
+    int GetHeight() const;
 
 private:
     std::vector<double> filter;

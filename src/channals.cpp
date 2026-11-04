@@ -1,5 +1,6 @@
 #include "channals.h"
-#include <errhandlingapi.h>
+#include "config.h"
+#include <string>
 
 Channals::Channals()
 {
@@ -238,6 +239,37 @@ bool Channals::HasNaN(const std::vector<double> &vec) {
         if (!std::isfinite(vec[i])) return true;
     }
     return false;
+}
+
+void Channals::SaveFiltersConfig(std::string path,int channelIdx) {
+    Config conf;
+    conf.SetPath(path);
+    std::string dataReference = "ChannelFilter" + std::to_string(channelIdx);
+    conf.SaveData(dataReference + "Size", filters.size());
+    conf.SaveData(dataReference + "Height", filters[0].GetHeight());
+    conf.SaveData(dataReference + "Width", filters[0].GetWidth());
+    for(int i =0;i < filters.size();i++){
+        conf.SaveData(dataReference + "Idx" + std::to_string(i), filters[i].GetFilter());
+    }
+
+}
+
+void Channals::ReadFiltersConfig(std::string path,int channelIdx) {
+    Config conf;
+    conf.SetPath(path);
+    std::string dataReference = "ChannelFilter" + std::to_string(channelIdx);
+    int filtersSize = -1;
+    int filterWidth = -1;
+    int filterHeight = -1;
+    conf.ReadData(dataReference + "Size", filtersSize);
+    conf.ReadData(dataReference + "Height", filterHeight);
+    conf.ReadData(dataReference + "Width", filterWidth);
+    SetFiltersParams(filtersSize, filterHeight, filterWidth);
+    for(int i =0;i < filtersSize;i++){
+        std::vector<double> filter;
+        conf.ReadData(dataReference + "Idx" + std::to_string(i), filter);
+        filters[i].SetFilter(filter);
+    }   
 }
 
 

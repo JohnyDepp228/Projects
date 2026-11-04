@@ -1,6 +1,5 @@
 #include "config.h"
-#include <cerrno>
-#include <sstream>
+
 
 Config::Config()
 {
@@ -91,5 +90,16 @@ void Config::ReadData(std::string dataType, std::vector<double> &data) {
         throw std::string("Can't read data from file. Error code: " + std::to_string(errno));
     }
     in.close();
+}
+
+void Config::RmOldFIle() {
+    std::fstream in(this->path,std::ios::in);
+    if(in.is_open()){
+        in.close();
+        std::error_code ec;
+        if(!std::filesystem::remove(path,ec)){
+            throw std::string("Can't remove file" + std::string(ec.message()));
+        }
+    }
 }
 

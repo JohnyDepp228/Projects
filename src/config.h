@@ -6,6 +6,9 @@
 #include <string> 
 #include <vector>
 #include <cerrno>
+#include <cerrno>
+#include <sstream>
+#include <filesystem>
 
 class Config
 {
@@ -22,7 +25,7 @@ public:
 
     void ReadData(std::string dataType,std::vector<double> &data);
 
-
+    void RmOldFIle();
 
 
 private:
