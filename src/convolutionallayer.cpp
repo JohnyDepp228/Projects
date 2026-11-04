@@ -1,6 +1,8 @@
 #include "convolutionallayer.h"
 #include "channals.h"
+#include "config.h"
 #include "image.h"
+#include <string>
 
 ConvolutionalLayer::ConvolutionalLayer()
 {
@@ -126,3 +128,40 @@ void ConvolutionalLayer::SetChannelsParams() {
         channals[channalNum -1].SetFiltersParams(channalsSize, 3, 3);
         channals[channalNum -1].SetChannalSize(channalsSize);
     }
+
+void ConvolutionalLayer::SaveChannelConfig(std::string path) {
+    Config conf;
+
+    conf.SetPath(path);
+
+    conf.SaveData("ChannelNum", this->channalNum);
+    std::string name;
+    for(int i =0;i<this->channalNum;i++ ){
+        name = "Channel_" + std::to_string(i);
+        conf.SaveData(name, this->channals[i].GetChannelSize());
+        name.clear();
+    }
+
+
+}
+
+void ConvolutionalLayer::ReadChannelConfig(std::string path) {
+    Config conf;
+
+    conf.SetPath(path);
+    int channelSize = -1;
+    conf.ReadData("ChannelNum", channelSize);
+    SetChannalsNum(channelSize);
+    std::string name;
+    for(int i =0;i < channelSize;i++){
+        name = "Channel_" + std::to_string(i);
+        int size = -1;
+        conf.ReadData(name, size);
+        if(size == -1){
+            throw std::string("Read invalid size of channel at idx\t" + std::to_string(i));
+        }else{
+            SetChannalsSize(size);
+        }
+        name.clear();
+    }
+}

@@ -17,8 +17,9 @@ void Config::SetPath(const std::string &path) {
 
 bool Config::SaveData(std::string dataType, int data) {
     bool res = false;
-    std::fstream out(this->path,std::ios::out | std::ios::trunc);
+    std::fstream out(this->path,std::ios::out | std::ios::app);
     if(out.is_open()){
+
         out << dataType << ": " << data << "\n";
         res = true;
     }
@@ -53,16 +54,18 @@ void Config::ReadData(std::string dataType, int &data) {
     std::fstream in(this->path,std::ios::in);
     if(in.is_open()){
         std::string temp;
-        std::getline(in, temp);
-        if(temp.find(dataType) != std::string::npos){
+        while(std::getline(in, temp)){
+             if(temp.find(dataType) != std::string::npos){
                 size_t pos = temp.find(':');
                 temp = temp.substr(pos + 1);
                 data = std::stoi(temp);
+                break;
+            }
         }
     }
     else{
         in.close();
-        throw std::string("Can't save data to file. Error code: " + std::to_string(errno));
+        throw std::string("Can't read data from file. Error code: " + std::to_string(errno));
     }
     in.close();
 }
@@ -85,7 +88,7 @@ void Config::ReadData(std::string dataType, std::vector<double> &data) {
     }
     else{
         in.close();
-        throw std::string("Can't save data to file. Error code: " + std::to_string(errno));
+        throw std::string("Can't read data from file. Error code: " + std::to_string(errno));
     }
     in.close();
 }

@@ -4,7 +4,6 @@
 #pragma once
 #include <vector>
 #include <math.h>
-#include <Windows.h>
 #include <random>
 #include <string>
 #include <algorithm>

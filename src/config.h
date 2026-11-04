@@ -23,6 +23,8 @@ public:
     void ReadData(std::string dataType,std::vector<double> &data);
 
 
+
+
 private:
     std::string path = "./config.txt";
 };

@@ -84,20 +84,9 @@ auto start = std::chrono::high_resolution_clock::now();
 
 Config conf;
 try{
-	conf.SetPath("./conf.txt");
-	conf.SaveData("size", 2);
-	std::vector<double> temp(10,1.3);
-
-	std::vector<double> temp2;
-	conf.SaveData("weights", temp);
-	int res =  -1;
-	conf.ReadData("size",res);
-	std::cout << res << std::endl;
-
-	conf.ReadData("weights",temp2);
-	for(auto n: temp2){
-		std::cout << n << ' ';
-	}
+	convLay.SetChannelsParams();
+	convLay.SaveChannelConfig("./config.txt");
+	convLay.ReadChannelConfig("./config.txt");
 }
 catch(std::string &msg){
 	std::cout << msg << std::endl;

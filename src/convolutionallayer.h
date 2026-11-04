@@ -6,6 +6,7 @@
 #include "image.h"
 #include <iostream>
 #include <string>
+#include "config.h"
 
 class ConvolutionalLayer
 {
@@ -26,6 +27,10 @@ public:
     void SetImage(std::string path);
 
     void SetChannelsParams();
+
+    void SaveChannelConfig(std::string path);
+
+    void ReadChannelConfig(std::string path);
 
 private:
     int channalNum;
