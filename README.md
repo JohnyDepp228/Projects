@@ -49,3 +49,7 @@ cnn
 * conv-> GeLu 
 
 * classifier -> ReLu + SoftMax
+
+## Dataset 
+
+"fish-vista" отобрано 100 классов из всех который есть 
