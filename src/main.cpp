@@ -3,95 +3,65 @@
 #include "convolutionallayer.h"
 #include <iostream>
 #include "classifier.h"
-
+#include "readandshuffle.h"
 
 int main(){
- 
+ReadAndShuffle rs;
+std::string datasetPathTrain = "../Pupa/dataset/fish-vista_split/train";
+std::string datasetPathTest  = "../Pupa/dataset/fish-vista_split/test";
+std::vector<DatasetItem> train;
+std::vector<DatasetItem> test;
+rs.ReadAndShuffleTrain(train,datasetPathTrain);
+rs.ReadAndShuffleTrain(test,datasetPathTest);
+
 ConvolutionalLayer convLay;
 Classifier cl;
 convLay.SetChannalsNum(6);
 convLay.SetChannalsSize(16);
 auto start = std::chrono::high_resolution_clock::now();
 
-// try{
-// 	int epoch = 0;
-// 	double error;
-// 	std::string path = "C:/Users/LordMegatron/Desktop/2.jpg";
-// 	//std::string path = "C:/Users/Boss/Desktop/2.jpg";
-// 	int correctAnswer1 = 2;
-// 	std::string path2 = "C:/Users/LordMegatron/Desktop/3.png";
-// 	int correctAnswer2 = 3;
-// 	std::cout << "Learning\n";
-// 	convLay.SetChannelsParams();
-// 	while(epoch < 20){
-// 		std::cout << "Epoch:\t" << epoch << std::endl;
-// 		convLay.SetImage(path);
-// 		std::vector<double> forwardRes  = convLay.Forward();
-// 		cl.SetFullyConnectedLayer(forwardRes);
-// 		cl.Classification();
-// 		cl.LearningClassifier(correctAnswer1);
-// 		convLay.Backpropageation(cl.GetInputErrors());
-// 		std::cout << "Error:\t" << cl.GetError() << std::endl;
-
-		
-// 		convLay.SetImage(path2);
-// 		forwardRes = convLay.Forward();
-// 		cl.SetFullyConnectedLayer(forwardRes);
-// 		cl.Classification();
-// 		cl.LearningClassifier(correctAnswer2);
-// 		convLay.Backpropageation(cl.GetInputErrors());
-// 		std::cout << "Error:\t" << cl.GetError() << std::endl;
-// 		epoch++;
-// 	}
-
-// 	convLay.SetImage(path);
-// 	std::cout << "Test 1" << std::endl;
-// 	for(int i =0;i < 3;i++){
-// 		std::vector<double> res = convLay.Forward();
-// 		cl.SetFullyConnectedLayer(res);
-// 		cl.Classification();
-// 		if(cl.FindCorrectOutNeuro() == correctAnswer1){
-// 			std::cout << "Passed test " << i << std::endl;
-// 		}
-// 		else {
-// 			std::cout << "Failed test " << i << std::endl;
-// 		}
-// 	}
-
-// 	convLay.SetImage(path2);
-// 	std::cout << "Test 2" << std::endl;
-// 	for(int i =0;i < 3;i++){
-// 		std::vector<double> res = convLay.Forward();
-// 		cl.SetFullyConnectedLayer(res);
-// 		cl.Classification();
-// 		if(cl.FindCorrectOutNeuro() == correctAnswer2){
-// 			std::cout << "Passed test " << i << std::endl;
-// 		}
-// 		else {
-// 			std::cout << "Failed test " << i << std::endl;
-// 		}
-// 	}
-// }
-// 	catch (const std::string& msg) {
-//         std::cout << "Caught string exception: " << msg << std::endl;
-//     }
-//     catch (const std::exception& e) {
-//         std::cout << "Caught std::exception: " << e.what() << std::endl;
-//     }
-//     catch (...) {
-//         std::cout << "Unknown crash occurred!" << std::endl;
-//     }
-
-Config conf;
 try{
+	int epoch = 0;
 	convLay.SetChannelsParams();
-	convLay.SetConfigPath("./config.txt");
-	convLay.SaveChannelConfig();
-	convLay.ReadChannelConfig();
+	while(epoch < 5){
+		double error = 0.0;
+		for(int i =0; i < train.size(); i++){
+			convLay.ClearChannelsMemory(); 
+			cl.Reset();
+			convLay.SetImage(train[i].path);
+			std::vector<double> forwardRes  = convLay.Forward();
+			cl.SetFullyConnectedLayer(forwardRes);
+			cl.Classification();
+			std::vector<double> out = cl.GetOutLayer();
+			std::cout << "Img " << i << " | Target: " << train[i].targetAnswer 
+          	<< "| Answer: " << cl.FindCorrectOutNeuro() << " | Error: " << cl.GetError() << "\n";
+		  	cl.LearningClassifier(train[i].targetAnswer);
+			convLay.Backpropageation(cl.GetInputErrors());
+			error += cl.GetError();
+		}
+		std::cout << "Epoch\t" << epoch << "\tError:\t" << error << std::endl;
+		epoch++;
+	}
 }
-catch(std::string &msg){
-	std::cout << msg << std::endl;
-}
+	catch (const std::string& msg) {
+        std::cout << "Caught string exception: " << msg << std::endl;
+    }
+    catch (const std::exception& e) {
+        std::cout << "Caught std::exception: " << e.what() << std::endl;
+    }
+    catch (...) {
+        std::cout << "Unknown crash occurred!" << std::endl;
+    }
+
+// Config conf;
+// try{
+// 	convLay.SetConfigPath("./config.txt");
+// 	convLay.SaveChannelConfig();
+// 	convLay.ReadChannelConfig();
+// }
+// catch(std::string &msg){
+// 	std::cout << msg << std::endl;
+// }
 
 
 auto end = std::chrono::high_resolution_clock::now();

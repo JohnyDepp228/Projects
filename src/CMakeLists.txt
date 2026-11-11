@@ -23,4 +23,5 @@ add_executable(CNN
     ./convolutionallayer.cpp
     ./classifier.cpp
     ./config.cpp
+    ./readandshuffle.cpp
 )

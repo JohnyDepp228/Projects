@@ -12,7 +12,7 @@ public:
     Image(std::string imagePath);
     ~Image();
 
-    std::vector<double> LoadImage(std::string imagePath, int color);
+    std::vector<double> LoadImage(std::string imagePath, int color,int &imgHeightLoaded,int &imgWidthLoaded);
 
     void NormalizeImgColor(std::vector<double> &color);
 
@@ -22,7 +22,7 @@ public:
 
     void ImgPadding(std::vector<double> & matrix);
 
-    void BilinearInterpolation(std::vector < double> & matrix);
+    void BilinearInterpolation(std::vector<double> &matrix,int imgHeightLoaded,int imgWidthLoaded) ;
 
 private:
 

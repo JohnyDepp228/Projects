@@ -257,13 +257,12 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 
 
 		 auto clip_gradients = [](std::vector<double>& errors) {
-			 double normalization_factor = errors.size();
-        	for (double& err : errors) {
-				 err /= normalization_factor; 
-            	
-        		}
-    		};
-
+    		const double limit = 0.5; // Оптимальный порог для весов
+    			for (double& err : errors) {
+        		if (err > limit) err = limit;
+        		else if (err < -limit) err = -limit;
+    			}
+		};
 
 		OutputLayerErrorCalcu(correctNeuronIndex);
 		clip_gradients(outputLayerErrors);
@@ -322,6 +321,10 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
     		}
     	return totalLoss / outputLayerErrors.size();
 	}
+
+	void Classifier::ZeroOutputBias() {
+		std::fill(outputLayerBias.begin(), outputLayerBias.end(), 0.0);
+	}
 		
 
 	//Activation Functions
@@ -351,6 +354,28 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	bool Classifier::HasNaN(const std::vector<double>& vec) {
     	for (double n : vec) if (std::isnan(n) || std::isinf(n)) return true;
     		return false;
+	}
+
+	void Classifier::Reset() {
+	
+    
+    std::fill(firstHiddenLayer.begin(), firstHiddenLayer.end(), 0.0);
+    std::fill(secondHiddenLayer.begin(), secondHiddenLayer.end(), 0.0);
+    std::fill(thirdHiddenLayer.begin(), thirdHiddenLayer.end(), 0.0);
+    std::fill(outputLayer.begin(), outputLayer.end(), 0.0);
+
+ 
+    std::fill(firstHiddenLayerBeforeReLu.begin(), firstHiddenLayerBeforeReLu.end(), 0.0);
+    std::fill(secondHiddenLayerBeforeReLu.begin(), secondHiddenLayerBeforeReLu.end(), 0.0);
+    std::fill(thirdHiddenLayerBeforeReLu.begin(), thirdHiddenLayerBeforeReLu.end(), 0.0);
+    std::fill(outputLayerBeforeSoftMax.begin(), outputLayerBeforeSoftMax.end(), 0.0);
+
+   
+    std::fill(outputLayerErrors.begin(), outputLayerErrors.end(), 0.0);
+    std::fill(fullyconnectedLayerErrors.begin(), fullyconnectedLayerErrors.end(), 0.0);
+    std::fill(firstHiddenLayerErrors.begin(), firstHiddenLayerErrors.end(), 0.0);
+    std::fill(secondHiddenLayerErrors.begin(), secondHiddenLayerErrors.end(), 0.0);
+    std::fill(thirdHiddenLayerErrors.begin(), thirdHiddenLayerErrors.end(), 0.0);
 	}
 
 	//Setters & Getters

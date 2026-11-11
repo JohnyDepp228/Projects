@@ -83,6 +83,8 @@ public:
 
 	bool HasNaN(const std::vector<double>& vec);
 
+	void Reset();
+
 	//Setters & Getters
 
 	void SetFullyConnectedLayer(const std::vector<double>& vec);
@@ -93,14 +95,16 @@ public:
 
 	double GetError() const;
 
+	void ZeroOutputBias();
+
 private:
     int numOfFullyConnectedLayerNeurons = 512;
-	int numOfFirstHiddenLayerNeurons = 460;
-	int numOfSecondHiddenLayerNeurons = 230;
-	int numOfThirdHiddenLayerNeurons = 130;
+	int numOfFirstHiddenLayerNeurons = 400;
+	int numOfSecondHiddenLayerNeurons = 200;
+	int numOfThirdHiddenLayerNeurons = 100;
 	int numOfOutputLayerNeurons = 41;
 	double inertia = 0.1;
-	double LR = 0.0001;
+	double LR = 0.001;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;

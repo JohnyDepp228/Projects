@@ -9,18 +9,17 @@ enum Color{
 
 Image::Image(std::string imagePath)
 {
-this->R = LoadImage(imagePath,Color::red);
-this->G = LoadImage(imagePath,Color::green);
-this->B = LoadImage(imagePath,Color::blue);
-
-
+int imgWidthLoaded;
+int imgHeightLoaded;
+this->R = LoadImage(imagePath,Color::red,imgHeightLoaded,imgWidthLoaded);
 NormalizeImgColor(this->R);
+BilinearInterpolation(this->R,imgHeightLoaded,imgWidthLoaded);
+this->G = LoadImage(imagePath,Color::green,imgHeightLoaded,imgWidthLoaded);
 NormalizeImgColor(this->G);
+BilinearInterpolation(this->G,imgHeightLoaded,imgWidthLoaded);
+this->B = LoadImage(imagePath,Color::blue,imgHeightLoaded,imgWidthLoaded);
 NormalizeImgColor(this->B);
-
-BilinearInterpolation(this->R);
-BilinearInterpolation(this->G);
-BilinearInterpolation(this->B);
+BilinearInterpolation(this->B,imgHeightLoaded,imgWidthLoaded);
 
 }
 
@@ -29,7 +28,7 @@ Image::~Image()
 
 }
 
-std::vector<double> Image::LoadImage(std::string imagePath, int color) {
+std::vector<double> Image::LoadImage(std::string imagePath, int color,int &imgHeightLoaded,int &imgWidthLoaded) {
 		int channels = 0;
 		unsigned char* res = stbi_load(imagePath.c_str(), &imgHeightLoaded, &imgWidthLoaded, &channels, 3);
 
@@ -86,11 +85,11 @@ void Image::ImgPadding(std::vector<double> &matrix)
 	matrix = correctSizeMatrix;
 }
 
-void Image::BilinearInterpolation(std::vector<double> &matrix) 
+void Image::BilinearInterpolation(std::vector<double> &matrix,int imgHeightLoaded,int imgWidthLoaded) 
 {
 	std::vector<double> correctSizeMat(this->imgHeight * this->imgWidth,0.0);
-	double decrСoefX = (double)this->imgHeightLoaded / (double)this->imgHeight;
-	double decrСoefY = (double)this->imgWidthLoaded  / (double)this->imgWidth;
+	double decrСoefX = (double)imgHeightLoaded / (double)this->imgHeight;
+	double decrСoefY = (double)imgWidthLoaded  / (double)this->imgWidth;
 		for (int x = 0; x < this->imgHeight; x++) {
 			for (int y = 0; y < this->imgWidth; y++) {
 				double scaleX = (x + 0.5) * decrСoefX - 0.5;

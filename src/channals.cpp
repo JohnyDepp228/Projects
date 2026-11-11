@@ -272,6 +272,12 @@ void Channals::ReadFiltersConfig(std::string path,int channelIdx) {
     }   
 }
 
+void Channals::Clean() {
+    for(int i =0;i < channalSize;i++){
+        maps[i].Reset();
+    }
+}
+
 
 
 

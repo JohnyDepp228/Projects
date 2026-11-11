@@ -34,6 +34,8 @@ public:
 
     void ReadChannelConfig();
 
+    void ClearChannelsMemory();
+
 private:
     int channalNum;
     int channalsSize;

@@ -57,13 +57,14 @@ void ConvolutionalLayer::Backpropageation(const std::vector<double> &classifierE
 
       
         for(int i = channalNum - 2; i >= 0; i--) {
-            std::cout << "Current layer:  " << i << std::endl;
+           // std::cout << "Current layer learning:  " << i << std::endl;
             channals[i].ChannalLearn();
             
             if (i > 0) {
                 SetPrevLayerErrorMap(i, i - 1);
             }
         }
+       // std::cout << "************************" << std::endl;
     }
     catch(const std::string &msg){
         std::cout << "Error in backpropagation " + msg;
@@ -165,5 +166,11 @@ void ConvolutionalLayer::ReadChannelConfig() {
             SetChannalsSize(size);
         }
         name.clear();
+    }
+}
+
+void ConvolutionalLayer::ClearChannelsMemory() {
+    for(int i =0;i < channalNum;i++){
+        channals[i].Clean();
     }
 }

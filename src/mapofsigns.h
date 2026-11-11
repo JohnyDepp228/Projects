@@ -47,6 +47,8 @@ public:
 
     std::vector<double> MapsSlide(const std::vector<double> &errorMap);
 
+    void Reset();
+
 
 private:
     int height;

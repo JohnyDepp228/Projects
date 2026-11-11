@@ -57,6 +57,8 @@ public:
 
     void ReadFiltersConfig(std::string path,int channelIdx);
 
+    void Clean();
+
 private:
     std::vector<MapOfSigns> maps;
     std::vector<Filters> filters;

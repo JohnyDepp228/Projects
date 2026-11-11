@@ -208,4 +208,14 @@ std::vector<double> MapOfSigns::MapsSlide(const std::vector<double> &errorMap) {
     return temp;
 }
 
+void MapOfSigns::Reset() {
+    std::fill(this->mapOfSigns.begin(), this->mapOfSigns.end(), 0.0);
+    std::fill(this->mapOfSignsBeforeActiveFunction.begin(), this->mapOfSignsBeforeActiveFunction.end(), 0.0);
+    std::fill(this->originalInput.begin(), this->originalInput.end(), 0.0);
+    std::fill(this->errorMat.begin(), this->errorMat.end(), 0.0);
+    std::fill(this->PrevLayerError.begin(), this->PrevLayerError.end(), 0.0);
+    std::fill(this->poolingMaxNumIdx.begin(), this->poolingMaxNumIdx.end(), 0);
+    this->GMPIdx = 0;
+}
+
 
