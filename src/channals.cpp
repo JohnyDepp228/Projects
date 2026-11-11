@@ -153,7 +153,7 @@ void Channals::ChannalLearn() {
         temp = MultiMapWithErrorMap(i, unpooledMap);
 
         for(int j =0;j < temp.size();j++){
-            if(!std::isfinite(temp[i])){
+            if(!std::isfinite(temp[j])){
                 std::cout << "Invalid Before GeLu in map\t" << i << "\tIndex:\t" << j << "\tValue\t" << temp[j] << std::endl; 
                 throw std::string("Before Gelu");
             }
@@ -186,7 +186,7 @@ void Channals::ChannalLearn() {
 
 
 std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<double> &errorMap) {
-    std::vector<double> res = maps[mapIdx].GetMapBeforeFun();
+    std::vector<double> res = errorMap;
     if (res.size() != errorMap.size()) {
         throw std::string("Size mismatch in MultiMapWithErrorMap: res is " + 
                           std::to_string(res.size()) + ", but errorMap is " + std::to_string(errorMap.size()) + "\n");
@@ -201,7 +201,7 @@ std::vector<double> Channals::MultiMapWithErrorMap(int mapIdx,const std::vector<
         if(!std::isfinite(errorMap[i])){
             throw std::string("invalid data when map multi in error map " + std::to_string(i) + "\n");
         } 
-        res[i] *= errorMap[i];
+       // res[i] = errorMap[i];
         if (!std::isfinite(res[i])){
             throw std::string("invalid data when map multi in res map " + std::to_string(i) + "\t" + std::to_string(errorMap[i]) + "\n");
         } 

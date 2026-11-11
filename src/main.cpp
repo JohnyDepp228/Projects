@@ -25,7 +25,7 @@ try{
 	convLay.SetChannelsParams();
 	while(epoch < 5){
 		double error = 0.0;
-		for(int i =0; i < train.size(); i++){
+		for(int i =0; i < 10; i++){
 			convLay.ClearChannelsMemory(); 
 			cl.Reset();
 			convLay.SetImage(train[i].path);
@@ -33,9 +33,9 @@ try{
 			cl.SetFullyConnectedLayer(forwardRes);
 			cl.Classification();
 			std::vector<double> out = cl.GetOutLayer();
+		  	cl.LearningClassifier(train[i].targetAnswer);
 			std::cout << "Img " << i << " | Target: " << train[i].targetAnswer 
           	<< "| Answer: " << cl.FindCorrectOutNeuro() << " | Error: " << cl.GetError() << "\n";
-		  	cl.LearningClassifier(train[i].targetAnswer);
 			convLay.Backpropageation(cl.GetInputErrors());
 			error += cl.GetError();
 		}

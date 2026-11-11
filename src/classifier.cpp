@@ -72,7 +72,7 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 			for (int j = 0; j < firstHiddenLayerErrors.size(); j++) {
 				errSum += (firstHiddenLayerErrors[j] * fullConToFirstHiddenWeights[i][j]);
 			}
-			fullyconnectedLayerErrors[i] = errSum * DirectiveReLu(fullyConnectedLayer[i]);
+			fullyconnectedLayerErrors[i] = errSum;
 		}
 	}
 
