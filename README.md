@@ -51,5 +51,5 @@ cnn
 * classifier -> ReLu + SoftMax
 
 ## Dataset 
-
+' https://huggingface.co/datasets/imageomics/fish-vista '
 "fish-vista" отобрано 100 классов из всех который есть 
