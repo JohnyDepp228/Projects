@@ -98,9 +98,9 @@ private:
 	int numOfFirstHiddenLayerNeurons = 460;
 	int numOfSecondHiddenLayerNeurons = 230;
 	int numOfThirdHiddenLayerNeurons = 130;
-	int numOfOutputLayerNeurons = 100;
+	int numOfOutputLayerNeurons = 41;
 	double inertia = 0.1;
-	double LR = 0.00001;
+	double LR = 0.0001;
 
 	//layers
 	std::vector<double> fullyConnectedLayer;

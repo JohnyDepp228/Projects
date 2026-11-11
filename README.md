@@ -54,3 +54,15 @@ cnn
 ``` https://huggingface.co/datasets/imageomics/fish-vista ```
 
 "fish-vista" отобрано 100 классов из всех который есть 
+
+```
+
+mkdir AllImages
+
+Get-ChildItem -Path Images -Recurse -File | Move-Item -Destination AllImages -Verbose
+
+Remove-Item -Recurse -Force Images
+
+Rename-Item AllImages Images
+
+```

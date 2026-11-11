@@ -9,19 +9,23 @@ DATASET_ROOT = "fish-vista"
 # Специфичный CSV-файл для разметки классификации
 CSV_NAME = "classification_train.csv"
 
-# Папка, куда скрипт разложит картинки по видам
-OUTPUT_DIR = "fish-vista_sorted_by_species"
+# Главная папка для вывода отсортированных данных
+OUTPUT_DIR = "fish-vista_split"
 
 # СКОЛЬКО ВИДОВ РЫБ ОСТАВИТЬ
 NUM_SPECIES_TO_KEEP = 100
+
+# ПАРАМЕТРЫ РАЗДЕЛЕНИЯ
+TRAIN_COUNT = 100
+TEST_COUNT = 50
+TOTAL_REQUIRED = TRAIN_COUNT + TEST_COUNT  # 150
 # -------------------------------------
 
-def sort_limited_species():
+def sort_and_split_species():
     csv_path = os.path.join(DATASET_ROOT, CSV_NAME)
     
     if not os.path.exists(csv_path):
         print(f"Ошибка: Не найден CSV-файл по пути: '{os.path.abspath(csv_path)}'")
-        print("Проверьте переменную DATASET_ROOT в начале скрипта.")
         return
 
     # Загружаем таблицу разметки
@@ -31,80 +35,98 @@ def sort_limited_species():
         print("Ошибка: В CSV-файле отсутствуют колонки 'filename' или 'standardized_species'!")
         return
 
-    # Отбираем ТОП-100 видов, у которых больше всего картинок
-    print(f"Выбираем {NUM_SPECIES_TO_KEEP} самых популярных видов рыб...")
-    top_species = df['standardized_species'].value_counts().head(NUM_SPECIES_TO_KEEP).index.tolist()
+    # Подсчитываем количество картинок для каждого вида
+    species_counts = df['standardized_species'].value_counts()
     
-    # Фильтруем датафрейм
-    df_filtered = df[df['standardized_species'].isin(top_species)]
+    # Фильтруем: оставляем только те виды, у которых ЕСТЬ ХОТЯ БЫ 150 картинок
+    suitable_species = species_counts[species_counts >= TOTAL_REQUIRED].index.tolist()
     
-    print(f"Отобрано видов: {len(top_species)}")
-    print(f"Всего изображений для этих видов в таблице: {len(df_filtered)}")
-    print("Начинаем копирование...")
+    if len(suitable_species) < NUM_SPECIES_TO_KEEP:
+        print(f"Внимание: В датасете всего {len(suitable_species)} видов, у которых есть >= {TOTAL_REQUIRED} картинок.")
+        print(f"Скрипт соберет максимально возможное количество видов: {len(suitable_species)}")
+        chosen_species = suitable_species
+    else:
+        # Берем ровно 100 видов из подходящих (самых наполненных)
+        chosen_species = suitable_species[:NUM_SPECIES_TO_KEEP]
 
-    copied_count = 0
-    missing_count = 0
-
-    # Очищаем старую папку вывода, если скрипт упал ранее, чтобы начать начисто
+    # Очищаем старую папку вывода, если она была, чтобы начать начисто
     if os.path.exists(OUTPUT_DIR):
         shutil.rmtree(OUTPUT_DIR)
 
-    for idx, row in df_filtered.reset_index(drop=True).iterrows():
-        img_name = row['filename']
-        species_name = row['standardized_species']
+    print(f"Отобрано видов рыб для обработки: {len(chosen_species)}")
+    print(f"Для каждого вида будет скопировано: {TRAIN_COUNT} в train и {TEST_COUNT} в test.")
+    print("Начинаем копирование...")
 
-        # Очищаем название вида для безопасного имени папки
+    total_copied = 0
+    missing_count = 0
+
+    # Проходим по каждому выбранному виду отдельно
+    for species_idx, species_name in enumerate(chosen_species):
+        # Вытаскиваем все строки для этого конкретного вида
+        species_df = df[df['standardized_species'] == species_name].reset_index(drop=True)
+        
+        # Безопасное имя для папки класса
         safe_species_name = "".join([c if c.isalnum() or c in (' ', '_', '-') else '_' for c in species_name])
         safe_species_name = safe_species_name.strip().replace(' ', '_')
 
-        # УМНЫЙ ПОИСК КАРТИНКИ:
-        # Проверяем 3 возможных места нахождения файла:
-        src_paths_to_try = []
+        # Будем перебирать строки, пока успешно не скопируем ровно 150 картинок на этот класс
+        current_species_copied = 0
         
-        # 1. Если колонка file_name заполнена (например, 'Images/chunk_1/имя.jpg')
-        if 'file_name' in row and pd.notna(row['file_name']):
-            src_paths_to_try.append(os.path.join(DATASET_ROOT, row['file_name']))
-            
-        # 2. Если файлы уже были объединены в общую папку Images
-        src_paths_to_try.append(os.path.join(DATASET_ROOT, "Images", img_name))
-        
-        # 3. Ручной перебор чанков на случай, если структура папок оригинальная
-        for chunk_id in range(1, 8):
-            src_paths_to_try.append(os.path.join(DATASET_ROOT, "Images", f"chunk_{chunk_id}", img_name))
+        for _, row in species_df.iterrows():
+            if current_species_copied >= TOTAL_REQUIRED:
+                break  # Собрали нужные 150 штук для этого вида, переходим к следующему
 
-        # Выбираем первый реально существующий путь
-        src_path = None
-        for path in src_paths_to_try:
-            if os.path.exists(path):
-                src_path = path
-                break
+            img_name = row['filename']
 
-        # Целевая папка и путь
-        species_folder = os.path.join(OUTPUT_DIR, safe_species_name)
-        dst_path = os.path.join(species_folder, img_name)
+            # УМНЫЙ ПОИСК ИСХОДНОЙ КАРТИНКИ
+            src_paths_to_try = []
+            if 'file_name' in row and pd.notna(row['file_name']):
+                src_paths_to_try.append(os.path.join(DATASET_ROOT, row['file_name']))
+            src_paths_to_try.append(os.path.join(DATASET_ROOT, "Images", img_name))
+            for chunk_id in range(1, 8):
+                src_paths_to_try.append(os.path.join(DATASET_ROOT, "Images", f"chunk_{chunk_id}", img_name))
 
-        # Копируем файл
-        if src_path is not None:
-            os.makedirs(species_folder, exist_ok=True)
-            shutil.copy2(src_path, dst_path)
-            copied_count += 1
-        else:
-            missing_count += 1
+            src_path = None
+            for path in src_paths_to_try:
+                if os.path.exists(path):
+                    src_path = path
+                    break
 
-        # Прогресс
-        if (idx + 1) % 2000 == 0:
-            print(f"Проверено строк: {idx + 1}..., Успешно скопировано: {copied_count}")
+            if src_path is not None:
+                # Определяем, куда положить картинку (первые 100 идут в train, следующие 50 в test)
+                if current_species_copied < TRAIN_COUNT:
+                    sub_folder = "train"
+                else:
+                    sub_folder = "test"
 
-    print("\nСортировка завершена без ошибок!")
-    print(f"Успешно скопировано картинок в новые папки: {copied_count} шт.")
+                # Собираем итоговый путь: fish-vista_split/train/название_вида/картинка.jpg
+                target_folder = os.path.join(OUTPUT_DIR, sub_folder, safe_species_name)
+                dst_path = os.path.join(target_folder, img_name)
+
+                os.makedirs(target_folder, exist_ok=True)
+                shutil.copy2(src_path, dst_path)
+                
+                current_species_copied += 1
+                total_copied += 1
+            else:
+                missing_count += 1
+
+        # Выводим мини-прогресс по классам
+        if (species_idx + 1) % 10 == 0 or (species_idx + 1) == len(chosen_species):
+            print(f"Обработано видов рыб: {species_idx + 1}/{len(chosen_species)}...")
+
+    print("\nСортировка и разделение завершены успешно!")
+    print(f"Всего картинок распределено: {total_copied} шт.")
     if missing_count > 0:
-        print(f"Файлов не найдено на диске (пропущено): {missing_count} шт.")
-        print(f"Примечание: Убедитесь, что вы скачали сами картинки (LFS-файлы) из HuggingFace!")
+        print(f"Предупреждение: {missing_count} файлов из таблицы отсутствовали на вашем диске.")
     
-    if os.path.exists(OUTPUT_DIR):
-        print(f"Итого создано папок (видов рыб): {len(os.listdir(OUTPUT_DIR))}")
-    else:
-        print("Папки не созданы, так как ни один файл изображений не был найден.")
+    # Финальная проверка структуры
+    train_dir = os.path.join(OUTPUT_DIR, "train")
+    test_dir = os.path.join(OUTPUT_DIR, "test")
+    if os.path.exists(train_dir):
+        print(f"Создана папка обучения: {os.path.abspath(train_dir)} (внутри {len(os.listdir(train_dir))} классов)")
+    if os.path.exists(test_dir):
+        print(f"Создана папка теста: {os.path.abspath(test_dir)} (внутри {len(os.listdir(test_dir))} классов)")
 
 if __name__ == "__main__":
-    sort_limited_species()
+    sort_and_split_species()
