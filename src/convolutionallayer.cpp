@@ -83,18 +83,24 @@ void ConvolutionalLayer::SetPrevLayerErrorMap(int currentChannelIdx,int prevChan
     else{
         int size = channals[prevChannelIdx].GetChannelSize();
          std::vector<double> errorMap;
-        for(int i =0;i < prevSizez;i++){
+        for(int i =0;i < currentSize;i++){
             if (i >= currentSize) {
-            throw std::string("Trying take map" + std::to_string(i) + " from channel " + std::to_string(currentChannelIdx) +
-                      "but only " + std::to_string(currentSize)+  " maps ");
-            }
-
-            errorMap = channals[currentChannelIdx].GetPrevLayerError(i);
-            if(errorMap.size() == 0) {
-                throw std::string("Error in channel: " + std::to_string(currentChannelIdx) + 
-                  " empty errormap " + std::to_string(i));
+                throw std::string("Trying take map" + std::to_string(i) + " from channel " + std::to_string(currentChannelIdx) +
+                          "but only " + std::to_string(currentSize)+  " maps ");
                 }
-            channals[prevChannelIdx].SetErrorMap(i, errorMap);
+            std::vector<double> currentError = channals[currentChannelIdx].GetPrevLayerError(i);
+            if(errorMap.empty()){
+                errorMap = currentError;
+            }
+            else{
+                for(int j = 0; j < currentError.size();j++){
+                errorMap[j] += currentError[j];
+                }
+            }
+        }
+
+        for(int i =0 ;i<prevSizez;i++){
+             channals[prevChannelIdx].SetErrorMap(i, errorMap);
         }
     }
        

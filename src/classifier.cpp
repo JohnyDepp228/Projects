@@ -1,5 +1,8 @@
 #include "classifier.h"
+#include <algorithm>
 #include <cmath>
+#include <ios>
+#include <numeric>
 
 
 Classifier::Classifier()
@@ -314,12 +317,20 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 		}
 	}
 
-	double Classifier::GetError() const{
-    	double totalLoss = 0.0;
-   			for (double err : outputLayerErrors) {
-        		totalLoss += std::abs(err); 
-    		}
-    	return totalLoss / outputLayerErrors.size();
+	double Classifier::GetError(int correctNeuron) const{
+
+		const double epsilon = 1e-15;
+
+		double propability = outputLayer[correctNeuron];
+
+		std::cout << "Correct propability:\t" << std::scientific << propability << std::endl;;
+
+		std::cout << "Max propability:\t" << *std::max_element(outputLayer.begin(), outputLayer.end()) << std::endl;
+
+		std::cout << "Sum propability:\t" << std::accumulate(outputLayer.begin(), outputLayer.end(),0.0);
+
+		propability = std::max(outputLayer[correctNeuron],epsilon);
+    	return -std::log(propability);
 	}
 
 	void Classifier::ZeroOutputBias() {

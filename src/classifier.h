@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <numbers> 
 #include <string>
+#include <numeric> 
 
 
 
@@ -93,7 +94,7 @@ public:
 
 	std::vector<double> GetInputErrors() const;
 
-	double GetError() const;
+	double GetError(int correctNeuron) const;
 
 	void ZeroOutputBias();
 

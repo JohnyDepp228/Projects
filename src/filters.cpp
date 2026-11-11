@@ -65,36 +65,30 @@ std::vector<double> Filters::Slide(const std::vector<double> &matrix,int stride)
 std::vector<double> Filters::SlideWithReversed(const std::vector<double> &matrix,int stride) {
     int height = std::sqrt(matrix.size());
     int width = std::sqrt(matrix.size());
+
     int widthStart = width;
     int heightStart = height;
-    height -= this->height;
-    width -= this->width;
-    int newWidth = ((widthStart + this->width) / stride) - 1;
-    int newHeight  =((heightStart + this->height) / stride) - 1;
-    std::vector<double> temp(newWidth * newHeight,0.0);
-    int xTemp = 0;
-    for(int x = 0;x <= height; x += stride){
-        int yTemp = 0;
-        for(int y =0;y <= width; y += stride){
-            double sum = 0.0;
-            for(int kx  = x;kx <  x + this->height;kx++){
-                for(int ky = y;ky < y + this->width;ky++){
-                    
-                    int idx = kx * widthStart  + ky;
-                    if(this->revFilter.size() <= 0){
-                        throw std::string("Reversed filter is empty");
-                    }
-                    sum += matrix[idx] * GetElementFromReversed(kx - x,ky - y);
 
+    int newWidth = ((widthStart -1 ) * stride) + this->height;
+    int newHeight  =((heightStart -1 ) * stride) + this->width;
+
+    std::vector<double> temp(newWidth * newHeight,0.0);
+
+    for(int y = 0;y < widthStart;y++){
+        for(int x = 0; x < heightStart;x++){
+            double error = matrix[y * widthStart + x];
+
+            for(int ky =0;ky < this->height;ky++){
+                for(int kx = 0; kx < this->width;kx++){
+                    int inputY = y * stride + ky;
+                    int inputX = x * stride + kx;
+
+                    double weight = revFilter[(this->height - 1 - ky) * this->width + (this->width - 1 -kx)];
+                    int idx = inputY * newHeight + inputX;
+                    temp[idx] += error * weight;
                 }
             }
-           
-            int tempIdx = xTemp * newWidth + yTemp;
-            int filterSize = this->width  * this->height;
-            temp[tempIdx] = sum / filterSize;
-            yTemp++;
         }
-        xTemp++;
     }
 
     return temp;
@@ -163,7 +157,7 @@ void Filters::LearnFilters(const std::vector<double> &errorMat) {
         if (!std::isfinite(errorMat[i])) {
             throw std::string("Nan/ inf in learning filters in errorMat at " + std::to_string(i) + "\n"); 
         }
-        filter[i] -= LR * (errorMat[i] / size); 
+        filter[i] -= LR * errorMat[i] ; 
     }
 
     for(int i =0;i < filter.size();i++){

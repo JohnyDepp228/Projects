@@ -35,9 +35,9 @@ try{
 			std::vector<double> out = cl.GetOutLayer();
 		  	cl.LearningClassifier(train[i].targetAnswer);
 			std::cout << "Img " << i << " | Target: " << train[i].targetAnswer 
-          	<< "| Answer: " << cl.FindCorrectOutNeuro() << " | Error: " << cl.GetError() << "\n";
+          	<< "| Answer: " << cl.FindCorrectOutNeuro() << " | Error: " << cl.GetError(train[i].targetAnswer) << "\n";
 			convLay.Backpropageation(cl.GetInputErrors());
-			error += cl.GetError();
+			error += cl.GetError(train[i].targetAnswer);
 		}
 		std::cout << "Epoch\t" << epoch << "\tError:\t" << error << std::endl;
 		epoch++;
