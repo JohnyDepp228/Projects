@@ -1,6 +1,7 @@
 #include "classifier.h"
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
 #include <ios>
 #include <numeric>
 
@@ -147,6 +148,14 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::ApplySoftMax() {
+		double maxOut = *std::max_element(outputLayer.begin(), outputLayer.end());
+		double minOut = *std::min_element(outputLayer.begin(), outputLayer.end());
+		std::cout << std::scientific << std::setprecision(10);
+
+		std::cout << "Logs min\t" << minOut << std::endl;
+		std::cout << "Logs max\t" << maxOut << std::endl;
+		std::cout << "Logs dif\t" << maxOut - minOut << std::endl;
+
 		for (size_t i = 0; i < outputLayer.size(); ++i) {
         if (!std::isfinite(outputLayer[i])) {
             throw std::string("ApplySoftMax: outputLayer already contains NaN/INF at index " 
@@ -218,12 +227,15 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	}
 
 	void Classifier::Velocity(const std::vector<double>& currentLay, const std::vector<double> nextLayError, std::vector<std::vector<double>>& velocity) {
+		double maxGradient = 0.0;
 		for (int i = 0; i < currentLay.size(); i++) {
 			for (int j = 0; j < nextLayError.size(); j++) {
 				double gradient = currentLay[i] * nextLayError[j];
+				maxGradient = std::max(maxGradient,std::abs(gradient));
 				velocity[i][j] = (inertia * velocity[i][j]) + (LR * gradient);
 			}
 		}
+		std::cout << "Max gradient:\t" << maxGradient << std::endl;
 	}
 
 	void Classifier::UpdateLayerWieghts(const std::vector<std::vector<double>>& velocity, std::vector<std::vector<double>>& layerWeights) {
@@ -323,11 +335,11 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 
 		double propability = outputLayer[correctNeuron];
 
-		std::cout << "Correct propability:\t" << std::scientific << propability << std::endl;;
+		//std::cout << "Correct propability:\t" << std::scientific << propability << std::endl;;
 
-		std::cout << "Max propability:\t" << *std::max_element(outputLayer.begin(), outputLayer.end()) << std::endl;
+		//std::cout << "Max propability:\t" << *std::max_element(outputLayer.begin(), outputLayer.end()) << std::endl;
 
-		std::cout << "Sum propability:\t" << std::accumulate(outputLayer.begin(), outputLayer.end(),0.0);
+		//std::cout << "Sum propability:\t" << std::accumulate(outputLayer.begin(), outputLayer.end(),0.0);
 
 		propability = std::max(outputLayer[correctNeuron],epsilon);
     	return -std::log(propability);
@@ -392,6 +404,8 @@ std::vector<std::vector<double>> Classifier::TransponMatrix(const std::vector<st
 	//Setters & Getters
 
 	void Classifier::SetFullyConnectedLayer(const std::vector<double>& vec) {
+		double maxIn = *std::max_element(vec.begin(), vec.end());
+		std::cout << "Max data from CNN:\t" << maxIn << std::endl;
 		this->fullyConnectedLayer = vec;
 	}
 

@@ -7,8 +7,10 @@
 
 int main(){
 ReadAndShuffle rs;
-std::string datasetPathTrain = "../Pupa/dataset/fish-vista_split/train";
-std::string datasetPathTest  = "../Pupa/dataset/fish-vista_split/test";
+//std::string datasetPathTrain = "../Projects/dataset/fish-vista_split/train";
+//std::string datasetPathTest  = "../Projects/dataset/fish-vista_split/test";
+std::string datasetPathTest = "../Projects/dataset/fish-vista_split/test";
+std::string datasetPathTrain = "../Projects/dataset/fish-vista_split/train";
 std::vector<DatasetItem> train;
 std::vector<DatasetItem> test;
 rs.ReadAndShuffleTrain(train,datasetPathTrain);
@@ -33,10 +35,10 @@ try{
 			cl.SetFullyConnectedLayer(forwardRes);
 			cl.Classification();
 			std::vector<double> out = cl.GetOutLayer();
-		  	cl.LearningClassifier(train[i].targetAnswer);
+		  	//cl.LearningClassifier(train[i].targetAnswer);
 			std::cout << "Img " << i << " | Target: " << train[i].targetAnswer 
           	<< "| Answer: " << cl.FindCorrectOutNeuro() << " | Error: " << cl.GetError(train[i].targetAnswer) << "\n";
-			convLay.Backpropageation(cl.GetInputErrors());
+			//convLay.Backpropageation(cl.GetInputErrors());
 			error += cl.GetError(train[i].targetAnswer);
 		}
 		std::cout << "Epoch\t" << epoch << "\tError:\t" << error << std::endl;
