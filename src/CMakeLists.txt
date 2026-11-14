@@ -12,6 +12,7 @@ endif()
 
 add_executable(CNN ./main.cpp
                     ./filters.cpp
+                    ./maps.cpp
               )
 
 
