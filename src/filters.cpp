@@ -50,6 +50,7 @@ int Filters::GetStride() const {
 }
 
 void Filters::FillFilter() {
+    this->filter.resize(this->width * this->height);
     double bound = std::sqrt(2.0 / (this->width * this->height)); 
     for(auto &f : this->filter){
         f = RandValue(-bound, bound);
@@ -103,7 +104,7 @@ std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const st
                             throw std::string("Invalid idx in small matrix\t") + std::to_string(kx * smallMatWidth + ky);
                         }
                         else{
-                            sum += bigMatrix[x * bigMatWidth + y] * smallMatrix[kx * smallMatWidth + ky];
+                            sum += bigMatrix[(x + kx) * bigMatWidth + (y + ky)] * smallMatrix[kx * smallMatWidth + ky];
                         }
                     }
 

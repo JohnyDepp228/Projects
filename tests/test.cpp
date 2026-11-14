@@ -105,5 +105,44 @@ TEST(MapClassTests, PooledMapValuesIdx) {
 }
 
 
+TEST(Forward, MapSizeOF16AfterForward) {
+    std::vector<double> map(16,1.0);
+    Maps m;
+    Filters f;
+    f.SetStride(1);
+    f.SetHeight(3);
+    f.SetWidth(3);
+
+    
+    f.FillFilter();
+    m.SetStride(2);
+
+    std::vector<double> temp = f.Slide(map, f.GetFilter());
+
+    std::vector<double> res =  m.Pooling(temp);
+
+    ASSERT_EQ(res.size(), 1);
+}
+
+TEST(Forward, MapSizeOF32AfterForward) {
+    std::vector<double> map(49,1.0);
+    Maps m;
+    Filters f;
+    f.SetStride(1);
+    f.SetHeight(3);
+    f.SetWidth(3);
+
+    
+    f.FillFilter();
+    m.SetStride(2);
+
+    std::vector<double> temp = f.Slide(map, f.GetFilter());
+
+    std::vector<double> res =  m.Pooling(temp);
+
+    ASSERT_EQ(res.size(), 4);
+}
+
+
 
 

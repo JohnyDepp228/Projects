@@ -1,5 +1,6 @@
 #include "maps.h"
 
+
 Maps::Maps()
 {
 
@@ -43,6 +44,27 @@ std::vector<double> Maps::Pooling(const std::vector<double> &mapsOfSigns) {
     }
 
     return pooledMap;
+}
+
+std::vector<double> Maps::ApplyActivateFunction(const std::vector<double> &mapOfSigns) {
+    std::vector<double> res = mapOfSigns;
+    for(auto &el : res){
+        if(std::isinf(el) || std::isnan(el)){
+            throw std::string("Invalid data SENT to activ function");
+            return {};
+        }
+        el  = GeLu(el);
+        if(std::isinf(el) || std::isnan(el)){
+            throw std::string("Invalid data AFTER activ function");
+            return {};
+        }
+    }
+
+    return res;
+}
+
+double Maps::GeLu(double data) {
+    return 0.5 * data * (1 + std::tanh(std::sqrt(2 / this->PI) * (data + 0.044715 * std::pow(data, 3))));
 }
 
 void Maps::SetHeight(unsigned int height) { this->mapHeight = height; }

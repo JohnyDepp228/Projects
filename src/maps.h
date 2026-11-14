@@ -14,6 +14,10 @@ public:
 
     std::vector<double> Pooling(const std::vector<double> &mapsOfSigns);
 
+    std::vector<double> ApplyActivateFunction(const std::vector<double> &mapOfSigns);
+
+    double GeLu(double);
+
     //Setters 
     void SetHeight(unsigned int height);
 
@@ -40,9 +44,10 @@ private:
     unsigned int mapWidth = 0;
     unsigned int mapHeight = 0;
     int stride = 2;
-    int poolHeight = 2;
-    int poolWidth = 2;
+    const int poolHeight = 2;
+    const int poolWidth = 2;
     std::vector<int> pooledValuesIdx;
+    const double PI = 3.141592653589793;
 };
 
 #endif
