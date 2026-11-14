@@ -172,6 +172,42 @@ TEST(Forward, MapSizeOF32After2Forward) {
     ASSERT_EQ(res.size(), 1);
 }
 
+TEST(ActivateFunction, GeLu){
+    Maps m;
+
+    double data = 3.2;
+
+    double res = m.GeLu(data);
+
+    double target = 3.198;
+
+    EXPECT_NEAR(res,target,0.01);
+}
+
+TEST(ActivateFunction, GeLuNegative){
+    Maps m;
+
+    double data = -3.2;
+
+    double res = m.GeLu(data);
+
+    double target = -0.002199;
+
+    EXPECT_NEAR(res,target,0.01);
+}
+
+TEST(ActivateFunction, GeLuZero){
+    Maps m;
+
+    double data = 0;
+
+    double res = m.GeLu(data);
+
+    double target = 0;
+
+    EXPECT_NEAR(res,target,0.01);
+}
+
 
 
 
