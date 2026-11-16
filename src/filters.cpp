@@ -113,7 +113,7 @@ std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const st
                     throw std::string("Invalid idx in res matrix\t") + std::to_string(newMatX * newMatWidth + newMatY);
                 }
                 else{
-                    resMatrix[newMatX * newMatWidth + newMatY] = sum;
+                    resMatrix[newMatX * newMatWidth + newMatY] = sum + this->bias;
                 }
 
                 newMatY++;

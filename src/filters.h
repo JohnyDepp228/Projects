@@ -47,7 +47,7 @@ private:
     unsigned int width = 1;
     std::vector<double> filter;
     int stride = 1;
-    double bias = 0.1;
+    double bias = 0.01;
 };
 
 #endif
