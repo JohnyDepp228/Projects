@@ -18,6 +18,8 @@ public:
 
     double GeLu(double);
 
+    double GMP();
+
     //Setters 
     void SetHeight(unsigned int height);
 
@@ -39,6 +41,8 @@ public:
 
     std::vector<int> GetPooledIdx() const;
 
+    int GetGMPIdx() const;
+
 private:
     std::vector<double> mapOfsigns;
     unsigned int mapWidth = 0;
@@ -48,6 +52,7 @@ private:
     const int poolWidth = 2;
     std::vector<int> pooledValuesIdx;
     const double PI = 3.141592653589793;
+    int GMPIdx = 0;
 };
 
 #endif

@@ -1,4 +1,6 @@
 #include "maps.h"
+#include <algorithm>
+#include <iterator>
 
 
 Maps::Maps()
@@ -67,6 +69,12 @@ double Maps::GeLu(double data) {
     return 0.5 * data * (1 + std::tanh(std::sqrt(2 / this->PI) * (data + 0.044715 * std::pow(data, 3))));
 }
 
+double Maps::GMP() {
+    auto maxEl = std::max_element(this->mapOfsigns.begin(),this->mapOfsigns.end());
+    this->GMPIdx = std::distance(this->mapOfsigns.begin(),maxEl);
+    return *maxEl;
+}
+
 void Maps::SetHeight(unsigned int height) { this->mapHeight = height; }
 
 void Maps::SetWidth(unsigned int width) { this->mapWidth = width; }
@@ -84,3 +92,7 @@ std::vector<double> Maps::GetMapOfSigns() const { return this->mapOfsigns; }
 int Maps::GetStride() const { return this->stride; }
 
 std::vector<int> Maps::GetPooledIdx() const { return this->pooledValuesIdx; }
+
+int Maps::GetGMPIdx() const {
+    return this->GMPIdx;
+}

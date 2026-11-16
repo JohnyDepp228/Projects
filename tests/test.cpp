@@ -172,6 +172,25 @@ TEST(Forward, MapSizeOF32After2Forward) {
     ASSERT_EQ(res.size(), 1);
 }
 
+TEST(MapClassTests, GMP) {
+    Maps m;
+
+    std::vector<double> map = { 1.0,1.0,1.0,1.0,
+                                1.0,2.0,1.0,1.0,
+                                1.0,1.0,1.0,1.0,
+                                1.0,1.0,1.0,1.0,
+                              };
+
+    int idx = 5;
+    double GMPtarget = 2.0;
+    m.SetMap(map);
+    m.GMP();
+    m.GetGMPIdx();
+    
+    EXPECT_DOUBLE_EQ( m.GMP(),GMPtarget);
+    EXPECT_EQ( m.GetGMPIdx(), idx);
+}
+
 TEST(ActivateFunction, GeLu){
     Maps m;
 
@@ -207,6 +226,7 @@ TEST(ActivateFunction, GeLuZero){
 
     EXPECT_NEAR(res,target,0.01);
 }
+
 
 
 
