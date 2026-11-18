@@ -8,6 +8,7 @@
 - [x] Biases init / getters / setters
 
 - [x]Learning
+
 ### Maps of signs
 
 - [x] GeLu 
@@ -16,6 +17,7 @@
 
 - [x] Pooling
 
+- [x] Map of errors for prev layer
 
 ### Channels 
 
@@ -74,10 +76,8 @@
 
 - [x] ActivateFunction.GeLuZero
 
-- [] Filters learning
+- [x] Overrided operator in maps
 
-- [] Ovverided operators in maps & filters
-
-- [] FindMapForLearning in
+- [x] FindMapForLearning in
 
 - [] FindMapForPrevLayer(Filters)

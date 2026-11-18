@@ -50,6 +50,7 @@ std::vector<double> Maps::Pooling(const std::vector<double> &mapsOfSigns) {
 
 std::vector<double> Maps::ApplyActivateFunction(const std::vector<double> &mapOfSigns) {
     std::vector<double> res = mapOfSigns;
+    mapBeforeActivateFunction = mapOfSigns;
     for(auto &el : res){
         if(std::isinf(el) || std::isnan(el)){
             throw std::string("Invalid data SENT to activ function");
@@ -77,7 +78,7 @@ std::vector<double> Maps::ReversePooling(const std::vector<double> &mapOfErrors)
         throw std::string("Invalid error map size sent");
     }
     else{
-        std::vector<double> reversedPoolingMap(mapOfErrors.size());
+        std::vector<double> reversedPoolingMap(this->mapBeforeActivateFunction.size(), 0.0);
         for(int i =0;i < mapOfErrors.size();i++){
             int idx = this->pooledValuesIdx[i];
             reversedPoolingMap[idx] =  mapOfErrors[i];

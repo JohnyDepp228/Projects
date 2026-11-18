@@ -2,6 +2,7 @@
 #include "../src/maps.h"
 #include <gtest/gtest.h>
 #include <cmath>
+#include <iostream>
 
 
 TEST(FilterClassTests, FilterSlideSize) {
@@ -12,37 +13,17 @@ TEST(FilterClassTests, FilterSlideSize) {
 
     f.SetStride(1);
 
-    std::vector<double> res = f.Slide(bigMat, smallMat);
+    std::vector<double> res = f.Slide(bigMat, smallMat,1);
 
     int size = ((std::sqrt(bigMat.size()) - std::sqrt(smallMat.size())) / f.GetStride()) + 1;
 
     std::vector<double> target(size * size,32.0);
 
     ASSERT_EQ(res.size(), target.size());
-
-
-    for (size_t i = 0; i < target.size(); ++i) {
-        EXPECT_DOUBLE_EQ(res[i], target[i]) << "Mismatch at index " << i;
-    }
-}
-
-TEST(FilterClassTests, FilterSlideValues) {
-    Filters f;
-    std::vector<double> bigMat(16,2.0);
-
-    std::vector<double> smallMat(4,4.0);
-
-    f.SetStride(1);
-
-    std::vector<double> res = f.Slide(bigMat, smallMat);
-
-    int size = ((std::sqrt(bigMat.size()) - std::sqrt(smallMat.size())) / f.GetStride()) + 1;
-
-    std::vector<double> target(size * size,32.0);
-
+    double bias = 0.01;
 
     for (size_t i = 0; i < target.size(); ++i) {
-        EXPECT_DOUBLE_EQ(res[i], target[i]) << "Mismatch at index " << i;
+        EXPECT_DOUBLE_EQ(res[i] , target[i] + bias) << "Mismatch at index " << i;
     }
 }
 
@@ -117,7 +98,7 @@ TEST(Forward, MapSizeOF16AfterForward) {
     f.FillFilter();
     m.SetStride(2);
 
-    std::vector<double> temp = f.Slide(map, f.GetFilter());
+    std::vector<double> temp = f.Slide(map, f.GetFilter(),1);
 
     temp =  m.ApplyActivateFunction(temp);
 
@@ -138,7 +119,7 @@ TEST(Forward, MapSizeOF32AfterForward) {
     f.FillFilter();
     m.SetStride(2);
 
-    std::vector<double> temp = f.Slide(map, f.GetFilter());
+    std::vector<double> temp = f.Slide(map, f.GetFilter(),1);
 
     temp =  m.ApplyActivateFunction(temp);
 
@@ -159,11 +140,11 @@ TEST(Forward, MapSizeOF32After2Forward) {
     f.FillFilter();
     m.SetStride(2);
 
-    std::vector<double> temp = f.Slide(map, f.GetFilter());
+    std::vector<double> temp = f.Slide(map, f.GetFilter(),1);
 
     temp =  m.ApplyActivateFunction(temp);
 
-    temp = f.Slide(temp,f.GetFilter());
+    temp = f.Slide(temp,f.GetFilter(),1);
 
     temp =  m.ApplyActivateFunction(temp);
 
@@ -227,7 +208,73 @@ TEST(ActivateFunction, GeLuZero){
     EXPECT_NEAR(res,target,0.01);
 }
 
+TEST(OverrideOperators, Multiplication){
+    Maps m;
 
+    std::vector<double> testMap(4,2.0);
 
+    std::vector<double> testMap2(4,2.0);
 
+    std::vector<double> expected(4, 4.0);
 
+    m.SetMapBeforeActivate(testMap);
+
+    std::vector<double> res = m * testMap2;
+
+    ASSERT_EQ(res.size(), expected.size());
+    for (size_t i = 0; i < res.size(); ++i) {
+        EXPECT_NEAR(res[i], expected[i], 0.01);
+    }
+}
+
+TEST(MapClassTests, FindMapForLearningFiltersSize) {
+    Maps m;
+        Filters f;
+        f.SetStride(1);
+        f.SetHeight(3);
+        f.SetWidth(3);
+        f.FillFilter();
+
+       
+        std::vector<double> inputMap = {
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 3.0, 1.0, 3.0,
+            1.0, 1.0, 1.0, 1.0,
+            1.0, 3.0, 1.0, 3.0
+        };
+
+      
+        std::vector<double> convMap = f.Slide(inputMap, f.GetFilter(),1);
+        m.ApplyActivateFunction(convMap);
+
+        
+        std::vector<double> pooledMap = m.Pooling(convMap);
+
+       
+        std::vector<double> errorMap = { 0.5 };
+        std::vector<double> temp1 = m.ReversePooling(errorMap); 
+
+        
+        std::vector<double> filtersError = f.Slide(inputMap, temp1,0);
+        std::vector<double> filter = f.GetFilter();
+        ASSERT_EQ(filtersError.size(), filter.size());
+}
+
+TEST(FiltersTest, FindMapForPrevLayer) {
+    Filters f;
+    f.SetStride(1);
+    f.SetHeight(2);
+    f.SetWidth(2);
+    f.FillFilter();
+    std::vector<double> errorMap = { 1.0, 1.0, 1.0, 1.0 };
+
+    std::vector<double> prevError = f.FindMapForPrevLayer(errorMap);
+
+    std::vector<double> expected = {
+        1.0,  3.0, 2.0,
+        4.0, 10.0, 6.0,
+        3.0,  7.0, 4.0
+    };
+
+    ASSERT_EQ(prevError.size(), expected.size());
+}

@@ -19,13 +19,15 @@ public:
 
     bool HasNanOrInf(const std::vector<double> &vec);
 
-    std::vector<double> Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix);
+    std::vector<double> Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix,bool addBias);
 
     void LearnFilters(const std::vector<double> &mapOfSigns,const std::vector<double> &errorMap);
 
     std::vector<double> FindMapForPrevLayer(const std::vector<double> &errorMap);
 
     std::vector<double> operator-(const std::vector<double> &filtersError);
+
+    std::vector<double> Padding(const std::vector<double> &);
 
     //Setters
 
@@ -49,12 +51,15 @@ public:
 
 
 private:
-    unsigned int height = 1;
-    unsigned int width = 1;
     std::vector<double> filter;
-    int stride = 1;
     double bias = 0.01;
     double LR = 0.001;
-};
+    int stride = 1;
+    int padding;
+    unsigned int height = 1;
+    unsigned int width = 1;
+    
+    
+};    
 
 #endif

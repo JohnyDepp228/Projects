@@ -1,5 +1,6 @@
 #include "filters.h"
 #include <algorithm>
+#include <cmath>
 
 Filters::Filters()
 {
@@ -52,6 +53,7 @@ int Filters::GetStride() const {
 
 void Filters::FillFilter() {
     this->filter.resize(this->width * this->height);
+    this->padding = this->height - this->stride;
     double bound = std::sqrt(2.0 / (this->width * this->height)); 
     for(auto &f : this->filter){
         f = RandValue(-bound, bound);
@@ -70,7 +72,7 @@ bool Filters::HasNanOrInf(const std::vector<double> &vec) {
     	return false;
 }
 
-std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix) {
+std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix,bool addBias) {
     if(smallMatrix.size() > bigMatrix.size()){
         throw std::string("Small matrix size is bigger then big matrix size(filters learning)");
     }
@@ -114,7 +116,9 @@ std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const st
                     throw std::string("Invalid idx in res matrix(filters learning)\t") + std::to_string(newMatX * newMatWidth + newMatY);
                 }
                 else{
-                    resMatrix[newMatX * newMatWidth + newMatY] = sum + this->bias;
+                    if(addBias) sum += this->bias;
+                    resMatrix[newMatX * newMatWidth + newMatY] = sum;
+                   
                 }
 
                 newMatY++;
@@ -134,7 +138,7 @@ void Filters::LearnFilters(const std::vector<double> &mapOfSigns,const std::vect
     if(HasNanOrInf(errorMap)){
         throw std::string("errorMap matrix has invalid data in(filters learning)");
     }
-    std::vector<double> filtersError = Slide(mapOfSigns,errorMap);
+    std::vector<double> filtersError = Slide(mapOfSigns,errorMap,0);
     if(HasNanOrInf(filtersError)){
         throw std::string("filtersError matrix has invalid data in");
     }
@@ -147,7 +151,8 @@ std::vector<double> Filters::FindMapForPrevLayer(const std::vector<double> &erro
     }
     std::vector<double> flippedFilter(filter.size());
     std::reverse_copy(filter.begin(), filter.end(),flippedFilter.begin());
-    std::vector<double> res =  Slide(errorMap,flippedFilter);
+    //std::vector<double> paddedErrorMap = Padding(errorMap);
+    std::vector<double> res =  Slide(errorMap,flippedFilter,0);
     if(HasNanOrInf(res)){
         throw std::string("Invalid data in map of error for prev layer(filters learn)");
     }
@@ -167,4 +172,24 @@ std::vector<double> Filters::operator-(const std::vector<double> &filtersError) 
         }
         return res;
     }
+}
+
+std::vector<double> Filters::Padding(const std::vector<double> &errorMap) {
+    int errorMapSizeOrg = std::sqrt(errorMap.size());
+    int errorMapSize = 0;
+    errorMapSize += 2 * this->padding;
+	std::vector<double> correctSizeMatrix(errorMapSize * errorMapSize,0.0);
+
+	for (int r = 0; r < errorMapSizeOrg; ++r) {
+        
+        auto startIt = errorMap.begin() + (r * errorMapSizeOrg);
+        auto endIt = startIt + errorMapSizeOrg;
+
+        int targetRowIdx = r + this->padding;
+        int targetGlobalIdx = targetRowIdx * errorMapSize + this->padding;
+
+        std::copy(startIt, endIt, correctSizeMatrix.begin() + targetGlobalIdx);
+    }
+
+	return correctSizeMatrix;
 }
