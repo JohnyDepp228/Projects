@@ -7,7 +7,7 @@
 
 - [x] Biases init / getters / setters
 
-
+- [x]Learning
 ### Maps of signs
 
 - [x] GeLu 
@@ -15,6 +15,7 @@
 - [x] GMP 
 
 - [x] Pooling
+
 
 ### Channels 
 
@@ -72,3 +73,11 @@
 - [x] ActivateFunction.GeLuNegative
 
 - [x] ActivateFunction.GeLuZero
+
+- [] Filters learning
+
+- [] Ovverided operators in maps & filters
+
+- [] FindMapForLearning in
+
+- [] FindMapForPrevLayer(Filters)

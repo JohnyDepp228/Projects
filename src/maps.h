@@ -16,9 +16,19 @@ public:
 
     std::vector<double> ApplyActivateFunction(const std::vector<double> &mapOfSigns);
 
+    void ApplyDiractivateFunction();
+
+    std::vector<double> ReversePooling(const std::vector<double> &mapOfErrors);
+
     double GeLu(double);
 
+    double DiractiveGeLu(double);
+
     double GMP();
+
+    std::vector<double> operator* (const std::vector<double> &reversePoolingMap) const;
+
+    void FindMapForLearning(const std::vector<double> &mapOfErrors);
 
     //Setters 
     void SetHeight(unsigned int height);
@@ -29,6 +39,9 @@ public:
 
     void SetStride(int stride);
 
+    void SetMapBeforeActivate(const std::vector<double> &map);
+
+    
     //Getters
 
     unsigned int GetHeight() const;
@@ -36,6 +49,8 @@ public:
     unsigned int GetWidth() const;
 
     std::vector<double> GetMapOfSigns() const;
+
+    std::vector<double> GetMapOfErros() const;
 
     int GetStride() const;
 
@@ -45,14 +60,18 @@ public:
 
 private:
     std::vector<double> mapOfsigns;
-    unsigned int mapWidth = 0;
-    unsigned int mapHeight = 0;
+    std::vector<double> mapBeforeActivateFunction;
+    std::vector<int> pooledValuesIdx;
+
+    std::vector<double> mapOfErrors;
+    const double PI = 3.141592653589793;
     int stride = 2;
     const int poolHeight = 2;
     const int poolWidth = 2;
-    std::vector<int> pooledValuesIdx;
-    const double PI = 3.141592653589793;
     int GMPIdx = 0;
+    unsigned int mapWidth = 0;
+    unsigned int mapHeight = 0;
+   
 };
 
 #endif

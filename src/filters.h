@@ -21,6 +21,12 @@ public:
 
     std::vector<double> Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix);
 
+    void LearnFilters(const std::vector<double> &mapOfSigns,const std::vector<double> &errorMap);
+
+    std::vector<double> FindMapForPrevLayer(const std::vector<double> &errorMap);
+
+    std::vector<double> operator-(const std::vector<double> &filtersError);
+
     //Setters
 
     void SetHeight(unsigned int height);
@@ -48,6 +54,7 @@ private:
     std::vector<double> filter;
     int stride = 1;
     double bias = 0.01;
+    double LR = 0.001;
 };
 
 #endif
