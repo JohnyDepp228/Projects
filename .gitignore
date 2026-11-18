@@ -2,3 +2,5 @@
 
 fish-vista_split/
 build/
+/build_src-Release
+/build_src-Debug
