@@ -286,13 +286,13 @@ TEST(FiltersTest, Padding) {
     f.SetHeight(3);
     f.SetWidth(3);
     f.FillFilter();
-    std::vector<double> errorMap = { 4 , 1.0 };
+    std::vector<double> errorMap(4 , 1.0 );
 
     std::vector<double> prevError = f.Padding(errorMap);
 
-    std::vector<double> expected = { 8 , 1.0 };
+    std::vector<double> expected(36 , 1.0);
 
-    ASSERT_EQ(errorMap.size(), expected.size());
+    ASSERT_EQ(prevError.size(), expected.size());
 }
 
 
