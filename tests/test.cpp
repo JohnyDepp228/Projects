@@ -275,7 +275,7 @@ TEST(FiltersTest, FindMapForPrevLayer) {
         std::cout << msg;
     }
 
-    std::vector<double> expected = { 16 , 1.0 };
+    std::vector<double> expected(16,1.0);
 
     ASSERT_EQ(prevError.size(), expected.size());
 }
