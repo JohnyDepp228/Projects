@@ -117,6 +117,19 @@ std::vector<double> Maps::operator* (const std::vector<double> &reversePoolingMa
    
 }
 
+std::vector<double> Maps::operator+ (const std::vector<double> &Map) const {
+    if(this->mapBeforeActivateFunction.size() != Map.size()){
+        throw std::string("Can't multi maps with different size");
+    }
+    else{
+        std::vector<double> res(mapBeforeActivateFunction.size());
+        for(int i = 0;i < mapBeforeActivateFunction.size();i++){
+            res[i] = mapOfsigns[i] + Map[i];
+        }
+        return res;
+    }
+}
+
 void Maps::FindMapForLearning(const std::vector<double> &mapOfErrors) {
     std::vector<double> reversedPoolingMap = ReversePooling(mapOfErrors);
     ApplyDiractivateFunction();

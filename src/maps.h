@@ -28,6 +28,8 @@ public:
 
     std::vector<double> operator* (const std::vector<double> &reversePoolingMap) const;
 
+    std::vector<double> operator+ (const std::vector<double> &Map) const;
+
     void FindMapForLearning(const std::vector<double> &mapOfErrors);
 
     //Setters 
