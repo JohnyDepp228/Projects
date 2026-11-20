@@ -80,4 +80,6 @@
 
 - [x] FindMapForLearning in
 
-- [] FindMapForPrevLayer(Filters)
+- [x] FindMapForPrevLayer(Filters)
+
+- [x] Padding(Filters)

@@ -151,8 +151,8 @@ std::vector<double> Filters::FindMapForPrevLayer(const std::vector<double> &erro
     }
     std::vector<double> flippedFilter(filter.size());
     std::reverse_copy(filter.begin(), filter.end(),flippedFilter.begin());
-    //std::vector<double> paddedErrorMap = Padding(errorMap);
-    std::vector<double> res =  Slide(errorMap,flippedFilter,0);
+    std::vector<double> paddedErrorMap = Padding(errorMap);
+    std::vector<double> res =  Slide(paddedErrorMap,flippedFilter,0);
     if(HasNanOrInf(res)){
         throw std::string("Invalid data in map of error for prev layer(filters learn)");
     }
@@ -177,7 +177,7 @@ std::vector<double> Filters::operator-(const std::vector<double> &filtersError) 
 std::vector<double> Filters::Padding(const std::vector<double> &errorMap) {
     int errorMapSizeOrg = std::sqrt(errorMap.size());
     int errorMapSize = 0;
-    errorMapSize += 2 * this->padding;
+    errorMapSize = errorMapSizeOrg +  2 * this->padding;
 	std::vector<double> correctSizeMatrix(errorMapSize * errorMapSize,0.0);
 
 	for (int r = 0; r < errorMapSizeOrg; ++r) {
