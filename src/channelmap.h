@@ -12,7 +12,7 @@ public:
     ~ChannelMap();
     void InitializeChannelParametrs(unsigned int);
     std::vector<double> Forward(const std::vector<Maps>&);
-    std::vector<double> Forward(const std::vector<Maps>&,int);
+    std::vector<double> Baskpropagetion(const std::vector<Maps> &,const std::vector<double>&);
     
 
 private:

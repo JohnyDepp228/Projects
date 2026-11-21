@@ -1,5 +1,4 @@
 #include "channel.h"
-#include <iostream>
 
 Channel::Channel()
 {

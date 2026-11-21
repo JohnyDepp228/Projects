@@ -25,9 +25,9 @@
 
 - [x] Combine Filters + Maps of signs (Forward)
 
-- [ ] Conv Backward (Расчет градиентов фильтров dW и сдвигов db)
+- [x] Conv Backward (Расчет градиентов фильтров dW и сдвигов db)
 
-- [ ] Input error pass to convolution layer (dx для предыдущего слоя)
+- [x] Input error pass to convolution layer (dx для предыдущего слоя)
 
 ## Classifier
 
@@ -85,3 +85,7 @@
 - [x] Padding(Filters)
 
 - [x] Channel forward 
+
+- [ ] Conv Backward (Расчет градиентов фильтров dW и сдвигов db)
+
+- [ ] Input error pass to convolution layer (dx для предыдущего слоя)

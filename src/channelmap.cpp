@@ -62,3 +62,27 @@ std::vector<double> ChannelMap::Forward(const std::vector<Maps> &images) {
     map.SetMap(res);
     return this->map.GetMapOfSigns();
 }
+
+std::vector<double> ChannelMap::Baskpropagetion(const std::vector<Maps> &imagesInput,const std::vector<double>&errorMaps) {
+    if(map.GetMapOfSigns().size() != errorMaps.size()){
+        throw std::string("Error map size didn't match with maps size");
+    }
+    std::vector<double> sum;
+        for(int i = 0;i < errorMaps.size();i++){
+            if(imagesInput[i].GetHeight() < filters[i].GetHeight() ||
+               imagesInput[i].GetWidth() < filters[i].GetWidth() ){
+                throw std::string("Image matrix size is too small:\t" + std::to_string(errorMaps.size()) + 
+                "\nWhen filter size is:\t" + std::to_string( filters[i].GetFilter().size()));
+            }
+            map.FindMapForLearning(errorMaps);
+            std::vector<double> temp = filters[i].FindMapForPrevLayer(map.GetMapOfErros());
+            filters[i].LearnFilters(imagesInput[i].GetMapOfSigns(),map.GetMapOfErros());
+            if(i == 0){
+                sum = temp;
+            }
+            else{
+                sum = sum + temp;
+            }
+        }
+    return sum;
+}

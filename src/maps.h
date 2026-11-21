@@ -52,6 +52,8 @@ public:
 
     std::vector<double> GetMapOfSigns() const;
 
+    std::vector<double> GetMapOfSignsBeforeActivate() const;
+
     std::vector<double> GetMapOfErros() const;
 
     int GetStride() const;

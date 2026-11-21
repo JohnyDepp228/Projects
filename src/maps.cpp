@@ -154,6 +154,10 @@ unsigned int Maps::GetWidth() const { return this->mapWidth; }
 
 std::vector<double> Maps::GetMapOfSigns() const { return this->mapOfsigns; }
 
+std::vector<double> Maps::GetMapOfSignsBeforeActivate() const {
+    return this->mapBeforeActivateFunction;
+}
+
 std::vector<double> Maps::GetMapOfErros() const {
     return this->mapOfErrors;
 }
