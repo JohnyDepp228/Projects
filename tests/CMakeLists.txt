@@ -37,6 +37,8 @@ add_executable(CNN_tests ./test.cpp
 target_sources(CNN_tests PRIVATE 
     ../src/filters.cpp
     ../src/maps.cpp
+    ../src/channel.cpp
+    ../src/channelmap.cpp
 )
 
 target_link_libraries(CNN_tests PRIVATE GTest::gtest GTest::gtest_main)

@@ -1,5 +1,6 @@
 #include "../src/filters.h"
 #include "../src/maps.h"
+#include "../src/channel.h"
 #include <gtest/gtest.h>
 #include <cmath>
 #include <iostream>
@@ -151,6 +152,38 @@ TEST(Forward, MapSizeOF32After2Forward) {
     std::vector<double> res =  m.Pooling(temp);
 
     ASSERT_EQ(res.size(), 1);
+}
+
+
+TEST(Forward, ChannelsCount2) {
+    std::vector<Channel> channel;
+    channel.resize(2);
+    std::vector<Maps> map(2);
+    std::vector<Maps> mapRes;
+    std::vector<double> mat(64,1.0);
+    std::vector<double> mat2(64,2.0);
+
+    map[0].SetMap(mat);
+    map[0].SetHeight(8);
+    map[0].SetWidth(8);
+    map[1].SetMap(mat2);
+    map[1].SetHeight(8);
+    map[1].SetWidth(8);
+
+
+    channel[0].SetSize(2);
+    mapRes = channel[0].Forward(map);
+    for (int i = 0; i < mapRes.size(); i++) {
+        EXPECT_EQ(mapRes[i].GetMapOfSigns().size(), 9) << "Mismatch at index " << i;
+    }
+    ASSERT_EQ(mapRes.size(), 2);
+    channel[1].SetSize(3);
+    mapRes = channel[1].Forward(mapRes);
+    for (int i = 0; i < mapRes.size(); i++) {
+        EXPECT_EQ(mapRes[i].GetMapOfSigns().size(), 1) << "Mismatch at index " << i;
+    }
+
+    ASSERT_EQ(mapRes.size(), 3);
 }
 
 TEST(MapClassTests, GMP) {

@@ -74,13 +74,13 @@ bool Filters::HasNanOrInf(const std::vector<double> &vec) {
 
 std::vector<double> Filters::Slide(const std::vector<double> &bigMatrix,const std::vector<double> &smallMatrix,bool addBias) {
     if(smallMatrix.size() > bigMatrix.size()){
-        throw std::string("Small matrix size is bigger then big matrix size(filters learning)");
+        throw std::string("Small matrix size is bigger then big matrix size(filters)");
     }
     else if(HasNanOrInf(bigMatrix)){
-        throw std::string("Big matrix has invalid data in(filters learning)");
+        throw std::string("Big matrix has invalid data in(filters )");
     }
     else if(HasNanOrInf(smallMatrix)){
-        throw std::string("Small matrix has invalid data in(filters learning)");
+        throw std::string("Small matrix has invalid data in(filters )");
     }
     else{
         int bigMatHeight;

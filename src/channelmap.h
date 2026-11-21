@@ -10,11 +10,9 @@ class ChannelMap
 public:
     ChannelMap();
     ~ChannelMap();
-    void InitializeChannelParametrs(unsigned int filterHeight,unsigned int filterWidth,
-                             unsigned int filterStride,unsigned int filtersNumber,
-                             unsigned int poolignStride);
+    void InitializeChannelParametrs(unsigned int);
     std::vector<double> Forward(const std::vector<Maps>&);
-
+    std::vector<double> Forward(const std::vector<Maps>&,int);
     
 
 private:

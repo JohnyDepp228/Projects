@@ -21,9 +21,9 @@
 
 ### Channels 
 
-- [ ] Padding & Stride logic
+- [x] Padding & Stride logic
 
-- [ ] Combine Filters + Maps of signs (Forward)
+- [x] Combine Filters + Maps of signs (Forward)
 
 - [ ] Conv Backward (Расчет градиентов фильтров dW и сдвигов db)
 
@@ -83,3 +83,5 @@
 - [x] FindMapForPrevLayer(Filters)
 
 - [x] Padding(Filters)
+
+- [x] Channel forward 
